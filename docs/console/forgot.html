@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light" />
+<title>Football Labs · 重置密码</title>
+<!--
+  Football Labs · Reset — 与 login.html 同一家族的右侧毛玻璃卡
+  ────────────────────────────────────────────────────────────────
+  两步式, 同一页切换 (第一步 hidden 后显示第二步):
+    第一步 POST /api/auth/reset/request  {username}
+           · 有 code (AUTH_RESET_SHOW_CODE=true, 本机自用)
+             -> {ok, username, expires_in, expires_at, code, detail:"重置码: 123456（…请立刻使用）"}
+             页面大号等宽显示该码 + 复制按钮 + 预填进 #fCode
+           · 无 code (默认, 公网安全)
+             -> {ok, username, expires_in, expires_at, detail:"重置码已生成, …请向管理员索取（已记入服务端日志）"}
+             同一张卡显示「请联系管理员索取」提示, 不显示任何码/空框, 复制按钮隐藏并禁用, 不预填
+    第二步 POST /api/auth/reset/confirm  {username, code, new_password}
+           -> {ok, detail:'密码已重置, 请用新密码登录'}
+  选择器契约 (端到端脚本依赖, 勿改名):
+    #fUser #fGet #fMsg | #fStep2 #fCodeShow #fCode #fPwd #fPwd2 #fReset #fMsg2 #fAgain
+  提示一律写进 msg 元素的 textContent (元素本身不重建)。
+  纯静态自包含: 只依赖同目录 auth.css, 不发任何外部请求。
+-->
+<link rel="stylesheet" href="auth.css" />
+<style>
+  /* 无码模式(默认)专用: 同一张码卡片改为读一句提示, 不用 34px 等宽码字体 */
+  #fCodeCard.is-nocode .code {
+    font: 400 14.5px/1.65 var(--sans);
+    letter-spacing: 0;
+    text-indent: 0;
+    color: var(--ink);
+  }
+  #fCodeCard.is-nocode .code-note { margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ 背景: 黄昏球场视频 + 深色遮罩 (CSS 渐变兜底) ═══════════════════ -->
+<div class="bgwrap" aria-hidden="true">
+  <video class="bg" autoplay muted loop playsinline preload="auto" disablepictureinpicture>
+    <source src="assets/dusk.mp4" type="video/mp4" />
+  </video>
+</div>
+<div class="veil" aria-hidden="true"></div>
+
+<main>
+  <aside class="gate" id="gate" aria-label="重置密码">
+    <div class="gate-inner">
+      <p class="eyebrow">MATCHDAY ACCESS</p>
+      <h2 class="gate-title">Reset<span class="accent">.</span></h2>
+      <p class="gate-sub" id="fSub">输入账号获取重置码，用来设置新密码</p>
+
+      <!-- ══ 第一步: 获取重置码 ══ -->
+      <form class="step" id="step1" novalidate>
+        <label class="field" for="fUser">
+          <span class="field-label">ACCOUNT · 账号</span>
+          <input id="fUser" name="username" type="text" autocomplete="username"
+                 spellcheck="false" placeholder="请输入要找回的账号" />
+        </label>
+
+        <button class="btn" id="fGet" type="submit">Get code · 获取重置码</button>
+
+        <p class="msg" id="fMsg" role="status" aria-live="polite"></p>
+      </form>
+
+      <!-- ══ 第二步: 用重置码设置新密码 ══ -->
+      <form class="step" id="fStep2" hidden novalidate>
+        <!-- 重置码卡片: 两种响应共用一个节点
+             · 有 code (AUTH_RESET_SHOW_CODE=true, 本机自用): 大号等宽码 + 复制按钮 + 预填
+             · 无 code (默认, 公网安全): 同一张卡显示「请联系管理员索取」提示,
+               不显示空框、不显示任何码, 复制按钮隐藏且禁用 -->
+        <div class="code-card" id="fCodeCard" hidden>
+          <span class="code-lbl">Reset code · 重置码</span>
+          <b class="code" id="fCodeShow">------</b>
+          <p class="code-note" id="fCodeNote">—</p>
+          <div class="copy-row">
+            <button class="link" id="fCopy" type="button">Copy · 复制重置码</button>
+          </div>
+        </div>
+
+        <label class="field" for="fCode">
+          <span class="field-label">RESET CODE · 重置码</span>
+          <input id="fCode" name="code" type="text" inputmode="numeric" autocomplete="one-time-code"
+                 maxlength="6" spellcheck="false" placeholder="6 位数字" />
+        </label>
+        <label class="field" for="fPwd">
+          <span class="field-label">NEW PASSWORD · 新密码</span>
+          <input id="fPwd" name="new_password" type="password" autocomplete="new-password"
+                 placeholder="至少 6 位" />
+        </label>
+        <label class="field" for="fPwd2">
+          <span class="field-label">CONFIRM · 确认密码</span>
+          <input id="fPwd2" name="new_password2" type="password" autocomplete="new-password"
+                 placeholder="再输一次" />
+        </label>
+        <p class="relink">
+          <button class="link" id="fAgain" type="button">Re-issue · 重新获取重置码</button>
+        </p>
+
+        <button class="btn" id="fReset" type="submit">Reset · 重置密码</button>
+
+        <p class="msg" id="fMsg2" role="status" aria-live="polite"></p>
+      </form>
+
+      <p class="gate-alt">
+        想起密码了？<a class="link" id="fBack" href="login.html">返回登录 · Back</a>
+      </p>
+
+      <p class="gate-foot">Football Labs · Access Control</p>
+    </div>
+  </aside>
+</main>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   忘记密码: 两步式, 同一页切换
+   ───────────────────────────────────────────────────────────────────────────
+   · 第一步拿到 code 后: 大号等宽字体(#fCodeShow) + 有效期说明 + 复制按钮, 自动进入第二步。
+   · code 缺失(服务端 AUTH_RESET_SHOW_CODE=false)时显示兜底文案「重置码已发送给管理员」。
+   · 密码规则在前端先自查(与后端一致), 后端 detail 一律原文显示。
+   · 提示只改 msg 元素的 textContent, 元素不重建 (端到端脚本依赖这个稳定性)。
+   ═══════════════════════════════════════════════════════════════════════════ */
+(function reset() {
+  // 后端基址: 本体由 8000 提供时走相对路径(同源); 8591 静态服务 / file:// 时回落到 8000。
+  // 部署到域名(含 https 反向代理)时必须同源, 否则浏览器会拦混合内容。
+  var API = '';
+  try {
+    if (location.protocol === 'file:') API = 'http://127.0.0.1:8000';
+    else if (location.protocol !== 'https:' && location.port && location.port !== '8000')
+      API = 'http://' + (location.hostname || '127.0.0.1') + ':8000';
+  } catch (e) { API = ''; }
+
+  var $ = function (id) { return document.getElementById(id); };
+  var gate = $('gate');
+  var sub = $('fSub');
+  var step1 = $('step1');
+  var step2 = $('fStep2');
+  var elUser = $('fUser');
+  var elCode = $('fCode');
+  var elPwd = $('fPwd');
+  var elPwd2 = $('fPwd2');
+  var btnGet = $('fGet');
+  var btnDo = $('fReset');
+  var msg1 = $('fMsg');
+  var msg2 = $('fMsg2');
+  var codeCard = $('fCodeCard');
+  var codeEl = $('fCodeShow');
+  var codeNote = $('fCodeNote');
+  var codeLbl = codeCard.querySelector('.code-lbl');
+  var btnCopy = $('fCopy');
+  var btnAgain = $('fAgain');
+  var back = $('fBack');
+
+  var entered = false;
+
+  // 提示写进指定 msg 元素 (第一步 -> #fMsg, 第二步 -> #fMsg2)
+  function say(el, text, kind) {
+    el.textContent = text || '';
+    el.className = 'msg' + (kind ? ' is-' + kind : '');
+  }
+  function say1(text, kind) { say(msg1, text, kind); }
+  function say2(text, kind) { say(msg2, text, kind); }
+
+  var SUB1 = '输入账号获取重置码，用来设置新密码';
+  var SUB2 = '把重置码和新密码填进来，完成后即可用新密码登录';
+
+  // ---- 返回登录: 把 ?next= 一并带上 (沿用 login.html 的语义) ----
+  var nextQ = null;
+  try { nextQ = new URLSearchParams(location.search).get('next'); } catch (e) { nextQ = null; }
+  if (nextQ) back.href = 'login.html?next=' + encodeURIComponent(nextQ);
+
+  function gotoStep(n) {
+    var one = n === 1;
+    step1.hidden = !one;
+    step2.hidden = one;
+    // 重播一次「立即进场」动画: 先去类强制重排, 再加回来。
+    // (.gate-inner>* 的开场 stagger 有 0.3~0.48s 延迟, 直接用会把新步骤空白约 1 秒)
+    var show = one ? step1 : step2;
+    show.classList.remove('reveal');
+    void show.offsetWidth;
+    show.classList.add('reveal');
+    sub.textContent = one ? SUB1 : SUB2;
+    say1(''); say2('');
+    if (one) elUser.focus(); else elCode.focus();
+  }
+
+  function post(url, payload) {
+    return fetch(API + url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) {
+        return { ok: r.ok, status: r.status, body: j || {} };
+      });
+    });
+  }
+
+  // ═══ 第一步: 获取重置码 ═══
+  step1.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    if (entered) return;
+    var u = elUser.value.trim();
+    if (!u) { say1('请输入账号', 'err'); return; }
+
+    btnGet.disabled = true;
+    btnGet.textContent = 'Sending · 申请中';
+    say1('正在申请重置码…');
+
+    post('/api/auth/reset/request', { username: u })
+      .then(function (res) {
+        btnGet.disabled = false;
+        btnGet.textContent = 'Get code · 获取重置码';
+        if (!res.ok) {
+          say1(res.body.detail || ('获取失败 (HTTP ' + res.status + ')'), 'err');
+          return;
+        }
+        var j = res.body;
+        var mins = Math.max(1, Math.round((j.expires_in || 600) / 60));
+        codeCard.hidden = false;                       // 两种模式都显示这张卡, 不留空框
+        if (j.code) {
+          // ── 有码: 服务端开了 AUTH_RESET_SHOW_CODE, 维持原行为 ──
+          codeCard.classList.remove('is-nocode');
+          codeLbl.textContent = 'Reset code · 重置码';
+          codeEl.textContent = String(j.code);
+          codeNote.textContent = '重置码 ' + j.code + ' · ' + mins + ' 分钟内有效，请立刻使用';
+          btnCopy.hidden = false;
+          btnCopy.disabled = false;
+          elCode.value = String(j.code);               // 顺手预填, 用户可直接确认
+        } else {
+          // ── 无码 (默认, 公网安全): 码只在服务端日志里, 页面上不出现任何数字码 ──
+          codeCard.classList.add('is-nocode');
+          codeLbl.textContent = 'Notice · 提示';
+          codeEl.textContent = '重置码已生成（' + mins + ' 分钟内有效）· 请联系管理员索取';
+          codeNote.textContent = '出于安全考虑，重置码不在页面上显示；管理员可在服务端日志中查到并转告你。';
+          btnCopy.hidden = true;                       // 没内容可复制: 隐藏 + 禁用
+          btnCopy.disabled = true;
+          elCode.value = '';
+        }
+        elUser.disabled = true;      // 第二步期间账号锁定
+        elPwd.value = '';
+        elPwd2.value = '';
+        gotoStep(2);
+        say2(j.code ? '重置码已获取，请在下方填入新密码'
+                    : '重置码已生成，请向管理员索取后填入下方', 'ok');
+      })
+      .catch(function () {
+        btnGet.disabled = false;
+        btnGet.textContent = 'Get code · 获取重置码';
+        say1('无法连接后端 (' + (API || location.origin) + ')，请确认服务已启动', 'err');
+      });
+  });
+
+  // ---- 复制重置码: 无码模式下按钮已禁用, 这里再兜一层; clipboard 失败静默忽略 ----
+  btnCopy.addEventListener('click', function () {
+    if (btnCopy.disabled || codeCard.classList.contains('is-nocode')) return;
+    var text = codeEl.textContent || '';
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text)['catch'](function () {});
+      }
+    } catch (e) { /* 静默忽略 */ }
+  });
+
+  // ---- 重新获取重置码: 回到第一步, 保留已填账号 ----
+  btnAgain.addEventListener('click', function () {
+    elUser.disabled = false;
+    gotoStep(1);
+    elUser.focus();
+  });
+
+  // ═══ 第二步: 重置密码 ═══
+  step2.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    if (entered) return;
+
+    var u = elUser.value.trim();
+    var code = elCode.value.trim();
+    var np = elPwd.value;
+    var np2 = elPwd2.value;
+
+    if (!/^\d{6}$/.test(code)) { say2('请输入 6 位数字重置码', 'err'); return; }
+    if (np.length < 6) { say2('密码至少 6 位', 'err'); return; }
+    if (np !== np.trim()) { say2('密码首尾不能有空格', 'err'); return; }
+    if (np !== np2) { say2('两次输入的密码不一致', 'err'); return; }
+
+    btnDo.disabled = true;
+    btnDo.textContent = 'Resetting · 提交中';
+    say2('正在重置密码…');
+
+    post('/api/auth/reset/confirm', { username: u, code: code, new_password: np })
+      .then(function (res) {
+        if (res.ok) {
+          entered = true;
+          gate.classList.add('is-entering');
+          btnDo.textContent = 'Done · 已重置';
+          say2('密码已重置，正在返回登录…', 'ok');
+          setTimeout(function () {
+            location.href = nextQ ? ('login.html?next=' + encodeURIComponent(nextQ)) : 'login.html';
+          }, 1200);
+          return;
+        }
+        // 后端 detail 原文显示 (码错 / 过期 / 密码不合规), 账号保留
+        say2(res.body.detail || ('重置失败 (HTTP ' + res.status + ')'), 'err');
+        btnDo.disabled = false;
+        btnDo.textContent = 'Reset · 重置密码';
+      })
+      .catch(function () {
+        btnDo.disabled = false;
+        btnDo.textContent = 'Reset · 重置密码';
+        say2('无法连接后端 (' + (API || location.origin) + ')，请确认服务已启动', 'err');
+      });
+  });
+
+  elUser.focus();
+})();
+</script>
+</body>
+</html>

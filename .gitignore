@@ -1,0 +1,97 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# 仓库只放「代码 + 项目」：实算 591 个文件 / 35.5 MB（含 webui/dist 构建产物），
+# 数据、模型、密钥、依赖目录全部排除。核对命令：python scripts/audit_repo_payload.py
+#
+# 服务器上必须**单独补**的东西（不在仓库里）：
+#   1. data/database/football.db        数据库本体（~159 MB）
+#   2. models/*.joblib  models/*.pt     预测模型（~11 MB，缺了 prediction_service 会 FileNotFoundError）
+#   3. data/processed/*.csv             预测特征输入（all_matches.csv / tm_team_season.csv / match_xg.csv）
+#   4. .env                             由 .env.example 复制后填真实 key
+# 详见 docs/deploy.md《部署说明》。
+#
+# 注意：本文件里带前导斜杠的规则以仓库根为界（/dist/ 只匹配根目录），
+# 不加斜杠的规则（dist/、lib/）会匹配**任意层级** —— 早期正是因为这样把
+# webui/src/lib/（前端工具库）和 webui/dist（构建产物）一起忽略了，会推成坏仓库。
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+/downloads/
+eggs/
+.eggs/
+/parts/
+/sdist/
+/var/
+/wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# ── 虚拟环境 ──────────────────────────────────────────────────────────────────
+venv/
+env/
+ENV/
+.venv/
+
+# ── 环境变量（含 API 密钥，绝不入库）──────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# ── 数据（大文件不入库，随部署单独传）────────────────────────────────────────
+data/raw/*.csv
+data/processed/*.csv
+data/database/*.db
+data/database/*.db-wal
+data/database/*.db-shm
+data/database/*.db-journal
+data/database/*.sqlite
+data/database/*.bak_*
+data/cache/
+# 外部数据集 562 MB，含 3 个 >100 MB 的文件（GitHub 硬限制 100 MB/文件，会直接拒收）；
+# 需要时用 scripts/fetch_external_dataset.py 重新下载 —— 运行时只用到 data/external/af_cache。
+data/external/
+*.parquet
+*.gz
+
+# ── 模型（二进制，部署时单独传）──────────────────────────────────────────────
+models/*.joblib
+models/*.pkl
+models/*.pt
+models/*.json
+
+# ── 前端 ──────────────────────────────────────────────────────────────────────
+node_modules/
+.vite/
+*.tsbuildinfo
+# 注意：webui/dist 是**故意提交**的构建产物（服务器不装 Node，git pull 即可跑）；
+# webui/.gitignore 里已为此加了例外，别在这里加 dist 规则。
+
+# ── IDE / 编辑器 ──────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── Jupyter ───────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ── 系统 ──────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── 日志 / 运行产物 ───────────────────────────────────────────────────────────
+*.log
+logs/

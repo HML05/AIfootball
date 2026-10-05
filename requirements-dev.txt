@@ -1,0 +1,15 @@
+﻿# 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+# 寮€鍙?/ 鑷 / 璁粌渚濊禆锛?*涓嶈涔熻兘璺戜富搴旂敤**锛?#
+# 鐢ㄩ€旓細
+#   playwright            鈫?鐣岄潰鑷鑴氭湰锛坰cripts/verify_webui.py銆乨ocs_shots.py 绛夛級
+#   torch                 鈫?娣卞害瀛︿範妯″瀷璁粌锛坰cripts/train_dl.py銆乻rc/prediction/dl_model.py锛?#   scipy                 鈫?scripts/dl_robustness.py 鐨勭粺璁℃楠?#   vl-convert-python     鈫?鎶?Altair 鍥惧鍑?PNG锛坰cripts/ 閲岀殑鍥捐〃鑷煡锛?#
+# 瀹夎锛歱ip install -r requirements-dev.txt
+# 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+
+playwright==1.62.0
+torch==2.13.0
+scipy==1.18.1
+vl-convert-python==1.9.0.post1
+pathspec==1.1.1        # scripts/audit_repo_payload.py 鐢紙绛変环 git 鐨?.gitignore 鍖归厤锛?
+# Playwright 杩橀渶瑕佹祻瑙堝櫒鍐呮牳锛堣嚜妫€鑴氭湰鐢ㄧ郴缁?Chrome 鏃舵棤闇€涓嬭浇锛夛細
+#   python -m playwright install chromium

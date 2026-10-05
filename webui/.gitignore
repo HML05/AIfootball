@@ -1,0 +1,25 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+# dist 故意入库（2.3 MB / 5 个文件）：服务器不装 Node，git pull 后由 FastAPI 直接托管构建产物。
+# 改了前端源码记得本地重新构建再提交：python scripts/build_webui.py
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

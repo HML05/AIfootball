@@ -1,0 +1,2798 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>足球数据分析与 AI 预测系统 · 控制台</title>
+<link rel="preload" as="image" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAMAAACahl6sAAAAw1BMVEUAAABqIVGzcpGsaou7e5qWRG2LRG2zcZGmXH+ZSnGjYoSMPmhKDkN/MV9eCj9TFUiGOWROE0ZcHU59MF1ZGkxXGEp7JVJqH1BPEENRDEGUS3NNEENdBjt3NF9eHU55LVueX4NlJFNkIFBsK1l0M19sI1NWDEKVVnx8NGBkGUuFRm5ED0NZE0aQU3qFRG6IQ209CD49CD86Bz49CD44Bz43BDs4BTw0Ajk1BDs7BDs0ADZHDkI4AjhBCD0xADZGC0BEBjsvun+jAAAAMHRSTlMAmx8uFRBdDAUaPib7UqbsPPjQZNbgLH3h0UrvjJPIcVXBq7eoj8drfZyV8bd+hXO1gLq8AAAPyklEQVR42uzBgQAAAACAoP2pF6kCAAAAAAAAAAAAmD0zUU4jBwKouGGA5b4XMGAwjr126WppLsb//1XbjQawgwm5amupyqvEKLZ76Ee3RtLkD3/4wx/+8FvJFk/jYo7dLg9vWZYyfquzG6NwGi52K+bwYlNkN8Y8Uzp0ViKiO0bkngDm+Fr22O1wF3SbbvQaSWiQVWVopR6gx/KV3Q652MbbMo0WVvDgC2OltpFSr9EjzrLboVITQrf71FlKShHn2CqQKJJh092M3QbZeQH7pwec22TOHgKOAjCcRRLRi61vXtiNMJ3UGVtazFvAbOJLArR0aIVT/0Yotey6/GIway4soI5QWitlQSmBxLezKD7s9GwBklDW6jic9LqjUbc3SSRYGxbYrVBqaNB830+txaDerLjUy4VKs7MezcrsZngxnAvrN9bNwiea7HbIJsomy/E+5UK/Plgvn5Fl52otXOEO/A96cOFnqpRTczB7in1lgbCmi9/cdqrsmwyejozW49/Uh9X+z10o18cv/fVQWhBCHrG1Ji6I8XP9W+31aMUBMDCq/45J+yj5yGM/x3gjteKcy3dwGzc9KtCwwy6SsfIdNvjnN8zZnVBm+JOTs5mRIE8IsFZIDrWVxBIBzHLfFgFE7AODB/artOmtfY/9JOMwNeHKQjjKTCdWSWW40IJLK4uXRCgqbiGxVVhR+PUVdGEwiZ+8TDVXYWPnATpc1it0AxuEVkrRWsb4AtH4kgiX0aqA5LYJSe2+/PKhwlq1W/3odK/k8e8ylslzvUc7X9uYV456SwAzZf2lttIMLovAX27sUVFt45eXnuJmuC6wHyM3y7JSL0AD5ceYkvx4hXpjd0cvE2NWl0UUiRD/0IXiPvvvaYY9xoqBRDjN6kbz64JNs/uXpWmVPhfRXBxFcnRruLRfLl/5Jg0vRV5j/GY3bg/vgHaeXWDuF6+LVGPBScTrdOY51O/8PaAL0ijTHXYzxUKaWWcw6JRYYTsbzgbZfSaPIxxWGZGfDzodDE8jH7vDdqaeRpaKnQ5Gsub277t39UhAtxnbgEzR8Zxdon5fvioy9jkWtsmeLezusSGt8qnEpW0tslqA1ZNOuikCFdzle8YqsLU6K9/jz3GYFBlSjJTeTV3e2xDDBBg/Xcv6vtWRxzJ+ZBun+VGzElp59uxEuIpWufRTwA/gjGzpgshpjtwbFAmr7Flhl77GwBVHkUrbKIHXRyCYlulSIXCYzYxEuI6L94GgEXfHuKK/P2Uj+dn+lo4IG+0j+7GQMM0YIcWQpeSHVlJHHxZn5b866UwC8LSmMlc/5n5FpPxC50uq8V8KB76QikRKXUrYgjAaE9pNnYjkoJQGEhS+lgKHiJ3knUjwherR3mFEJLiOMHHzJRXhggqvjiIrIxEzY3eRJOKiK2ZsMQ0s87aaaaeFGVewtbyLItAee95426Xr8OA1FZHCyPityb7shAQ9W/897Vp0izwSwXQ4JN1eDFJQpeJ2N0YVHjy8E5nuOIdwW2/WpxKk8D0SUVLQ9WI5Yo7XgEsi2pb3J3URdpolrNNGA0gEIMacHF6vg7et/CURuncrobVEbK+UioC/9qrVci72JSQPDCm9REKaBYkofOMFFr05ARTRMxo2rODm/iSSw6ShW3UZtHyKJBHqxmGnWs2mEwQrT6BopudLwmI0Un+uxXEswYqIRJz1znJzd0mESK8GsceciIjHjJga7A7yIHAyqDi3F1HhPpMitUmSOwxhcxL5Ekj/KU2X2kZgJLWWtLPTFC7TTHMISoXgtldm7nTVbDbHS4BG//Dri51tX6zIEWGfPJaKRFO2p6slhF7V8QBKREUSwWwOz2il7rphCFKMjiIUGa3KJUc29CX2HYmQ0JEiFvkMrj986IPIhkeTddAtXG4t8AGsVeG6wlIR4buCVEJBTc0dVLlovRcJVodng1I7p1ILhDqJ5GuAcU/IhL5IevK5F9E9diRf24E4F4FGlr3j1bdPR/m53pSz+U9FRLgZbTardZ00UhEVu+bOxsJ13pFguhfRi6OI2rikPopUEyWo81Oo9+9JhLyPFDrrWSjkGXrSZO94iOxJbRw/z+4/FYFHdsKJHLdc1YSysSdg50TE5hMRuRcRqQjdaQG0xj8aX2GXIRH36ydKDZDnwNu6Wn5XE4kn9+ocH0c8rusrDb53YR25JOJaK5kXT3Ry10XS1sLI7SGq08HIz0TujfwIT+drPFwhi8VitRyMGwBJAlYosMA5N93yd4s0D+c9KWSOvef7RCjy7EHnuchDwM9EHEKZIDCEBfoXKE4Izt1J9kyEf1PkJeDcHlbWyqP3/SJbw2XUzaeRmf6nIlS363BldBhqRUOBFj6HSf5rEckvthaRTXzOdQ93b+XsfGJqVSci1PPFyQ5OpBIqLu0+soqRk/5nItOd/IBAzjSEiRfFbHYaG/qZTV66QDuQjyJwRQS3ELQd8Vu9YWKBwyT3nSLUNYJL7bdGwwQUh6fcuQit/lfR/spjhLfwQULXYw+G40n2B0XYPeUjlYL9x/HmfbcImxpBbaEU7cds7J2L3Bsur6BMb8wOjBOzKqF/Ir4+AD4aAPO1yLMFIJGUAbeoQoAd5fbtZq2ZOZHQ4jdTEQOWRKwS6SOMrbSKux0+tPvuPAKmzQ5kY3W9HC+l9/+JsqOWKvesW8hObMNWK9yyj2TCWm1SZUeay8T3AYC33QPlfK9WS9yaVOiGrXDp3qQd1mg4rrVqSfqgz1uGvtYgeNdFVhq1VkiRjhcjr+D/y66ZNqcNA2HY4TJnIRyFQIBAQknatBmtTsc27v//Vd21MMJ1CZnJZNrO5PkQO4uv17vSSlp3nTvSl7X7vh/6C5brEesVpO7l8cmYszR6y+tx5/PxAXW36+d37SXdmZvfzvQLufA0drxaEDI3jOl/p149jfg5zNDPveK9kGvBub71/hUwqZ8ln/m2gX38DS06tqueo4bDxaul91fwu4af5bibrc8DYFSnprlOOuV0fFJCmE/eX6HJgfEzADiXlFYSaIUDDSvypTx2wIOweeRv8GQY42dR2Ry9dml4AEKopOSHys5vHBeC8b8l5IGWxQJ+Bowlm9UjIYL2t26iotsfhpHExT8iZLiLr8bT2TkpKrxpPi0CDSbZVqt+uWuCgKVCRrnQ+ntCNssWZoYQzgZXwKXkQTRs7tcxAJhd8an/G0JSmq8ZNjImdHLve5aFzjq0f0lIB+AVQoI2Fa5d9SNFvU5Iq9fsFWrb1Var6hXw/2g9cdFmvnZdi/h5gh+V3BcSrxdSXV7FQqv4ank89Bw8XsbxbD3Fsc5w0R9Ya72z7iZo/ezVb/v9RQ87kH6/f1j7n/cX/ZWVWR8sEmEMm4wb3oGl5OeJ7vLVVmuVo3qxYpWnN9EKCKknh/Q5nUgVACgT/SiF2uhre+hQGUXWeDANjImwyDDDHw/Dh6ud0Ukj9UZfGUjn4mbWccPviL+CfRKf0qYcgzWKq3O91k2s6IYBnWDCvZIOU5wh9MMlbiEVUgskR9CseAgcYhQyUeh1PxMCXIQkpNzW9qJ4qlK1YyGMn0Ov0vLb8490opcZb0/VEN38kzGpk3YiFSppl2zvQuKUVEorluq8dlah0C0c+AtCKjPDqEjQDkk6xGUn5HR+h8NOsG3OL+Xujm6ZWeX9GY+sNGN69tSqtJaXBoXPqX2MDDDQI6yqbULDrBA77Muskp0S0kYh82fGJNY6Ko3aKGL2FRfaCPBTiCAwipuVVzqMNJmqveyRZkDrsyXrnK7igkJ8qxkHOfdT45CUCBTyhFYuv+6t+qSQavrZqGrbKK30Ixq6Fnut4GfBJSzbgbQOs2jRvREG5NWXhXzVnFM5J0ujIqp59b5hLiZLl4qEoBXPfr5z1tNCts+c7baH2AXrZ6TjhKhZszCwZ27DaJU6lLA3CLzHy0KGFPZ33y13AQDes5HQwgqqy1btSAitplBxxCWq00JoDiVvv1u+JnCIrekhniC6OTnVyr4XAgFgU8j0EhvMi0KqM0E9wvPueYcYWsi5xRZGJ/su+vDfa6/HwRZlLNMATgrpU1MwO4vmAGbkvJPCyEfbIyGsIISwO9EKn2HrvdjYG4nt7A+AXuEz5vJPGf8VqRBu+m60ETshs6rzL6CQiaC4BqDrpRvT9Q4LrSkaZ+d0xbwj3DYvBEVPS6/xSBw64jm9NzfDoZZDQqzV+QmtVojtIFzFC0+keGW5i66yA8y+6FfeL/5nsBeEyJrnKHrEvcN42rCUKvjHtzUCt7Z3p0kIOS9vJSH5BfwSHTLz8TcGcts4ourOQiC4KS4QHcdTDvhZ/tNHNeah0GuZH4dI2+cWbN6yW8oyP5AQtBqaFWRWDlbInPLQ3A3wqES1RZvLxNW6d2AQpQ196RH10WkhjLHMYqO8IESNsCcZ7+mlBWPg+wsPkoesG+Zcd+nzzeoTpXMSQkmAlJC1co9WK6RGOSeg4aa/pJjHhXPbwZmNbxvTtxXtuNYOOPawLEwhszslJCQr/zncVJcr6p5ECnnn9hkA5HB8c7MZSmke6rYujFeRarReXxrgeyH+SKfLs6P1LVn3QvyZoViZrNcTJRhW0Urkmh1l1Mnm5mY8BCUfMyWUoqiDz4TonAeKQmjHJoJiGzlGbfDtzRR1ujKSUgGAzWPl0DDSbLRgIPF3sR9rkVUaIxizQjL3cSXJyMB+8On3NZ2uokhJwOTo3unTLiJ/OCGFhuG8wZD0c4+iEOAFIV55Ro9gzwf5WLK5o63JRBLihRWCTGOTxi4woMgiIchYi6znUfrCxnNpqMEV9IeutVa6NoyLofXH5oK4/sXxSeSxDb+xZtIIAGHU7HCX1iIySgilw079Eo/ceESvr7SkOQYfXwTWI8hgRoVcgZ5yS/3+JqbzhVIqGVc9x9F+fSLcs59SRJXQAtPr35ha++fNYpaEo/Xg+I6d9eRn2L9HD9XwyF42Q3wYheHkoucNFAnJCuiPk3bSfVw2PEdrjBclY8s7gT9T+VxeJPuW4fVUG42C8nrDPljBWrf9NvDesdUvPqkzFrHfHZ1D33nvQSNX+Yek5L0F6ovZ6cAiJI4T3oFtOMgc8CAZMxi+b+EmyDeQYpwJDKx3oPzTqP6gVa22Ov0IOHXVb+JenxrFg52IgHyXOlVlqDkYGbfbsZIUviP/XUo/jAm+CEkH9pXvQTOgLHKo8puw7L0Jqtb+CWEmnfTbR3XhvQ+9kRaCW+TzqPxWD4caCl0vSNmlgduTVtG99174ywlTRghlYHL/hrhyhXBjxJEQUIb1bTJr6rjmvSP13vji8fFh3HmbDJc0rxJQRigpjJQq+TL+nLkLV2X/L1odejWrx/XFstfwPvjggw8++OCDX+3BAQkAAACAoP+v+xEqAAAAAAAAAAAA/AShzoiPZkx8rQAAAABJRU5ErkJggg==">
+<style>
+@layer od-layout {
+  :where(.od-stack,.od-row,.od-row-top,.od-cluster,.od-grid,.od-field,.od-stat,.od-cell,.od-tile) > :where(*) { min-width: 0; }
+
+  /* containers */
+  .od-stack   { display: flex; flex-direction: column; gap: var(--od-gap, 8px); }
+  .od-row     { display: flex; align-items: center; gap: var(--od-gap, 8px); }
+  .od-row-top { display: flex; align-items: flex-start; gap: var(--od-gap, 8px); }
+  .od-cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--od-gap, 8px); }
+  .od-fill    { flex: 1 1 0; min-width: 0; }
+  .od-fixed   { flex: none; }
+  .od-grid    { display: grid; gap: var(--od-gap, 12px); grid-template-columns: repeat(var(--od-cols, 3), minmax(0, 1fr)); }
+
+  /* stacked information: each piece is its own line — never sibling inline spans */
+  .od-stat, .od-field, .od-cell { display: grid; gap: var(--od-gap, 2px); }
+  :where(.od-stat,.od-field,.od-cell) > :where(*) { display: block; }
+  .od-tile { display: grid; grid-template-rows: auto 1fr; }
+  :where(.od-tile) > :where(*) { display: block; }
+
+  /* media keeps its intrinsic ratio by default */
+  .od-media { display: block; width: 100%; height: auto; aspect-ratio: var(--od-ratio, auto); }
+  .od-media-cover { object-fit: cover; }
+
+  /* data text only — authored copy is rewritten to its budget instead */
+  .od-truncate { display: block; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .od-clamp-2, .od-clamp-3 { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+  .od-clamp-2 { -webkit-line-clamp: 2; }
+  .od-clamp-3 { -webkit-line-clamp: 3; }
+  .od-lines-2 { min-height: calc(2 * 1.4em); }
+  .od-nowrap  { white-space: nowrap; }
+  .od-keep    { word-break: keep-all; overflow-wrap: anywhere; }
+
+  /* screen skeleton */
+  .od-screen { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; height: 100%; }
+  .od-scroll { overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
+
+  /* horizontal rail */
+  .od-rail { display: flex; gap: var(--od-gap, 8px); overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none;
+             padding-inline: var(--od-rail-pad, 16px); scroll-padding-inline: var(--od-rail-pad, 16px); }
+  .od-rail::-webkit-scrollbar { display: none; }
+  :where(.od-rail) > :where(*) { flex: none; scroll-snap-align: start; }
+  :where(.od-rail) > :where(:last-child) { margin-inline-end: var(--od-rail-pad, 16px); }
+
+  .od-spacer { flex: none; visibility: hidden; pointer-events: none; }
+  .od-touch  { min-width: 44px; min-height: 44px; }
+}
+</style>
+<style data-od-inline-asset="styles.css">/* ============================================================
+   足球数据分析与 AI 预测系统 · 控制台
+   设计系统：Data Command — 深炭底 / 单一球场绿强调 / 等宽数字
+   ============================================================ */
+
+:root{
+  /* 纸面（对齐参照稿「晴空蓝玻璃仪表盘」：蓝白纸面 + 白玻璃卡） */
+  --bg:#e8f1fb;
+  --bg-2:#f1f7fd;
+  --panel:rgba(255,255,255,.86);
+  --panel-2:#ffffff;
+  --panel-3:#f1f7fd;
+  --line:rgba(30,64,110,.14);
+  --line-2:#d7e4f2;
+  --text:#14202e;
+  --text-2:#3c4c60;
+  --text-3:#5d6d80;
+  /* 主色 = 参照稿的天蓝 #4090e0 一族 */
+  --accent:#2f86e0;
+  --accent-2:#1f6fc4;
+  --accent-deep:#17539a;
+  --accent-soft:rgba(47,134,224,.10);
+  --accent-tint:#cfe4f8;
+  --accent-ink:#ffffff;
+  --warm-glow:rgba(122,182,245,.45);
+  --cool-glow:rgba(140,206,240,.34);
+  --amber:#c8871a;
+  --red:#d0453c;
+  --blue:#2aa3c9;
+  --violet:#5b6f8c;
+
+  --radius:22px;
+  --radius-sm:14px;
+  --radius-xs:10px;
+  --radius-pill:999px;
+  --shadow:0 30px 70px -28px rgba(21,54,99,.28), 0 12px 26px -16px rgba(21,54,99,.16);
+  --shadow-sm:0 10px 24px -14px rgba(21,54,99,.22);
+  --hair:rgba(30,64,110,.12);
+  --glass:rgba(255,255,255,.56);
+  --sidebar-w:252px;
+  --topbar-h:66px;
+  --pad:26px;
+
+  --font-sans:"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei UI","Microsoft YaHei","Noto Sans SC",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"SF Mono","JetBrains Mono","Cascadia Mono",ui-monospace,"DejaVu Sans Mono",Consolas,monospace;
+  /* 展示体：登录页的 Cormorant Garamond → Georgia → 中文回落 */
+  --font-display:"Cormorant Garamond","PP Editorial New",Georgia,"Times New Roman","Songti SC","PingFang SC","Microsoft YaHei",serif;
+
+  --ease-out:cubic-bezier(.16,.84,.44,1);
+  --ease-in:cubic-bezier(.5,0,.75,0);
+  --ease:cubic-bezier(.2,.75,.2,1);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font:400 15px/1.6 var(--font-sans);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  overflow:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(1100px 620px at 82% -14%, var(--warm-glow), transparent 62%),
+    radial-gradient(860px 560px at -8% 110%, var(--cool-glow), transparent 64%),
+    radial-gradient(rgba(19,26,33,.055) 1px, transparent 1.4px);
+  background-size:auto,auto,22px 22px;
+}
+
+h1,h2,h3,h4,p{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--text-2)}
+.dim{color:var(--text-3)}
+.accent{color:var(--accent)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+::selection{background:var(--accent-soft);color:#fff}
+
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#e4ebf2;border:3px solid var(--bg);border-radius:999px}
+::-webkit-scrollbar-thumb:hover{background:#d6e0ea}
+
+/* ---------- route progress ---------- */
+.route-progress{position:fixed;top:0;left:0;height:2px;width:0;z-index:90;
+  background:linear-gradient(90deg,var(--accent),#86c9d8);opacity:0;transition:width .3s var(--ease-out),opacity .25s}
+.route-progress.on{opacity:1}
+.route-progress.done{width:100%!important;opacity:0;transition:width .2s ease,opacity .4s .15s}
+
+/* ============================================================
+   App layout
+   ============================================================ */
+.app{position:relative;z-index:1;display:grid;grid-template-columns:var(--sidebar-w) minmax(0,1fr);height:100vh}
+
+/* ---------- sidebar ---------- */
+.sidebar{
+  display:flex;flex-direction:column;min-height:0;
+  background:linear-gradient(180deg,var(--bg-2),var(--bg));
+  border-right:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:11px;padding:18px 18px 16px;border-bottom:1px solid var(--line)}
+.brand-mark{flex:none;width:34px;height:34px;color:var(--accent);display:grid;place-items:center;
+  background:var(--accent-soft);border:1px solid rgba(47,134,224,.28);border-radius:10px}
+.brand-mark svg{width:22px;height:22px}
+.brand-text{display:flex;flex-direction:column;min-width:0}
+.brand-text b{font-size:14.5px;font-weight:650;letter-spacing:.005em;white-space:nowrap}
+.brand-text small{font:500 9.5px/1 var(--font-mono);letter-spacing:.16em;color:var(--text-3);margin-top:3px}
+
+.nav{flex:1 1 auto;overflow-y:auto;padding:14px 12px 18px;display:flex;flex-direction:column;gap:2px}
+.nav-group{margin-top:14px;padding:0 8px 7px;font:600 10px/1 var(--font-mono);letter-spacing:.16em;
+  color:var(--text-3);text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.nav-group:first-child{margin-top:2px}
+.nav-group::after{content:"";flex:1;height:1px;background:var(--line)}
+.nav-item{
+  position:relative;display:flex;align-items:center;gap:11px;
+  padding:9px 11px;border-radius:9px;color:var(--text-2);
+  font-size:13.5px;font-weight:500;transition:color .16s,background .16s;
+}
+.nav-item svg{width:17px;height:17px;flex:none;opacity:.85;transition:opacity .16s,transform .2s var(--ease-out)}
+.nav-item .nav-label{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-item .nav-key{font:500 10px/1 var(--font-mono);color:var(--text-3);opacity:0;transition:opacity .16s}
+.nav-item:hover{color:var(--text);background:var(--panel)}
+.nav-item:hover svg{opacity:1}
+.nav-item.active{color:#131a21;background:linear-gradient(90deg,var(--accent-soft),rgba(47,134,224,.04))}
+.nav-item.active svg{color:var(--accent);opacity:1}
+.nav-item.active .nav-key{opacity:.6}
+.nav-item.active::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:3px;height:20px;border-radius:3px;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+
+.sidebar-foot{padding:12px 14px 14px;border-top:1px solid var(--line)}
+.svc-mini{display:flex;flex-direction:column;gap:7px}
+.svc-mini .row{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--text-2)}
+.svc-mini .row .port{margin-left:auto;font:500 10.5px/1 var(--font-mono);color:var(--text-3)}
+.dot{width:7px;height:7px;border-radius:50%;flex:none;background:var(--text-3);position:relative}
+.dot.ok{background:var(--accent);box-shadow:0 0 0 3px rgba(47,134,224,.14)}
+.dot.warn{background:var(--amber);box-shadow:0 0 0 3px rgba(169,116,26,.14)}
+.dot.live{background:var(--red)}
+.dot.live::after{content:"";position:absolute;inset:-3px;border-radius:50%;border:1px solid var(--red);animation:ping 1.6s var(--ease-out) infinite}
+
+/* ---------- main ---------- */
+.main{display:grid;grid-template-rows:var(--topbar-h) minmax(0,1fr) 34px;min-width:0;height:100vh}
+
+.topbar{
+  display:flex;align-items:center;gap:14px;padding:0 22px;
+  background:rgba(255,255,255,.72);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);
+  position:relative;z-index:5;
+}
+.menu-btn{display:none}
+.tb-title{min-width:0;display:flex;flex-direction:column;gap:2px}
+.tb-title h1{font-size:18px;font-weight:650;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-title p{font-size:12px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-actions{margin-left:auto;display:flex;align-items:center;gap:10px}
+.demo-badge{font:600 10.5px/1 var(--font-mono);letter-spacing:.1em;color:var(--amber);
+  padding:6px 9px;border:1px solid rgba(169,116,26,.3);background:rgba(169,116,26,.08);border-radius:7px}
+
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:9px;font-size:13px;font-weight:550;
+  border:1px solid var(--line-2);background:var(--panel);color:var(--text);
+  transition:background .16s,border-color .16s,transform .12s,color .16s}
+.btn:hover{background:var(--panel-3);border-color:#c9d4e0}
+.btn:active{transform:translateY(1px)}
+.btn svg{width:15px;height:15px}
+.btn-primary{background:var(--accent);color:var(--accent-ink);border-color:transparent;font-weight:650}
+.btn-primary:hover{background:#1f6fc4}
+.btn-ghost{background:transparent;border-color:var(--line-2)}
+.btn-ghost:hover{background:var(--panel)}
+.btn-sm{padding:6px 10px;font-size:12px;border-radius:8px}
+.icon-btn{display:grid;place-items:center;width:36px;height:36px;border-radius:9px;border:1px solid transparent;
+  color:var(--text-2);transition:background .16s,color .16s,border-color .16s}
+.icon-btn:hover{background:var(--panel);color:var(--text);border-color:var(--line)}
+.icon-btn svg{width:18px;height:18px}
+
+/* ---------- content ---------- */
+.content{overflow-y:auto;overscroll-behavior:contain;padding:var(--pad);position:relative}
+.content:focus{outline:none}
+.view{max-width:1440px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.view-head{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:2px}
+.view-head .eyebrow{font:600 10.5px/1 var(--font-mono);letter-spacing:.18em;color:var(--accent);text-transform:uppercase}
+.view-head h2{font-size:22px;font-weight:680;letter-spacing:-.015em;margin-top:8px}
+.view-head p{color:var(--text-2);font-size:13px;margin-top:5px;max-width:64ch}
+.view-head .head-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+
+/* entrance animation */
+.rise{opacity:0;animation:riseIn .5s var(--ease-out) forwards;animation-delay:calc(var(--i,0)*38ms)}
+
+/* ============================================================
+   Panels & primitives
+   ============================================================ */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);position:relative;overflow:hidden}
+.panel::before{content:"";position:absolute;inset:0 0 auto 0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);pointer-events:none}
+.panel-head{display:flex;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+.panel-head h3{font-size:14px;font-weight:620;letter-spacing:-.005em}
+.panel-head .sub{font-size:11.5px;color:var(--text-3)}
+.panel-head .head-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.panel-body{padding:18px}
+.panel-body.tight{padding:12px}
+.panel-body.flush{padding:0}
+.section-label{font:600 10px/1 var(--font-mono);letter-spacing:.16em;color:var(--text-3);text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.section-label::after{content:"";flex:1;height:1px;background:var(--line)}
+
+.grid{display:grid;gap:16px}
+.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.cols-5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.split{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:16px;align-items:start}
+.split-r{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.7fr);gap:16px;align-items:start}
+.span-2{grid-column:span 2}
+
+.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:var(--radius-pill);
+  border:1px solid var(--line-2);background:var(--panel);font-size:12px;color:var(--text-2);transition:.16s;white-space:nowrap}
+.chip svg{width:13px;height:13px}
+.chip:hover{border-color:#c9d4e0;color:var(--text)}
+.chip.on{background:var(--accent-soft);border-color:rgba(47,134,224,.4);color:#17539a}
+.chip.on svg{color:var(--accent)}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:550;
+  border:1px solid var(--line-2);color:var(--text-2);background:var(--panel-2);white-space:nowrap}
+.tag.g{color:#17539a;border-color:rgba(47,134,224,.32);background:rgba(47,134,224,.08)}
+.tag.a{color:#8a5c10;border-color:rgba(169,116,26,.3);background:rgba(169,116,26,.08)}
+.tag.r{color:#8f2a1e;border-color:rgba(208,69,60,.3);background:rgba(208,69,60,.08)}
+.tag.b{color:#2c5c80;border-color:rgba(63,124,168,.3);background:rgba(63,124,168,.08)}
+.form-chips{display:inline-flex;gap:3px}
+.form-chips i{width:17px;height:17px;border-radius:5px;display:grid;place-items:center;font:700 9.5px/1 var(--font-mono);font-style:normal}
+.form-chips i.W{background:rgba(47,134,224,.16);color:#17539a}
+.form-chips i.D{background:rgba(19,26,33,.14);color:#3e4a57}
+.form-chips i.L{background:rgba(208,69,60,.15);color:#8f2a1e}
+
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12px;color:var(--text-2);font-weight:550}
+.input,.select{width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--line-2);background:var(--bg-2);color:var(--text);
+  font:inherit;font-size:13.5px;transition:border-color .16s,background .16s}
+.input:hover,.select:hover{border-color:#c9d4e0}
+.input:focus,.select:focus{outline:none;border-color:var(--accent);background:var(--panel)}
+.input::placeholder{color:var(--text-3)}
+.select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237c8e84' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat:no-repeat;background-position:right 11px center;padding-right:32px}
+.search{position:relative}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--text-3)}
+.search .input{padding-left:34px}
+
+/* segmented control */
+.segmented{display:inline-flex;padding:3px;gap:2px;background:var(--bg-2);border:1px solid var(--line);border-radius:10px}
+.segmented button{padding:6px 13px;border-radius:7px;font-size:12.5px;font-weight:550;color:var(--text-2);transition:.16s;position:relative}
+.segmented button:hover{color:var(--text)}
+.segmented button.on{background:var(--panel-3);color:var(--text);box-shadow:0 1px 0 rgba(255,255,255,.60) inset}
+.segmented button.on::after{content:"";position:absolute;left:50%;bottom:-2px;transform:translateX(-50%);width:16px;height:2px;border-radius:2px;background:var(--accent)}
+
+/* ============================================================
+   Stats & data display
+   ============================================================ */
+.stat{display:flex;flex-direction:column;gap:6px;padding:16px 16px 15px}
+.stat .stat-label{font:600 10px/1 var(--font-mono);letter-spacing:.14em;color:var(--text-3);text-transform:uppercase}
+.stat .stat-value{font:600 30px/1.05 var(--font-mono);letter-spacing:-.02em;display:flex;align-items:baseline;gap:5px;white-space:nowrap;color:var(--text)}
+.stat .stat-value .unit{font-size:13px;color:var(--text-2);font-weight:500}
+.stat .stat-foot{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-3)}
+.stat .stat-delta{font-weight:600}
+.stat-delta.up{color:var(--accent)}
+.stat-delta.down{color:var(--red)}
+.stat .spark{margin-top:2px}
+.stat-foot svg,.stat-delta svg,.stat-value svg{width:13px;height:13px;vertical-align:-2px}
+.hero-tag svg{width:13px;height:13px}
+.fn-card .go svg{width:17px;height:17px}
+.ticker .tk-label svg{width:14px;height:14px}
+.db-item svg{width:15px;height:15px;flex:none;color:var(--text-3)}
+.api-line .fi svg{width:16px;height:16px}
+.api-line .fi{display:grid;place-items:center}
+.schema-col .pk svg{width:14px;height:14px}
+.stat .od-row .fi svg,.panel .fi svg{width:16px;height:16px}
+
+.meter{display:flex;flex-direction:column;gap:7px}
+.meter-top{display:flex;align-items:baseline;gap:8px;font-size:13px}
+.meter-top .meter-label{color:var(--text-2)}
+.meter-top .meter-value{margin-left:auto;font-family:var(--font-mono);font-size:13px;color:var(--text)}
+.meter-track{height:7px;border-radius:999px;background:var(--panel-3);overflow:hidden;position:relative}
+.meter-fill{height:100%;border-radius:999px;background:var(--accent);width:0;transition:width .8s var(--ease-out)}
+.meter-fill.alt{background:var(--blue)}
+.meter-fill.warn{background:var(--amber)}
+.meter-fill.red{background:var(--red)}
+.meter-fill.dim{background:#cbd5df}
+
+.dual{display:grid;grid-template-columns:52px 1fr 52px;align-items:center;gap:12px;font-size:13px}
+.dual .v{font-family:var(--font-mono);font-size:14px;font-weight:600}
+.dual .v.l{text-align:right;color:#17539a}
+.dual .v.r{text-align:left}
+.dual .track{position:relative;height:8px;border-radius:999px;background:var(--panel-3);overflow:hidden;display:flex}
+.dual .track .seg{height:100%;transition:width .9s var(--ease-out)}
+.dual .track .seg.l{background:var(--accent)}
+.dual .track .seg.r{background:var(--blue)}
+.dual .mid{grid-column:1/-1;text-align:center;font-size:11.5px;color:var(--text-3);margin-bottom:-4px}
+
+/* table */
+.table-wrap{overflow-x:auto}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px;min-width:620px}
+.tbl thead th{position:sticky;top:0;background:var(--panel);text-align:left;font:600 10.5px/1 var(--font-mono);
+  letter-spacing:.1em;color:var(--text-3);text-transform:uppercase;padding:11px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl th.num,.tbl td.num{text-align:right;font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.tbl tbody td{padding:10px 12px;border-bottom:1px solid rgba(19,26,33,.6);vertical-align:middle}
+.tbl tbody tr{transition:background .14s}
+.tbl tbody tr:hover{background:var(--panel-2)}
+.tbl tbody tr.hl{background:linear-gradient(90deg,var(--accent-soft),transparent)}
+.tbl tbody tr:last-child td{border-bottom:0}
+.tbl .rank{width:34px;color:var(--text-3);font-family:var(--font-mono);font-size:12px}
+.tbl .rank.ucl{color:var(--accent);font-weight:700}
+.tbl .rank.rel{color:var(--red)}
+.team-cell{display:flex;align-items:center;gap:10px;min-width:0}
+.team-cell img{width:22px;height:22px;object-fit:contain;flex:none}
+.team-cell .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.team-cell .nm b{font-weight:550}
+
+.crest{width:26px;height:26px;object-fit:contain;flex:none}
+.crest-lg{width:44px;height:44px;object-fit:contain;flex:none}
+.crest-xl{width:64px;height:64px;object-fit:contain;flex:none}
+
+/* avatar (monogram) */
+.avatar{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;flex:none;
+  font:650 14px/1 var(--font-sans);color:#131a21;background:var(--panel-3);border:1px solid var(--line-2);letter-spacing:.02em}
+.avatar.sm{width:30px;height:30px;border-radius:9px;font-size:12px}
+.avatar.lg{width:56px;height:56px;border-radius:14px;font-size:19px}
+
+/* list rows */
+.rows{display:flex;flex-direction:column}
+.row-item{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid rgba(19,26,33,.6);transition:background .14s}
+.row-item:last-child{border-bottom:0}
+.row-item:hover{background:var(--panel-2)}
+.row-item .grow{flex:1;min-width:0}
+
+/* match / fixture */
+.fixture{display:flex;align-items:center;gap:16px;padding:18px;border:1px solid var(--line);border-radius:var(--radius);
+  background:linear-gradient(180deg,var(--panel-2),var(--panel))}
+.fixture .side{flex:1;display:flex;align-items:center;gap:12px;min-width:0}
+.fixture .side.away{flex-direction:row-reverse;text-align:right}
+.fixture .side .name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fixture .score{font:700 30px/1 var(--font-mono);letter-spacing:-.02em;white-space:nowrap}
+.fixture .vs{font:700 20px/1 var(--font-mono);color:var(--text-3)}
+.fixture .meta{font-size:11.5px;color:var(--text-3)}
+
+/* prediction bar */
+.prob{display:flex;flex-direction:column;gap:10px}
+.prob-bar{display:flex;height:12px;border-radius:999px;overflow:hidden;background:var(--panel-3)}
+.prob-bar .p{transition:width .9s var(--ease-out)}
+.prob-bar .win{background:var(--accent)}
+.prob-bar .draw{background:#b8c2cc}
+.prob-bar .lose{background:var(--blue)}
+.prob-legend{display:flex;justify-content:space-between;font-size:12px}
+.prob-legend .k{display:flex;align-items:center;gap:7px;color:var(--text-2)}
+.prob-legend .k i{width:9px;height:9px;border-radius:3px;display:block}
+.prob-legend .v{margin-left:auto;font-family:var(--font-mono);color:var(--text)}
+
+/* heatmap */
+.heat{display:grid;gap:3px}
+.heat .hc{aspect-ratio:1;border-radius:5px;display:grid;place-items:center;font:600 10px/1 var(--font-mono);color:var(--text-2);
+  background:var(--panel-2);transition:transform .18s}
+.heat .hc:hover{transform:scale(1.08)}
+.heat .hl{font:600 9.5px/1 var(--font-mono);color:var(--text-3);display:grid;place-items:center}
+
+/* timeline */
+.timeline{position:relative;padding-left:28px}
+.timeline::before{content:"";position:absolute;left:9px;top:6px;bottom:6px;width:1px;background:var(--line-2)}
+.tl-item{position:relative;padding:0 0 18px}
+.tl-item:last-child{padding-bottom:0}
+.tl-item::before{content:"";position:absolute;left:-23px;top:4px;width:9px;height:9px;border-radius:50%;
+  background:var(--panel);border:2px solid var(--line-2)}
+.tl-item.goal::before{border-color:var(--accent);background:var(--accent)}
+.tl-item.card::before{border-color:var(--amber)}
+.tl-item.sub::before{border-color:var(--blue)}
+.tl-minute{font:650 11px/1 var(--font-mono);color:var(--accent)}
+.tl-title{font-size:13.5px;font-weight:550;margin-top:5px}
+.tl-desc{font-size:12px;color:var(--text-3);margin-top:2px}
+
+/* pitch */
+.pitch{position:relative;width:100%;aspect-ratio:68/100;max-height:520px;margin:0 auto;
+  border-radius:10px;overflow:hidden;border:1px solid var(--line-2);
+  background:
+    repeating-linear-gradient(0deg,#eaf0f6,#eaf0f6 8.5%,#e2eaf2 8.5%,#e2eaf2 17%);
+}
+.pitch .line{position:absolute;border:1px solid rgba(19,26,33,.14)}
+.pitch .dot{position:absolute;width:26px;height:26px;margin:-13px;border-radius:50%;display:grid;place-items:center;
+  font:700 9.5px/1 var(--font-mono);color:#131a21;background:#cfe4f8;border:1px solid rgba(47,134,224,.5);
+  box-shadow:0 4px 10px -4px rgba(14,28,45,.30)}
+.pitch .dot.away{background:#dbe7f3;border-color:rgba(63,124,168,.5)}
+
+/* chat */
+.chat{display:flex;flex-direction:column;height:100%;min-height:0}
+.chat-log{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
+.msg{display:flex;gap:11px;max-width:88%}
+.msg .who{width:30px;height:30px;border-radius:9px;flex:none;display:grid;place-items:center;font:650 11px/1 var(--font-sans)}
+.msg.user{margin-left:auto;flex-direction:row-reverse}
+.msg.user .who{background:var(--panel-3);color:var(--text-2)}
+.msg.ai .who{background:var(--accent-soft);color:var(--accent);border:1px solid rgba(47,134,224,.3)}
+.bubble{padding:11px 14px;border-radius:12px;font-size:13.5px;line-height:1.65;border:1px solid var(--line);background:var(--panel-2)}
+.msg.user .bubble{background:var(--panel-3);border-color:var(--line-2)}
+.msg.ai .bubble{background:linear-gradient(180deg,var(--panel-2),var(--panel))}
+.bubble .tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.typing{display:inline-flex;gap:4px;align-items:center;padding:3px 0}
+.typing i{width:6px;height:6px;border-radius:50%;background:var(--text-3);animation:blink 1.2s infinite}
+.typing i:nth-child(2){animation-delay:.2s}
+.typing i:nth-child(3){animation-delay:.4s}
+.chat-input{display:flex;gap:10px;padding:14px 16px;border-top:1px solid var(--line);background:var(--bg-2)}
+
+/* code / json */
+.code{font:12.5px/1.65 var(--font-mono);background:var(--bg-2);border:1px solid var(--line);border-radius:10px;
+  padding:14px 16px;overflow:auto;color:#cfe3d8;max-height:420px;white-space:pre}
+.code .k{color:#17539a}
+.code .s{color:#c8871a}
+.code .n{color:#2c5c80}
+.code .b{color:var(--violet)}
+
+/* misc */
+.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 18px;font-size:13px}
+.kv dt{color:var(--text-3)}
+.kv dd{margin:0;font-family:var(--font-mono);text-align:right}
+.empty{padding:34px 20px;text-align:center;color:var(--text-3);font-size:13px}
+.hintline{font-size:11.5px;color:var(--text-3)}
+.divider{height:1px;background:var(--line);margin:2px 0}
+.scroll-rail{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px}
+.pill-list{display:flex;flex-wrap:wrap;gap:8px}
+.chart{width:100%;height:auto;display:block;overflow:visible}
+.chart .grid-line{stroke:rgba(19,26,33,.1);stroke-width:1}
+.chart .axis{fill:var(--text-3);font-size:9.5px;font-family:var(--font-mono)}
+.chart .bar{transition:transform .6s var(--ease-out);transform-box:fill-box}
+.radar-poly{opacity:0;animation:radarIn .7s var(--ease-out) forwards}
+.radar-poly.b{animation-delay:.12s}
+
+/* ticker */
+.ticker{display:flex;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:var(--panel);height:38px;align-items:center}
+.ticker .tk-label{flex:none;padding:0 14px;height:100%;display:flex;align-items:center;gap:7px;
+  background:var(--accent-soft);color:var(--accent);font:650 11px/1 var(--font-mono);letter-spacing:.1em;border-right:1px solid var(--line)}
+.ticker .tk-track{flex:1;overflow:hidden}
+.ticker .tk-inner{display:flex;gap:34px;white-space:nowrap;padding-left:16px;animation:marquee 34s linear infinite}
+.ticker:hover .tk-inner{animation-play-state:paused}
+.ticker .tk-item{font-size:12.5px;color:var(--text-2);display:inline-flex;gap:8px;align-items:center}
+.ticker .tk-item b{color:var(--text);font-family:var(--font-mono)}
+
+/* statusbar */
+.statusbar{display:flex;align-items:center;gap:16px;padding:0 18px;border-top:1px solid var(--line);
+  background:var(--bg-2);font-size:11.5px;color:var(--text-3)}
+.sb-left{display:flex;align-items:center;gap:16px;flex-wrap:wrap;min-width:0}
+.sb-left .s{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.sb-right{margin-left:auto;display:flex;gap:14px;white-space:nowrap}
+
+/* mobile drawer scrim */
+.scrim{position:fixed;inset:0;background:rgba(19,26,33,.6);backdrop-filter:blur(2px);z-index:40;opacity:0;transition:opacity .2s}
+.scrim.show{opacity:1}
+
+/* ============================================================
+   Keyframes
+   ============================================================ */
+@keyframes riseIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes viewIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes radarIn{from{opacity:0;transform:scale(.92);transform-origin:center}to{opacity:1;transform:scale(1)}}
+@keyframes ping{0%{transform:scale(1);opacity:.9}80%,100%{transform:scale(1.9);opacity:0}}
+@keyframes blink{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-2px)}}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes pulseNum{0%{color:var(--accent)}100%{color:var(--text)}}
+@keyframes drawIn{to{stroke-dashoffset:0}}
+@keyframes growUp{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes growRight{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.chart .bar{transform-origin:center bottom;animation:growUp .62s var(--ease-out) both;animation-delay:calc(var(--i,0)*42ms)}
+.chart .hbar{transform-origin:left center;animation:growRight .62s var(--ease-out) both;animation-delay:calc(var(--i,0)*42ms)}
+
+/* ============================================================
+   View components
+   ============================================================ */
+.fn-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.fn-card{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid var(--line);border-radius:12px;
+  background:var(--panel);transition:border-color .18s,background .18s,transform .18s var(--ease-out);text-align:left;width:100%}
+.fn-card:hover{border-color:#c9d4e0;background:var(--panel-3);transform:translateY(-2px)}
+.fn-card:hover .go{transform:translateX(3px);color:var(--accent)}
+.fn-card .fi{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);flex:none}
+.fn-card .fi svg{width:18px;height:18px}
+.fn-card b{font-size:13.5px;font-weight:600;display:block}
+.fn-card p{font-size:11.5px;color:var(--text-3);margin-top:3px;line-height:1.5}
+.fn-card .go{margin-left:auto;color:var(--text-3);transition:transform .18s,color .18s;flex:none}
+
+.hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:0}
+.hero-main{padding:24px;border-right:1px solid var(--line)}
+.hero-side{padding:24px;display:flex;flex-direction:column;gap:14px}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;font:600 10.5px/1 var(--font-mono);letter-spacing:.12em;
+  color:var(--accent);text-transform:uppercase}
+.hero-team{display:flex;align-items:center;gap:12px;font-size:17px;font-weight:650}
+.hero-score{font:700 42px/1 var(--font-mono);letter-spacing:-.03em}
+.hero-vs{font:700 22px/1 var(--font-mono);color:var(--text-3)}
+@media (max-width:900px){.hero{grid-template-columns:1fr}.hero-main{border-right:0;border-bottom:1px solid var(--line)}}
+
+.league-tile{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid var(--line);border-radius:11px;
+  background:var(--panel);transition:.18s;width:100%;text-align:left}
+.league-tile:hover{border-color:#c9d4e0;background:var(--panel-3)}
+.league-tile.on{border-color:rgba(47,134,224,.42);background:var(--accent-soft)}
+.league-tile img{width:24px;height:24px;object-fit:contain;flex:none}
+.league-tile .grow{flex:1;min-width:0}
+.league-tile b{font-size:13px;font-weight:600;display:block}
+.league-tile span{font-size:11px;color:var(--text-3)}
+
+.chart-card{padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);display:flex;flex-direction:column;gap:10px}
+.chart-card h4{font-size:12.5px;font-weight:600}
+.chart-card .csub{font-size:11px;color:var(--text-3);margin-top:-6px}
+.chart-card .ctop{display:flex;align-items:center;gap:8px}
+.chart-card .ctop .tag{margin-left:auto}
+
+.check{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid rgba(19,26,33,.6);font-size:13px}
+.check:last-child{border-bottom:0}
+.check .ci{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;flex:none}
+.check .ci svg{width:13px;height:13px}
+.check .ci.ok{background:rgba(47,134,224,.14);color:var(--accent)}
+.check .ci.warn{background:rgba(169,116,26,.14);color:var(--amber)}
+.check .ci.bad{background:rgba(208,69,60,.14);color:var(--red)}
+.check .cv{margin-left:auto;font-family:var(--font-mono);font-size:12px;color:var(--text-2)}
+
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--text-2)}
+.legend .lg{display:inline-flex;align-items:center;gap:7px}
+.legend .lg i{width:10px;height:10px;border-radius:3px;flex:none}
+
+.tool-card{display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2)}
+.tool-card .ti{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--panel-3);color:var(--accent)}
+.tool-card .ti svg{width:15px;height:15px}
+.tool-card b{font-size:12.5px}
+.tool-card span{font-size:11px;color:var(--text-3)}
+
+.api-line{display:flex;gap:8px;align-items:center}
+.api-method{font:700 12px/1 var(--font-mono);color:var(--accent);background:var(--accent-soft);border:1px solid rgba(47,134,224,.3);
+  padding:9px 11px;border-radius:9px;flex:none}
+.endpoint-list{display:flex;flex-direction:column;gap:4px}
+.endpoint{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:9px;font-size:12.5px;text-align:left;color:var(--text-2);transition:.15s}
+.endpoint:hover{background:var(--panel-2);color:var(--text)}
+.endpoint.on{background:var(--accent-soft);color:#17539a}
+.endpoint .m{font:700 10px/1 var(--font-mono);color:var(--accent);flex:none}
+.endpoint .p{font-family:var(--font-mono);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.db-item{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:9px;font-size:12.5px;text-align:left;width:100%;transition:.15s;color:var(--text-2)}
+.db-item:hover{background:var(--panel-2);color:var(--text)}
+.db-item.on{background:var(--accent-soft);color:#17539a}
+.db-item .r{margin-left:auto;font-family:var(--font-mono);font-size:11.5px;color:var(--text-3)}
+.schema-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.schema-col{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--panel-2);font-size:12.5px}
+.schema-col .ty{margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--text-3)}
+.schema-col .pk{width:16px;height:16px;color:var(--amber);flex:none}
+
+.kpi-row{display:flex;gap:10px;flex-wrap:wrap}
+.mini-kpi{display:flex;flex-direction:column;gap:3px;padding:12px 14px;border:1px solid var(--line);border-radius:11px;background:var(--panel-2);min-width:120px;flex:1}
+.mini-kpi .l{font:600 9.5px/1 var(--font-mono);letter-spacing:.12em;color:var(--text-3);text-transform:uppercase}
+.mini-kpi .v{font:600 22px/1.1 var(--font-mono);letter-spacing:-.02em}
+.mini-kpi .d{font-size:11px;color:var(--text-3)}
+
+.flagbar{display:flex;height:8px;border-radius:999px;overflow:hidden;background:var(--panel-3);margin-top:8px}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width:1180px){
+  :root{--pad:20px}
+  .cols-5{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .cols-4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .split,.split-r{grid-template-columns:1fr}
+}
+@media (max-width:1024px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;width:min(82vw,300px);z-index:50;
+    transform:translateX(-102%);transition:transform .28s var(--ease-out);box-shadow:var(--shadow)}
+  .app.nav-open .sidebar{transform:none}
+  .menu-btn{display:grid}
+  .cols-3{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .span-2{grid-column:span 1}
+}
+@media (max-width:720px){
+  :root{--pad:15px;--topbar-h:60px}
+  .cols-2,.cols-3,.cols-4,.cols-5{grid-template-columns:1fr}
+  .demo-badge{display:none}
+  .content{padding-bottom:calc(var(--pad) + 6px)}
+  .statusbar{overflow-x:auto}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-duration:.001ms!important;scroll-behavior:auto!important}
+  .rise,.radar-poly{opacity:1!important;transform:none!important}
+}
+
+/* ============================================================
+   26. 参照稿(晴空蓝玻璃仪表盘)设计语言对齐层
+   —— 与 docs/console/login.html 同一套玻璃面板 + 参照稿的天蓝强调：
+      蓝白纸面 + 白玻璃卡 + 天蓝 #2f86e0 + 衬线展示标题 + 等宽大写微标签。
+      只覆盖视觉，不动布局与任何交互逻辑。
+   ============================================================ */
+body{background:var(--bg);color:var(--text)}
+
+/* 面板 = 白玻璃 + 发丝线 + 大圆角 + 柔投影 */
+.panel,.card,.fn-card,.league-tile,.row-item,.tbl-wrap{
+  backdrop-filter:blur(10px) saturate(120%);
+}
+.panel{
+  border:1px solid var(--hair);border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);
+}
+.panel::before{
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent);
+}
+.panel-head{border-bottom:1px solid var(--hair)}
+
+/* 展示体标题：衬线 */
+h1,h2,.ph-title,.panel-head h2,.panel-head .title,.brand .b-title,#pageTitle,#pageTitle2{
+  font-family:var(--font-display);font-weight:600;letter-spacing:.005em;
+}
+h1,.ph-title{font-weight:600}
+h3,h4,.section-title,.panel-head .sub{font-family:var(--font-sans)}
+
+/* 等宽大写微标签 */
+.kicker,.panel-head .cap,.sec-cap,.micro,.eyebrow,.badge,.tag,
+.tbl thead th,.kpi .label,.stat .label,.metric .label,.side-cap{
+  font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.16em;
+}
+.tbl thead th{letter-spacing:.14em;color:var(--text-3);background:transparent}
+.panel-head .cap,.side-cap{letter-spacing:.22em;font-size:.62rem;color:var(--text-3)}
+
+/* 导航：选中 = 暖色玻璃块 + 左侧暖条 */
+.nav-item{border-radius:var(--radius-xs)}
+.nav-item.active{
+  color:var(--accent-deep);
+  background:linear-gradient(90deg,var(--accent-soft),rgba(47,134,224,.03));
+  box-shadow:inset 3px 0 0 var(--accent);
+}
+.nav-item:hover{background:rgba(19,26,33,.04)}
+
+/* 按钮：主按钮暖色渐变 + 内高光 + 悬停暖投影 + 按压 1px */
+.btn{border-radius:var(--radius-xs);border:1px solid var(--hair);background:var(--glass)}
+.btn:hover{background:#fff;border-color:var(--accent-soft)}
+.btn-primary{
+  border:0;color:#fff;background:linear-gradient(180deg,#4a9df0 0%,#1f6fc4 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.34),0 10px 24px -14px rgba(31,111,196,.55);
+}
+.btn-primary:hover{
+  background:linear-gradient(180deg,#5aa9f8 0%,#2f86e0 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.38),0 18px 34px -14px rgba(31,111,196,.7);
+}
+.btn:active{transform:translateY(1px)}
+
+/* 输入控件：白底 + 发丝线 + 暖色聚焦环 */
+.input,.select,select,input[type="text"],input[type="search"],textarea{
+  background:#fff;border:1px solid var(--hair);border-radius:var(--radius-xs);color:var(--text);
+}
+.input:focus,.select:focus,select:focus,input:focus,textarea:focus{
+  outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 4px var(--accent-soft);
+}
+.input:hover,.select:hover,select:hover{border-color:rgba(19,26,33,.22)}
+.segmented{background:var(--panel-3);border:1px solid var(--hair);border-radius:var(--radius-pill)}
+.segmented button{border-radius:var(--radius-pill)}
+.segmented button.on{background:#fff;color:var(--accent-deep);box-shadow:var(--shadow-sm)}
+
+/* 芯片 / 标签 / 徽标：令牌色 1px 同色描边 */
+.chip{border-radius:var(--radius-pill);background:var(--glass)}
+.chip:hover{border-color:rgba(19,26,33,.22)}
+.chip.on{border-color:var(--accent);color:var(--accent-deep);background:var(--accent-soft)}
+.tag{border-width:1px;border-radius:var(--radius-pill);text-transform:none;letter-spacing:.02em;
+  font-family:var(--font-mono)}
+
+/* 表格：发丝分割线 + 悬停暖底 */
+.tbl tbody td{border-bottom:1px solid var(--hair)}
+.tbl tbody tr:hover{background:rgba(47,134,224,.05)}
+.row-item{border-bottom:1px solid var(--hair)}
+.check{border-bottom:1px solid var(--hair)}
+
+/* 状态点：3px 淡光晕（与登录页一致） */
+.dot.ok{box-shadow:0 0 0 3px rgba(46,158,107,.18)}
+.dot.warn{box-shadow:0 0 0 3px rgba(200,135,26,.18)}
+.dot.err{box-shadow:0 0 0 3px rgba(208,69,60,.18)}
+
+/* 数值：等宽 tabular */
+.kpi .v,.stat .v,.metric .v,.dual .v,.meter .v,.big-num{
+  font-family:var(--font-mono);font-variant-numeric:tabular-nums;
+}
+
+/* 进度条 / 仪表：暖色渐变 */
+.bar-fill,.meter-fill,.progress-fill{
+  background:linear-gradient(90deg,var(--accent),#86c9d8);
+}
+.meter-fill.dim{background:#cbd5df}
+
+/* 侧栏与顶栏：玻璃 */
+.sidebar,.side{background:var(--glass);backdrop-filter:blur(14px);border-right:1px solid var(--hair)}
+.topbar,.top{background:rgba(255,255,255,.78);backdrop-filter:blur(14px);border-bottom:1px solid var(--hair)}
+.brand{color:var(--text)}
+.brand .mark,.logo,.brand-mark{
+  background:linear-gradient(180deg,#4a9df0,#1f6fc4);color:#fff;
+  box-shadow:0 8px 20px -10px rgba(31,111,196,.55);
+}
+
+/* 滚动条：浅色 */
+::-webkit-scrollbar-thumb{background:#c3d6ea;border:3px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:#a6bed6}
+
+/* 代码块：浅底深字 */
+.code{background:#f6f8fa;color:#2f3b46;border:1px solid var(--hair);border-radius:var(--radius-sm)}
+.code .k{color:#17539a}.code .s{color:#8a5c10}.code .n{color:#2c5c80}
+
+/* 图表：网格线/坐标轴跟随令牌 */
+.chart .grid-line{stroke:rgba(19,26,33,.10)}
+.chart .axis-line{stroke:rgba(19,26,33,.18)}
+.chart text{fill:var(--text-3)}
+
+/* 球场示意：改浅草色 */
+.pitch{background:repeating-linear-gradient(0deg,#eef5ea,#eef5ea 8.5%,#e4eedd 8.5%,#e4eedd 17%)}
+.pitch .line{border-color:rgba(19,26,33,.16)}
+.pitch .dot{background:#cfe4f8;color:#17539a;border-color:var(--accent);box-shadow:0 4px 10px -4px rgba(14,28,45,.35)}
+
+/* 遮罩 */
+.scrim{background:rgba(19,26,33,.32);backdrop-filter:blur(2px)}
+
+/* 入场：与登录页同一条缓动曲线 */
+@keyframes tmRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.main > *,.panel,.fn-card,.league-tile{animation:tmRise .7s var(--ease) both}
+.panel:nth-child(2){animation-delay:.07s}
+.panel:nth-child(3){animation-delay:.14s}
+.panel:nth-child(4){animation-delay:.21s}
+@media (prefers-reduced-motion:reduce){
+  .main > *,.panel,.fn-card,.league-tile{animation:none}
+}
+
+/* 窄栏（DSH 侧边浏览器 ~520px）：内容区与顶栏允许横向滚动，
+   避免固定最小宽度的表格/按钮被裁掉后无法查看（只放开滚动，不改宽度、不隐藏内容）。 */
+@media (max-width:900px){
+  .content{overflow-x:auto}
+  .topbar{overflow-x:auto;padding:0 12px;gap:10px}
+  .btn,.who,.tb-actions{white-space:nowrap}
+}
+
+</style>
+</head>
+<body>
+<div class="route-progress" id="routeProgress" aria-hidden="true"></div>
+
+<div class="app" id="app">
+  <aside class="sidebar" id="sidebar" aria-label="主导航">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none">
+          <path d="M16 2.4 28 8.2v15.6L16 29.6 4 23.8V8.2z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+          <path d="M16 9.5 21.5 13v6L16 22.5 10.5 19v-6z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+          <circle cx="16" cy="16" r="2.3" fill="currentColor"/>
+        </svg>
+      </span>
+      <span class="brand-text">
+        <b>足球数据 · AI 预测</b>
+        <small>FOOTBALL INTELLIGENCE</small>
+      </span>
+    </div>
+
+    <nav class="nav" id="nav"></nav>
+
+    <div class="sidebar-foot">
+      <div class="svc-mini" id="svcMini"></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menuBtn" aria-label="打开导航" aria-expanded="false" aria-controls="sidebar"></button>
+      <div class="tb-title">
+        <h1 id="viewTitle">首页概览</h1>
+        <p id="viewSub"></p>
+      </div>
+      <div class="tb-actions">
+        <span class="demo-badge" title="界面为演示原型，分析数值为示例数据">演示数据</span>
+        <button class="btn btn-ghost" id="realBtn" title="在本地已运行的真实系统中打开当前页面">
+          <span>真实系统</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="content" id="content" tabindex="-1"></main>
+
+    <footer class="statusbar">
+      <div class="sb-left" id="sbServices"></div>
+      <div class="sb-right"><span id="sbClock" class="mono"></span></div>
+    </footer>
+  </div>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+
+<script>/* ============================================================
+   数据层 — 演示数据（demo）。真实联赛 / 球队 / 球员 指代，
+   数值为系统分析示例，不改变原项目的页面结构与深链语义。
+   ============================================================ */
+window.ASSETS = {
+  crest: slug => 'assets/crests/' + slug + '.png',
+  league: slug => 'assets/leagues/' + slug + '.png'
+};
+
+/* ---- 页面清单：与前端 / 管理后台的 ?page= 深链一一对应 ---- */
+window.PAGES = [
+  { slug:'home',     label:'首页概览',    port:8501, group:'用户端',
+    desc:'英雄版块 · 关键指标 · 核心功能 · 数据分布', icon:'home' },
+  { slug:'leagues',  label:'联赛数据',    port:8501, group:'用户端',
+    desc:'积分榜 · 球队实力 Elo · 各赛事技术风格', icon:'trophy' },
+  { slug:'teams',    label:'球队分析',    port:8501, group:'用户端',
+    desc:'双队对比 · 能力雷达 · 近期状态 · 历史交锋', icon:'shield' },
+  { slug:'players',  label:'球员分析',    port:8501, group:'用户端',
+    desc:'球员检索 · 能力雷达 · 伤病转会 · 身价走势', icon:'user' },
+  { slug:'match',    label:'比赛详情',    port:8501, group:'用户端',
+    desc:'技术统计 · 首发阵容 · 事件时间轴 · 伤停名单', icon:'ball' },
+  { slug:'predict',  label:'比赛预测',    port:8501, group:'用户端',
+    desc:'单场预测 · 批量预测 · 历史预测复盘', icon:'target' },
+  { slug:'agent',    label:'AI 智能分析', port:8501, group:'用户端',
+    desc:'自然语言问答 · 6 个数据工具 · 深度分析报告', icon:'spark' },
+  { slug:'live',     label:'实时比分',    port:8501, group:'用户端',
+    desc:'进行中比赛 · 实时比分推送 · 服务状态', icon:'activity' },
+  { slug:'overview', label:'数据概览',    port:8502, group:'管理后台',
+    desc:'模块数据量 · 数据分布 · 系统状态检查', icon:'grid' },
+  { slug:'browse',   label:'数据浏览',    port:8502, group:'管理后台',
+    desc:'按主题浏览 10 个数据主题 · 33 张图表', icon:'layers' },
+  { slug:'api',      label:'API 接口测试',port:8502, group:'管理后台',
+    desc:'RESTful 接口在线调试与响应查看', icon:'plug' },
+  { slug:'database', label:'数据库管理',  port:8502, group:'管理后台',
+    desc:'27 张数据表 · 字段结构 · 行数统计', icon:'database' },
+  { slug:'update',   label:'数据更新控制',port:8502, group:'管理后台',
+    desc:'API Key 配置 · 赛程同步 · 更新日志', icon:'refresh' },
+  { slug:'models',   label:'模型管理',    port:8502, group:'管理后台',
+    desc:'样本外评估 · 混淆矩阵 · 校准曲线 · McNemar 检验', icon:'cpu' }
+];
+
+window.SERVICES = [
+  { name:'API 服务',   port:8000, status:'ok',   note:'已连接' },
+  { name:'用户端',     port:8501, status:'ok',   note:'已连接' },
+  { name:'管理后台',   port:8502, status:'ok',   note:'已连接' },
+  { name:'实时数据',   port:'feed', status:'live', note:'推送中' }
+];
+
+/* ---- 联赛 ---- */
+window.LEAGUES = {
+  'premier-league': { name:'英超', en:'Premier League', country:'英格兰', crest:'premier-league',
+    style:{ '控球组织':72,'直塞穿透':68,'高位逼抢':80,'快速反击':78,'定位球':74,'身体对抗':82 } },
+  'la-liga':        { name:'西甲', en:'LaLiga', country:'西班牙', crest:'la-liga',
+    style:{ '控球组织':80,'直塞穿透':76,'高位逼抢':72,'快速反击':70,'定位球':66,'身体对抗':68 } },
+  'bundesliga':     { name:'德甲', en:'Bundesliga', country:'德国', crest:'bundesliga',
+    style:{ '控球组织':74,'直塞穿透':80,'高位逼抢':86,'快速反击':76,'定位球':70,'身体对抗':74 } },
+  'serie-a':        { name:'意甲', en:'Serie A', country:'意大利', crest:'serie-a',
+    style:{ '控球组织':76,'直塞穿透':70,'高位逼抢':74,'快速反击':72,'定位球':72,'身体对抗':72 } },
+  'ligue-1':        { name:'法甲', en:'Ligue 1', country:'法国', crest:'ligue-1',
+    style:{ '控球组织':78,'直塞穿透':74,'高位逼抢':76,'快速反击':74,'定位球':68,'身体对抗':76 } }
+};
+
+/* ---- 球队 ---- */
+window.TEAMS = {
+  'man-city':   { name:'曼城',       en:'Manchester City',   short:'MCI', crest:'man-city',   elo:1905, color:'#6cabdd', form:['W','W','D','W','W'] },
+  'arsenal':    { name:'阿森纳',     en:'Arsenal',           short:'ARS', crest:'arsenal',    elo:1878, color:'#ef0107', form:['W','D','W','W','L'] },
+  'liverpool':  { name:'利物浦',     en:'Liverpool',         short:'LIV', crest:'liverpool',  elo:1867, color:'#c8102e', form:['W','W','L','W','D'] },
+  'chelsea':    { name:'切尔西',     en:'Chelsea',           short:'CHE', crest:'chelsea',    elo:1790, color:'#034694', form:['D','W','W','L','W'] },
+  'man-utd':    { name:'曼联',       en:'Manchester United', short:'MUN', crest:'man-utd',    elo:1775, color:'#da020e', form:['L','W','D','L','W'] },
+  'tottenham':  { name:'托特纳姆热刺', en:'Tottenham Hotspur', short:'TOT', crest:'tottenham', elo:1770, color:'#132257', form:['W','L','W','D','L'] },
+  'newcastle':  { name:'纽卡斯尔联', en:'Newcastle United',  short:'NEW', crest:'newcastle',  elo:1800, color:'#241f20', form:['W','W','W','D','L'] },
+  'aston-villa':{ name:'阿斯顿维拉', en:'Aston Villa',       short:'AVL', crest:'aston-villa',elo:1778, color:'#95bfe5', form:['D','W','L','W','D'] },
+  'brighton':   { name:'布莱顿',     en:'Brighton & Hove Albion', short:'BHA', crest:'brighton', elo:1745, color:'#0057b8', form:['L','D','W','L','W'] },
+  'west-ham':   { name:'西汉姆联',   en:'West Ham United',   short:'WHU', crest:'west-ham',   elo:1700, color:'#7a263a', form:['L','L','D','W','L'] },
+
+  'real-madrid':{ name:'皇家马德里', en:'Real Madrid',       short:'RMA', crest:'real-madrid',elo:1910, color:'#febe10', form:['W','W','W','W','D'] },
+  'barcelona':  { name:'巴塞罗那',   en:'FC Barcelona',      short:'BAR', crest:'barcelona',  elo:1890, color:'#a50044', form:['W','W','D','W','W'] },
+  'atletico':   { name:'马德里竞技', en:'Atlético de Madrid',short:'ATM', crest:'atletico',   elo:1845, color:'#cb3524', form:['W','D','W','W','W'] },
+  'athletic':   { name:'毕尔巴鄂竞技', en:'Athletic Club',   short:'ATH', crest:'athletic',   elo:1795, color:'#ee2523', form:['W','D','W','L','W'] },
+  'villarreal': { name:'比利亚雷亚尔', en:'Villarreal CF',   short:'VIL', crest:'villarreal', elo:1770, color:'#ffe667', form:['W','L','W','W','D'] },
+  'real-betis': { name:'皇家贝蒂斯', en:'Real Betis',        short:'BET', crest:'real-betis', elo:1740, color:'#00954c', form:['D','D','W','L','W'] },
+  'real-sociedad':{ name:'皇家社会', en:'Real Sociedad',     short:'RSO', crest:'real-sociedad',elo:1735, color:'#0067b1', form:['L','W','D','D','L'] },
+  'sevilla':    { name:'塞维利亚',   en:'Sevilla FC',        short:'SEV', crest:'sevilla',    elo:1710, color:'#d8b207', form:['L','D','L','W','D'] },
+
+  'bayern':     { name:'拜仁慕尼黑', en:'FC Bayern München', short:'FCB', crest:'bayern',     elo:1895, color:'#dc052d', form:['W','W','W','D','W'] },
+  'leverkusen': { name:'勒沃库森',   en:'Bayer 04 Leverkusen',short:'B04',crest:'leverkusen', elo:1830, color:'#e32221', form:['W','D','W','W','L'] },
+  'dortmund':   { name:'多特蒙德',   en:'Borussia Dortmund', short:'BVB', crest:'dortmund',   elo:1810, color:'#fde100', form:['W','L','W','W','D'] },
+  'rb-leipzig': { name:'RB 莱比锡',  en:'RB Leipzig',        short:'RBL', crest:'rb-leipzig', elo:1805, color:'#dd0741', form:['W','W','L','D','W'] },
+  'stuttgart':  { name:'斯图加特',   en:'VfB Stuttgart',     short:'VFB', crest:'stuttgart',  elo:1770, color:'#e32219', form:['D','W','W','L','W'] },
+  'frankfurt':  { name:'法兰克福',   en:'Eintracht Frankfurt',short:'SGE',crest:'frankfurt',  elo:1755, color:'#e1000f', form:['L','W','D','W','L'] },
+  'wolfsburg':  { name:'沃尔夫斯堡', en:'VfL Wolfsburg',     short:'WOB', crest:'wolfsburg',  elo:1700, color:'#65b32e', form:['L','D','L','W','D'] },
+
+  'inter':      { name:'国际米兰',   en:'Inter',             short:'INT', crest:'inter',      elo:1840, color:'#0068a8', form:['W','W','D','W','W'] },
+  'napoli':     { name:'那不勒斯',   en:'Napoli',            short:'NAP', crest:'napoli',     elo:1820, color:'#12a0d7', form:['W','W','W','L','D'] },
+  'atalanta':   { name:'亚特兰大',   en:'Atalanta',          short:'ATA', crest:'atalanta',   elo:1815, color:'#1e71b8', form:['W','D','W','W','L'] },
+  'juventus':   { name:'尤文图斯',   en:'Juventus',          short:'JUV', crest:'juventus',   elo:1800, color:'#c8c8c8', form:['D','W','D','W','D'] },
+  'ac-milan':   { name:'AC 米兰',    en:'AC Milan',          short:'MIL', crest:'ac-milan',   elo:1795, color:'#fb090b', form:['W','L','W','D','W'] },
+  'lazio':      { name:'拉齐奥',     en:'Lazio',             short:'LAZ', crest:'lazio',      elo:1760, color:'#87d8f7', form:['L','W','W','D','L'] },
+  'roma':       { name:'罗马',       en:'AS Roma',           short:'ROM', crest:'roma',       elo:1750, color:'#8e1f2f', form:['W','D','L','W','D'] },
+  'fiorentina': { name:'佛罗伦萨',   en:'Fiorentina',        short:'FIO', crest:'fiorentina', elo:1730, color:'#592c82', form:['D','L','W','D','W'] },
+
+  'psg':        { name:'巴黎圣日耳曼', en:'Paris Saint-Germain', short:'PSG', crest:'psg',     elo:1880, color:'#004170', form:['W','W','W','W','L'] },
+  'marseille':  { name:'马赛',       en:'Olympique de Marseille', short:'OM', crest:'marseille', elo:1750, color:'#2faee0', form:['W','W','D','L','W'] },
+  'monaco':     { name:'摩纳哥',     en:'AS Monaco',         short:'ASM', crest:'monaco',     elo:1775, color:'#e63312', form:['W','D','W','W','D'] },
+  'lille':      { name:'里尔',       en:'LOSC Lille',        short:'LIL', crest:'lille',      elo:1765, color:'#e01e13', form:['W','W','L','W','D'] },
+  'lyon':       { name:'里昂',       en:'Olympique Lyonnais',short:'OL',  crest:'lyon',       elo:1735, color:'#0a2b5e', form:['W','L','W','W','L'] },
+  'rennes':     { name:'雷恩',       en:'Stade Rennais',     short:'REN', crest:'rennes',     elo:1715, color:'#e23029', form:['L','W','D','L','W'] }
+};
+
+/* ---- 积分榜：[slug, 胜, 平, 负, 进, 失] ---- */
+window.STANDINGS = {
+  'premier-league': [
+    ['man-city',19,5,3,62,26],['arsenal',18,6,3,55,24],['liverpool',18,5,4,58,27],
+    ['chelsea',14,7,6,52,36],['newcastle',14,5,8,47,35],['man-utd',12,7,8,40,36],
+    ['tottenham',12,5,10,52,44],['aston-villa',11,7,9,40,40],['brighton',10,8,9,44,44],['west-ham',8,7,12,34,47]
+  ],
+  'la-liga': [
+    ['real-madrid',20,4,3,58,22],['barcelona',19,4,4,64,30],['atletico',16,7,4,44,22],
+    ['athletic',13,8,6,42,28],['villarreal',12,7,8,48,44],['real-betis',10,9,8,36,34],
+    ['real-sociedad',10,7,10,32,31],['sevilla',9,8,10,33,38]
+  ],
+  'bundesliga': [
+    ['bayern',18,4,2,65,24],['leverkusen',15,6,3,52,28],['dortmund',13,5,6,48,34],
+    ['rb-leipzig',12,6,6,40,30],['stuttgart',11,6,7,44,38],['frankfurt',11,5,8,40,36],['wolfsburg',9,6,9,36,38]
+  ],
+  'serie-a': [
+    ['inter',19,5,3,58,22],['napoli',17,6,4,45,24],['atalanta',16,6,5,55,32],
+    ['juventus',14,9,4,44,25],['ac-milan',14,7,6,48,34],['lazio',13,5,9,46,40],
+    ['roma',12,7,8,44,38],['fiorentina',11,7,9,42,38]
+  ],
+  'ligue-1': [
+    ['psg',19,4,1,62,22],['marseille',14,5,5,46,30],['monaco',13,6,5,48,32],
+    ['lille',12,7,5,40,28],['lyon',12,4,8,42,38],['rennes',10,6,8,36,34]
+  ]
+};
+
+/* ---- 球员 ---- */
+window.PLAYERS = [
+  { slug:'haaland',   name:'埃尔林·哈兰德',     en:'Erling Haaland',   team:'man-city',  pos:'前锋', age:25, nation:'挪威',   value:180, apps:26, goals:24, assists:5,  attrs:{射门:96,传球:68,盘带:76,防守:34,速度:89,身体:94} },
+  { slug:'salah',     name:'穆罕默德·萨拉赫',   en:'Mohamed Salah',    team:'liverpool', pos:'前锋', age:33, nation:'埃及',   value:55,  apps:27, goals:20, assists:13, attrs:{射门:90,传球:84,盘带:88,防守:42,速度:90,身体:74} },
+  { slug:'saka',      name:'布卡约·萨卡',       en:'Bukayo Saka',      team:'arsenal',   pos:'前锋', age:24, nation:'英格兰', value:140, apps:25, goals:12, assists:11, attrs:{射门:84,传球:86,盘带:87,防守:52,速度:85,身体:70} },
+  { slug:'palmer',    name:'科尔·帕尔默',       en:'Cole Palmer',      team:'chelsea',   pos:'中场', age:24, nation:'英格兰', value:90,  apps:27, goals:14, assists:8,  attrs:{射门:86,传球:88,盘带:84,防守:48,速度:80,身体:66} },
+  { slug:'foden',     name:'菲尔·福登',         en:'Phil Foden',       team:'man-city',  pos:'中场', age:26, nation:'英格兰', value:130, apps:24, goals:11, assists:9,  attrs:{射门:85,传球:87,盘带:90,防守:50,速度:82,身体:64} },
+  { slug:'bruno',     name:'布鲁诺·费尔南德斯', en:'Bruno Fernandes',  team:'man-utd',   pos:'中场', age:31, nation:'葡萄牙', value:60,  apps:27, goals:8,  assists:11, attrs:{射门:82,传球:91,盘带:78,防守:58,速度:70,身体:68} },
+  { slug:'mbappe',    name:'基利安·姆巴佩',     en:'Kylian Mbappé',    team:'real-madrid',pos:'前锋',age:27, nation:'法国',   value:180, apps:25, goals:26, assists:7,  attrs:{射门:94,传球:78,盘带:92,防守:32,速度:97,身体:82} },
+  { slug:'vinicius',  name:'维尼修斯·儒尼奥尔', en:'Vinícius Júnior',  team:'real-madrid',pos:'前锋',age:25, nation:'巴西',   value:200, apps:24, goals:17, assists:12, attrs:{射门:88,传球:80,盘带:95,防守:38,速度:96,身体:76} },
+  { slug:'bellingham',name:'祖德·贝林厄姆',     en:'Jude Bellingham',  team:'real-madrid',pos:'中场',age:22, nation:'英格兰', value:180, apps:26, goals:15, assists:10, attrs:{射门:86,传球:88,盘带:85,防守:66,速度:84,身体:86} },
+  { slug:'yamal',     name:'拉明·亚马尔',       en:'Lamine Yamal',     team:'barcelona', pos:'前锋', age:18, nation:'西班牙', value:200, apps:25, goals:13, assists:15, attrs:{射门:82,传球:87,盘带:93,防守:40,速度:90,身体:60} },
+  { slug:'lewa',      name:'罗伯特·莱万多夫斯基', en:'Robert Lewandowski', team:'barcelona', pos:'前锋', age:37, nation:'波兰', value:15, apps:24, goals:21, assists:4, attrs:{射门:95,传球:74,盘带:70,防守:36,速度:66,身体:88} },
+  { slug:'kane',      name:'哈里·凯恩',         en:'Harry Kane',       team:'bayern',    pos:'前锋', age:32, nation:'英格兰', value:90,  apps:24, goals:28, assists:9,  attrs:{射门:96,传球:86,盘带:74,防守:44,速度:68,身体:86} },
+  { slug:'musiala',   name:'贾马尔·穆西亚拉',   en:'Jamal Musiala',    team:'bayern',    pos:'中场', age:23, nation:'德国',   value:140, apps:23, goals:12, assists:10, attrs:{射门:82,传球:86,盘带:94,防守:46,速度:88,身体:62} },
+  { slug:'wirtz',     name:'弗洛里安·维尔茨',   en:'Florian Wirtz',    team:'leverkusen',pos:'中场', age:22, nation:'德国',   value:150, apps:24, goals:14, assists:16, attrs:{射门:84,传球:90,盘带:92,防守:52,速度:84,身体:64} },
+  { slug:'lautaro',   name:'劳塔罗·马丁内斯',   en:'Lautaro Martínez', team:'inter',     pos:'前锋', age:28, nation:'阿根廷', value:110, apps:26, goals:22, assists:6,  attrs:{射门:91,传球:76,盘带:80,防守:48,速度:78,身体:84} },
+  { slug:'kvara',     name:'赫维查·克瓦拉茨赫利亚', en:'Khvicha Kvaratskhelia', team:'psg', pos:'前锋', age:25, nation:'格鲁吉亚', value:90, apps:25, goals:11, assists:10, attrs:{射门:80,传球:82,盘带:93,防守:40,速度:88,身体:72} },
+  { slug:'dembelе',   name:'奥斯曼·登贝莱',     en:'Ousmane Dembélé',  team:'psg',       pos:'前锋', age:28, nation:'法国',   value:60,  apps:23, goals:19, assists:9,  attrs:{射门:86,传球:78,盘带:91,防守:36,速度:93,身体:70} },
+  { slug:'mctominay', name:'斯科特·麦克托米奈', en:'Scott McTominay',  team:'napoli',    pos:'中场', age:29, nation:'苏格兰', value:40,  apps:26, goals:9,  assists:6,  attrs:{射门:76,传球:74,盘带:72,防守:74,速度:70,身体:88} }
+];
+// 修正一个拼写保护
+window.PLAYERS.forEach(p => { if (p.slug === 'dembelе') p.slug = 'dembele'; });
+
+/* ---- 预测（示例） ---- */
+window.UPCOMING = [
+  { league:'premier-league', home:'man-city', away:'arsenal',   date:'2026-03-14', time:'20:00', prob:[46,27,27], score:'2-1', conf:0.71, model:'集成模型 v4' },
+  { league:'premier-league', home:'liverpool', away:'chelsea',  date:'2026-03-14', time:'22:30', prob:[52,26,22], score:'2-0', conf:0.68, model:'集成模型 v4' },
+  { league:'la-liga',        home:'real-madrid', away:'barcelona', date:'2026-03-15', time:'23:00', prob:[40,28,32], score:'2-2', conf:0.58, model:'集成模型 v4' },
+  { league:'serie-a',        home:'inter', away:'napoli',       date:'2026-03-15', time:'21:45', prob:[48,30,22], score:'1-0', conf:0.66, model:'集成模型 v4' },
+  { league:'bundesliga',     home:'bayern', away:'leverkusen',  date:'2026-03-15', time:'22:30', prob:[44,26,30], score:'2-1', conf:0.62, model:'集成模型 v4' },
+  { league:'ligue-1',        home:'psg', away:'marseille',      date:'2026-03-16', time:'03:00', prob:[61,22,17], score:'3-1', conf:0.74, model:'集成模型 v4' }
+];
+
+/* ---- 比赛详情：曼城 2-1 阿森纳 ---- */
+window.MATCH = {
+  league:'premier-league', round:'第 28 轮', date:'2026-03-08 20:00', venue:'伊蒂哈德球场', referee:'迈克尔·奥利弗',
+  home:'man-city', away:'arsenal', score:[2,1], status:'FT',
+  stats:[
+    { label:'控球率',   home:58,  away:42,  unit:'%' },
+    { label:'射门',     home:16,  away:11,  unit:'' },
+    { label:'射正',     home:7,   away:4,   unit:'' },
+    { label:'预期进球 xG', home:2.1, away:1.3, unit:'', fixed:1 },
+    { label:'传球成功率', home:89, away:84,  unit:'%' },
+    { label:'角球',     home:7,   away:5,   unit:'' },
+    { label:'犯规',     home:9,   away:13,  unit:'' },
+    { label:'抢断成功', home:15,  away:12,  unit:'' }
+  ],
+  events:[
+    { min:12, type:'goal', team:'home', title:'哈兰德 进球',        desc:'德布劳内直塞，禁区内推射远角破门' },
+    { min:28, type:'card', team:'away', title:'赖斯 黄牌',          desc:'战术犯规，阻断反击' },
+    { min:37, type:'goal', team:'away', title:'萨卡 进球',          desc:'右路内切远射，皮球击中远柱内侧入网' },
+    { min:54, type:'sub',  team:'home', title:'换人：福登 ← 格拉利什', desc:'加强左路突破' },
+    { min:67, type:'goal', team:'home', title:'福登 进球',          desc:'角球二次进攻，弧顶低射破门' },
+    { min:78, type:'sub',  team:'away', title:'换人：特罗萨德 ← 马丁内利', desc:'寻求进攻变化' },
+    { min:84, type:'card', team:'home', title:'罗德里 黄牌',        desc:'拖延时间' }
+  ],
+  lineups:{
+    home:{ formation:'4-2-3-1', xi:[
+      ['31','埃德森'],['2','沃克'],['3','迪亚斯'],['5','斯通斯'],['24','格瓦迪奥尔'],
+      ['16','罗德里'],['8','科瓦契奇'],['47','福登'],['17','德布劳内'],['10','格拉利什'],['9','哈兰德'] ] },
+    away:{ formation:'4-3-3', xi:[
+      ['22','拉亚'],['4','本·怀特'],['6','加布里埃尔'],['2','萨利巴'],['18','富安健洋'],
+      ['41','赖斯'],['8','厄德高'],['29','哈弗茨'],['7','萨卡'],['9','热苏斯'],['11','马丁内利'] ] }
+  },
+  injuries:[
+    ['arsenal','阿森纳','富安健洋','肌肉拉伤','预计 3 周'],
+    ['arsenal','阿森纳','廷贝尔','膝伤','赛季报销'],
+    ['man-city','曼城','阿克','脚踝','预计 2 周']
+  ]
+};
+
+/* ---- 管理后台：数据模块 ---- */
+window.MODULES = [
+  { name:'球队', value:220,   unit:'支',   delta:+2.1, icon:'shield' },
+  { name:'球员', value:5200,  unit:'名',   delta:+3.4, icon:'user' },
+  { name:'比赛', value:12840, unit:'场',   delta:+5.8, icon:'ball' },
+  { name:'比赛事件', value:96.4, unit:'万条', delta:+7.2, icon:'activity', fixed:1 },
+  { name:'预测样本', value:1280, unit:'条', delta:+12.5, icon:'target' },
+  { name:'数据表', value:27,   unit:'张',   delta:0,    icon:'database' }
+];
+
+/* ---- 管理后台：数据主题与图表 ---- */
+window.TOPICS = [
+  { id:'strength', name:'球队实力', charts:6, icon:'shield' },
+  { id:'standings',name:'联赛积分', charts:4, icon:'trophy' },
+  { id:'player',   name:'球员能力', charts:4, icon:'user' },
+  { id:'result',   name:'比赛结果', charts:3, icon:'ball' },
+  { id:'goals',    name:'进球分布', charts:4, icon:'target' },
+  { id:'passing',  name:'传球网络', charts:3, icon:'layers' },
+  { id:'defense',  name:'防守强度', charts:3, icon:'shield' },
+  { id:'setpiece', name:'定位球',   charts:2, icon:'flag' },
+  { id:'injury',   name:'伤病记录', charts:2, icon:'activity' },
+  { id:'model',    name:'预测模型', charts:2, icon:'cpu' }
+];
+
+/* ---- 管理后台：数据库表 ---- */
+window.TABLES = [
+  { name:'teams',            rows:220,     cols:['id','name','league_id','elo','founded'] },
+  { name:'players',          rows:5200,    cols:['id','name','team_id','position','value'] },
+  { name:'matches',          rows:12840,   cols:['id','home_id','away_id','score','date'] },
+  { name:'match_events',     rows:964000,  cols:['id','match_id','minute','type','player_id'] },
+  { name:'lineups',          rows:282480,  cols:['id','match_id','player_id','role'] },
+  { name:'leagues',          rows:36,      cols:['id','name','country','season'] },
+  { name:'standings',        rows:720,     cols:['id','league_id','team_id','points','rank'] },
+  { name:'player_stats',     rows:145600,  cols:['id','player_id','season','apps','goals'] },
+  { name:'team_stats',       rows:2640,    cols:['id','team_id','season','xg','possession'] },
+  { name:'referees',         rows:1840,    cols:['id','name','matches','avg_cards'] },
+  { name:'venues',           rows:960,     cols:['id','name','city','capacity'] },
+  { name:'seasons',          rows:24,      cols:['id','competition','start','end'] },
+  { name:'transfers',        rows:18400,   cols:['id','player_id','from','to','fee'] },
+  { name:'injuries',         rows:6420,     cols:['id','player_id','type','start','return'] },
+  { name:'predictions',      rows:1280,    cols:['id','match_id','prob_h','prob_d','prob_a'] },
+  { name:'prediction_results',rows:980,    cols:['id','prediction_id','hit','brier'] },
+  { name:'model_metrics',    rows:64,      cols:['id','model','acc','logloss','brier'] },
+  { name:'elo_ratings',      rows:26400,   cols:['id','team_id','date','rating'] },
+  { name:'xg_data',          rows:12840,   cols:['id','match_id','side','xg'] },
+  { name:'passes',           rows:9820000, cols:['id','match_id','player_id','x','y'] },
+  { name:'shots',            rows:238000,  cols:['id','match_id','player_id','x','y','xg'] },
+  { name:'odds',             rows:76800,   cols:['id','match_id','bookmaker','h','d','a'] },
+  { name:'api_sync_log',     rows:9120,    cols:['id','endpoint','status','ts'] },
+  { name:'data_sources',     rows:18,      cols:['id','name','type','enabled'] },
+  { name:'users',            rows:3240,    cols:['id','name','role','created'] },
+  { name:'favorites',        rows:18800,   cols:['id','user_id','target','type'] },
+  { name:'audit_log',        rows:52400,   cols:['id','actor','action','target','ts'] }
+];
+
+/* ---- 管理后台：模型 ---- */
+window.MODELS = [
+  { id:'ensemble', name:'集成模型 v4', algo:'Stacking (GBDT + NN + LR)', acc:0.551, logloss:0.974, brier:0.188, f1:0.528, status:'production', trained:'2026-02-28' },
+  { id:'gbdt',     name:'梯度提升 GBDT', algo:'XGBoost',                  acc:0.546, logloss:0.982, brier:0.191, f1:0.521, status:'challenger', trained:'2026-02-27' },
+  { id:'nn',       name:'神经网络 NN',   algo:'MLP 3×256',                acc:0.538, logloss:0.990, brier:0.196, f1:0.516, status:'challenger', trained:'2026-02-26' },
+  { id:'lr',       name:'逻辑回归 LR',   algo:'Multinomial Logistic',     acc:0.521, logloss:1.010, brier:0.203, f1:0.502, status:'baseline',   trained:'2026-02-20' }
+];
+
+/* ---- 管理后台：更新日志 ---- */
+window.UPDATE_LOG = [
+  { ts:'2026-03-09 06:12', level:'ok',   title:'赛程同步完成',   desc:'英超 / 西甲 / 意甲 第 28 轮，共 480 场赛程与结果写入' },
+  { ts:'2026-03-08 23:40', level:'ok',   title:'实时比分入库',   desc:'接收 32 场比赛事件，合并 214 条进/失球与换人事件' },
+  { ts:'2026-03-08 18:05', level:'warn', title:'外部 API 限流',   desc:'football-data 接口触发 429，已退避重试并补齐缺失数据' },
+  { ts:'2026-03-08 06:12', level:'ok',   title:'模型重训练',     desc:'集成模型 v4 完成样本外评估，准确率 55.1%（+0.6pp）' },
+  { ts:'2026-03-07 06:12', level:'ok',   title:'赔率数据同步',   desc:'写入 12 家博彩公司盘口，共 960 条记录' }
+];
+
+/* ---- 初始化状态 ---- */
+window.APP_META = {
+  generatedBy:'OD Next',
+  note:'界面为演示原型；球队/联赛徽标来自公开数据源，分析数值为示例数据。'
+};
+</script>
+<script>/* ============================================================
+   图标 · 格式化 · 图表 · 动效助手
+   ============================================================ */
+(function () {
+  const P = {
+    home:'M3 10.5 12 3l9 7.5M5.5 9.5V20h13V9.5',
+    trophy:'M7 4h10v4a5 5 0 0 1-10 0zM7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3M9 20h6M12 13v7',
+    shield:'M12 3 20 6v6c0 4.4-3.2 7.6-8 9-4.8-1.4-8-4.6-8-9V6z',
+    user:'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM5 20a7 7 0 0 1 14 0',
+    ball:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7.5l3.5 2.5-1.3 4h-4.4L8.5 10zM12 3v4.5M4.2 8.5 8.5 10M19.8 8.5 15.5 10M6.5 19.2 9.8 14M17.5 19.2 14.2 14',
+    target:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 11.5a.5.5 0 1 0 0 1 .5.5 0 0 0 0-1z',
+    spark:'M12 3.5 13.7 9l5.3 1.8-5.3 1.8L12 18l-1.7-5.4L5 10.8 10.3 9zM19 4v3M20.5 5.5h-3M5 17v2.4M6.2 18.2H3.8',
+    activity:'M3 12h4l2.5-6 4 12L16 12h5',
+    grid:'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
+    layers:'M12 3 3 8l9 5 9-5zM4.5 12 12 16.2 19.5 12M4.5 15.5 12 19.7l7.5-4.2',
+    plug:'M9 3v5M15 3v5M7 8h10v3a5 5 0 0 1-10 0zM12 16v5',
+    database:'M12 3c4.4 0 8 1.3 8 3s-3.6 3-8 3-8-1.3-8-3 3.6-3 8-3zM4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3',
+    refresh:'M20 11a8 8 0 1 0-2 6M20 5v6h-6',
+    cpu:'M6 6h12v12H6zM9.5 9.5h5v5h-5zM9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3',
+    menu:'M4 7h16M4 12h16M4 17h16',
+    x:'M6 6l12 12M18 6 6 18',
+    external:'M14 5h5v5M19 5l-8 8M9 6H6a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-3',
+    search:'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-3.5-3.5',
+    chevron:'M6 9l6 6 6-6',
+    flag:'M6 21V4M6 5h11l-2 3.5L17 12H6',
+    check:'M4 12.5 9 17.5 20 6.5',
+    alert:'M12 4 2.5 20h19zM12 10v4M12 17.4v.2',
+    clock:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7.5V12l3 2',
+    'arrow-up':'M12 19V5M6 11l6-6 6 6',
+    'arrow-down':'M12 5v14M6 13l6 6 6-6',
+    send:'M4 12 20 4l-6 16-3-6zM11 14l9-10',
+    key:'M15 8a3 3 0 1 0-2.9 3.9L4 20v-3h3v-3h3v-2',
+    table:'M4 4h16v16H4zM4 9.5h16M4 15h16M10 4v16',
+    code:'M9 7 4 12l5 5M15 7l5 5-5 5',
+    filter:'M4 5h16l-6 7v6l-4 2v-8z',
+    info:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 11v5M12 7.6v.2',
+    cal:'M5 5h14v15H5zM5 9.5h14M9 3v4M15 3v4',
+    play:'M7 4l12 8-12 8z',
+    whistle:'M14 4h6M17 4v6M9 8a1 1 0 0 1 1 1v2a4 4 0 1 1-4-4zM9 8h5'
+  };
+  window.ico = function (name, cls) {
+    const d = P[name] || P.info;
+    return '<svg class="' + (cls || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+      'stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + d + '"/></svg>';
+  };
+  window.ICONS = P;
+})();
+
+(function () {
+  const nf0 = new Intl.NumberFormat('zh-CN', { maximumFractionDigits: 0 });
+  const nf1 = new Intl.NumberFormat('zh-CN', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  window.fmtNum = function (v, fixed) { return fixed ? nf1.format(v) : nf0.format(Math.round(v)); };
+  window.fmtInt = function (v) { return nf0.format(v); };
+  window.capitalize = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+  window.crest = function (slug, cls, label) {
+    const t = window.TEAMS[slug];
+    return '<img class="' + (cls || 'crest') + '" src="' + ASSETS.crest(slug) + '" width="26" height="26" ' +
+      'alt="' + (label || (t ? t.name : slug)) + ' 队徽" loading="lazy">';
+  };
+  window.leagueCrest = function (slug, cls, label) {
+    const l = window.LEAGUES[slug];
+    return '<img class="' + (cls || 'crest') + '" src="' + ASSETS.league(slug) + '" width="26" height="26" ' +
+      'alt="' + (label || (l ? l.name : slug)) + ' 联赛徽标" loading="lazy">';
+  };
+
+  window.formChips = function (form) {
+    return '<span class="form-chips">' + form.map(r => '<i class="' + r + '">' + r + '</i>').join('') + '</span>';
+  };
+  window.count = function (val, fixed) {
+    return '<span class="count" data-val="' + val + '" data-fixed="' + (fixed || 0) + '">0</span>';
+  };
+  window.meter = function (label, value, opts) {
+    opts = opts || {};
+    const max = opts.max || 100;
+    const pctW = Math.max(0, Math.min(100, (value / max) * 100));
+    return '<div class="meter">' +
+      '<div class="meter-top"><span class="meter-label">' + label + '</span>' +
+      '<span class="meter-value">' + (opts.display != null ? opts.display : value + (opts.unit || '')) + '</span></div>' +
+      '<div class="meter-track"><div class="meter-fill ' + (opts.tone || '') + '" data-w="' + pctW.toFixed(1) + '" style="width:0"></div></div>' +
+      '</div>';
+  };
+  window.avatar = function (name, cls) {
+    return '<span class="avatar ' + (cls || '') + '" aria-hidden="true">' + name.slice(0, 2) + '</span>';
+  };
+})();
+
+/* ---------------- charts ---------------- */
+(function () {
+  function polar(cx, cy, r, deg) {
+    const a = (deg - 90) * Math.PI / 180;
+    return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+  }
+
+  window.radar = function (axes, series, size) {
+    size = size || 240;
+    const cx = size / 2, cy = size / 2 + 4, r = size / 2 - 34, n = axes.length, max = 100;
+    const rings = [0.25, 0.5, 0.75, 1];
+    let g = '';
+    rings.forEach(k => {
+      const pts = axes.map((_, i) => polar(cx, cy, r * k, i * 360 / n).join(',')).join(' ');
+      g += '<polygon points="' + pts + '" fill="none" stroke="rgba(19,26,33,.13)" stroke-width="1"/>';
+    });
+    axes.forEach((ax, i) => {
+      const [x, y] = polar(cx, cy, r, i * 360 / n);
+      g += '<line x1="' + cx + '" y1="' + cy + '" x2="' + x + '" y2="' + y + '" stroke="rgba(19,26,33,.13)"/>';
+      const [lx, ly] = polar(cx, cy, r + 17, i * 360 / n);
+      g += '<text class="axis" x="' + lx + '" y="' + (ly + 3) + '" text-anchor="middle">' + ax + '</text>';
+    });
+    series.forEach((s, si) => {
+      const pts = s.values.map((v, i) => polar(cx, cy, r * Math.min(1, v / max), i * 360 / n).join(',')).join(' ');
+      g += '<polygon class="radar-poly' + (si ? ' b' : '') + '" points="' + pts +
+        '" fill="' + s.color + '22" stroke="' + s.color + '" stroke-width="2" stroke-linejoin="round"/>';
+      s.values.forEach((v, i) => {
+        const [x, y] = polar(cx, cy, r * Math.min(1, v / max), i * 360 / n);
+        g += '<circle cx="' + x + '" cy="' + y + '" r="2.4" fill="' + s.color + '"/>';
+      });
+    });
+    return '<svg class="chart" viewBox="0 0 ' + size + ' ' + size + '" role="img" aria-label="能力雷达图">' + g + '</svg>';
+  };
+
+  window.columnChart = function (data, opts) {
+    opts = opts || {};
+    const w = opts.width || 620, h = opts.height || 200, pad = 26, gap = 10;
+    const max = opts.max || Math.max.apply(null, data.map(d => d.value)) * 1.15;
+    const bw = (w - pad * 2 - gap * (data.length - 1)) / data.length;
+    const baseY = h - 26;
+    let g = '';
+    [0, 0.5, 1].forEach(k => {
+      const y = 14 + (baseY - 14) * k;
+      g += '<line class="grid-line" x1="' + pad + '" y1="' + y + '" x2="' + (w - pad) + '" y2="' + y + '"/>';
+    });
+    data.forEach((d, i) => {
+      const bh = Math.max(2, (d.value / max) * (baseY - 14));
+      const x = pad + i * (bw + gap);
+      const y = baseY - bh;
+      g += '<rect class="bar" style="--i:' + i + '" x="' + x + '" y="' + y + '" width="' + bw + '" height="' + bh +
+        '" rx="4" fill="' + (d.color || 'var(--accent)') + '" opacity="' + (d.dim ? '.5' : '1') + '"/>';
+      g += '<text class="axis" x="' + (x + bw / 2) + '" y="' + (h - 8) + '" text-anchor="middle">' + d.label + '</text>';
+      g += '<text class="axis" x="' + (x + bw / 2) + '" y="' + (y - 5) + '" text-anchor="middle" fill="var(--text-2)">' + d.display + '</text>';
+    });
+    return '<svg class="chart" viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="柱状图">' + g + '</svg>';
+  };
+
+  let __agId = 0;
+  window.areaChart = function (values, opts) {
+    opts = opts || {};
+    const gid = 'ag' + (++__agId);
+    const w = opts.width || 620, h = opts.height || 160, pad = 14;
+    const max = Math.max.apply(null, values), min = Math.min.apply(null, values);
+    const span = (max - min) || 1;
+    const step = (w - pad * 2) / (values.length - 1);
+    const pts = values.map((v, i) => [pad + i * step, h - 20 - ((v - min) / span) * (h - 44)]);
+    const line = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+    const area = line + ' L' + pts[pts.length - 1][0].toFixed(1) + ' ' + (h - 14) + ' L' + pts[0][0].toFixed(1) + ' ' + (h - 14) + ' Z';
+    const color = opts.color || 'var(--accent)';
+    let g = '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0" stop-color="' + color + '" stop-opacity=".28"/>' +
+      '<stop offset="1" stop-color="' + color + '" stop-opacity="0"/></linearGradient></defs>';
+    g += '<path d="' + area + '" fill="url(#' + gid + ')"/>';
+    g += '<path d="' + line + '" fill="none" stroke="' + color + '" stroke-width="2" stroke-linejoin="round" ' +
+      'stroke-linecap="round" style="stroke-dasharray:1200;stroke-dashoffset:1200;animation:drawIn 1.1s var(--ease-out) forwards"/>';
+    pts.forEach((p, i) => {
+      if (i === pts.length - 1)
+        g += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="3.4" fill="' + color + '"/>';
+    });
+    const labels = opts.labels || [];
+    labels.forEach((l, i) => {
+      g += '<text class="axis" x="' + (pad + i * ((w - pad * 2) / (labels.length - 1))) + '" y="' + (h - 2) + '" text-anchor="middle">' + l + '</text>';
+    });
+    return '<svg class="chart" viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="趋势图">' + g + '</svg>';
+  };
+
+  window.donut = function (segs, size) {
+    size = size || 168;
+    const cx = size / 2, cy = size / 2, r = size / 2 - 12, sw = 18;
+    const total = segs.reduce((a, s) => a + s.value, 0);
+    let off = 0, g = '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="var(--panel-3)" stroke-width="' + sw + '"/>';
+    segs.forEach(s => {
+      const len = (s.value / total) * 2 * Math.PI * r;
+      g += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + s.color + '" stroke-width="' + sw +
+        '" stroke-linecap="butt" stroke-dasharray="' + len + ' ' + (2 * Math.PI * r - len) +
+        '" stroke-dashoffset="' + (-off) + '" transform="rotate(-90 ' + cx + ' ' + cy + ')"/>';
+      off += len;
+    });
+    g += '<text x="' + cx + '" y="' + (cy - 2) + '" text-anchor="middle" fill="var(--text)" font-family="var(--font-mono)" font-size="20" font-weight="600">' +
+      window.fmtInt(total) + '</text>';
+    g += '<text x="' + cx + '" y="' + (cy + 15) + '" text-anchor="middle" fill="var(--text-3)" font-size="10">总记录</text>';
+    return '<svg class="chart" viewBox="0 0 ' + size + ' ' + size + '" role="img" aria-label="占比环形图">' + g + '</svg>';
+  };
+
+  window.heatmap = function (matrix, rowLabels, colLabels, opts) {
+    opts = opts || {};
+    const flat = matrix.flat();
+    const max = Math.max.apply(null, flat);
+    const scale = opts.accent || '47,134,224';
+    let html = '<div class="heat" style="grid-template-columns:26px repeat(' + colLabels.length + ',1fr)">';
+    html += '<span class="hl"></span>';
+    colLabels.forEach(c => html += '<span class="hl">' + c + '</span>');
+    matrix.forEach((row, ri) => {
+      html += '<span class="hl">' + rowLabels[ri] + '</span>';
+      row.forEach(v => {
+        const a = (v / max) * 0.9 + 0.03;
+        html += '<span class="hc" style="background:rgba(' + scale + ',' + a.toFixed(3) + ');color:' +
+          (v / max > 0.5 ? '#131a21' : 'var(--text-2)') + '">' + v + '</span>';
+      });
+    });
+    html += '</div>';
+    return html;
+  };
+
+  window.confusion = function (matrix, labels) {
+    const max = Math.max.apply(null, matrix.flat());
+    let html = '<div class="heat" style="grid-template-columns:52px repeat(3,1fr)">';
+    html += '<span class="hl"></span>' + labels.map(l => '<span class="hl">预测 ' + l + '</span>').join('');
+    matrix.forEach((row, ri) => {
+      const rowSum = row.reduce((a, b) => a + b, 0);
+      html += '<span class="hl" style="text-align:right;padding-right:8px">实际 ' + labels[ri] + '</span>';
+      row.forEach((v, ci) => {
+        const a = (v / max) * 0.9 + 0.03;
+        const diag = ri === ci;
+        html += '<span class="hc" style="background:rgba(' + (diag ? '47,134,224' : '208,69,60') + ',' +
+          (diag ? a : a * 0.55) + ');color:' + (a > 0.5 ? '#131a21' : 'var(--text-2)') + '" title="' +
+          (v / rowSum * 100).toFixed(1) + '%">' + v + '</span>';
+      });
+    });
+    html += '</div>';
+    return html;
+  };
+
+  window.calibChart = function (bins) {
+    const w = 520, h = 260, pad = 34;
+    let g = '';
+    g += '<rect x="' + pad + '" y="' + pad + '" width="' + (w - pad * 2) + '" height="' + (h - pad * 2) + '" fill="none" stroke="rgba(19,26,33,.14)"/>';
+    g += '<line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + pad + '" stroke="rgba(19,26,33,.22)" stroke-dasharray="4 4"/>';
+    const px = v => pad + v * (w - pad * 2);
+    const py = v => h - pad - v * (h - pad * 2);
+    const line = bins.map((b, i) => (i ? 'L' : 'M') + px(b.pred).toFixed(1) + ' ' + py(b.actual).toFixed(1)).join(' ');
+    g += '<path d="' + line + '" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linejoin="round"/>';
+    bins.forEach((b, i) => {
+      const r = 3 + (b.count / 700) * 6;
+      g += '<circle cx="' + px(b.pred) + '" cy="' + py(b.actual) + '" r="' + r.toFixed(1) + '" fill="var(--accent)" opacity=".85"/>';
+    });
+    g += '<text class="axis" x="' + (w / 2) + '" y="' + (h - 8) + '" text-anchor="middle">预测概率</text>';
+    g += '<text class="axis" x="12" y="' + (h / 2) + '" text-anchor="middle" transform="rotate(-90 12 ' + (h / 2) + ')">实际频率</text>';
+    return '<svg class="chart" viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="校准曲线">' + g + '</svg>';
+  };
+})();
+
+/* ---------------- hydration / motion ---------------- */
+(function () {
+  function countUp(el) {
+    const target = parseFloat(el.dataset.val);
+    const fixed = parseInt(el.dataset.fixed || '0', 10);
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) { el.textContent = fmtNum(target, fixed); return; }
+    const dur = 760, t0 = performance.now();
+    (function step(t) {
+      const k = Math.min(1, (t - t0) / dur);
+      const e = 1 - Math.pow(1 - k, 3);
+      el.textContent = fmtNum(target * e, fixed);
+      if (k < 1) requestAnimationFrame(step);
+    })(t0);
+  }
+
+  window.hydrate = function (root) {
+    requestAnimationFrame(() => {
+      root.querySelectorAll('[data-w]').forEach(e => { e.style.width = e.dataset.w + '%'; });
+      root.querySelectorAll('[data-h]').forEach(e => { e.style.height = e.dataset.h + '%'; });
+      root.querySelectorAll('.count').forEach(countUp);
+    });
+  };
+
+  window.pulseEl = function (el) {
+    if (!el) return;
+    el.style.animation = 'none';
+    void el.offsetWidth;
+    el.style.animation = 'pulseNum .8s var(--ease-out)';
+  };
+})();
+</script>
+<script>/* ============================================================
+   用户端视图（8）：首页概览 / 联赛数据 / 球队分析 / 球员分析
+                    比赛详情 / 比赛预测 / AI 智能分析 / 实时比分
+   ============================================================ */
+(function () {
+  const T = window.TEAMS, L = window.LEAGUES, ST = window.STANDINGS;
+  window.VIEWS = window.VIEWS || {};
+
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  function hash(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function jit(slug, seed) { return (hash(slug + seed) % 1000) / 1000; }
+
+  function standingOf(slug) {
+    for (const k in ST) { const r = ST[k].find(x => x[0] === slug); if (r) return { league: k, row: r }; }
+    return null;
+  }
+  function metrics(slug) {
+    const t = T[slug], s = standingOf(slug);
+    let gfP = 1.55, gaP = 1.15, p = 26;
+    if (s) { p = s.row[1] + s.row[2] + s.row[3]; gfP = s.row[4] / p; gaP = s.row[5] / p; }
+    const poss = clamp(46 + (t.elo - 1700) / 9, 40, 67);
+    const passAcc = clamp(77 + (t.elo - 1700) / 17, 72, 91);
+    return {
+      gfP, gaP, poss, passAcc, p,
+      xgF: +(gfP * 1.03).toFixed(2), xgA: +(gaP * 0.98).toFixed(2),
+      shots: +(gfP * 4.1 + 3).toFixed(1),
+      radar: {
+        进攻: clamp(Math.round(gfP * 30 + 22), 32, 97),
+        防守: clamp(Math.round(98 - gaP * 30), 30, 96),
+        控球: Math.round(clamp(poss + 6, 40, 97)),
+        定位球: 56 + Math.round(jit(slug, 'sp') * 30),
+        体能: 58 + Math.round(jit(slug, 'en') * 30),
+        经验: clamp(Math.round(58 + (t.elo - 1700) / 9), 50, 95)
+      }
+    };
+  }
+
+  function teamLine(slug) {
+    const t = T[slug];
+    return '<div class="team-cell">' + crest(slug, 'crest') + '<span class="nm"><b>' + t.name + '</b></span></div>';
+  }
+  function probBlock(prob, labels) {
+    labels = labels || ['主胜', '平局', '客胜'];
+    const cls = ['win', 'draw', 'lose'];
+    return '<div class="prob">' +
+      '<div class="prob-bar">' + prob.map((p, i) => '<span class="p ' + cls[i] + '" data-w="' + p + '" style="width:0"></span>').join('') + '</div>' +
+      '<div class="prob-legend">' + prob.map((p, i) =>
+        '<span class="k"><i style="background:' + ['var(--accent)', '#b8c2cc', 'var(--blue)'][i] + '"></i>' + labels[i] +
+        '<b class="v">' + p + '%</b></span>').join('') + '</div></div>';
+  }
+  function fixtureRow(m) {
+    const l = L[m.league];
+    return '<a class="row-item" href="#/predict" data-goto="predict">' +
+      '<span class="tag b" style="flex:none">' + l.name + '</span>' +
+      '<div class="team-cell grow" style="justify-content:flex-end;text-align:right">' + T[m.home].name + crest(m.home, 'crest') + '</div>' +
+      '<span class="mono" style="font-weight:600;flex:none;padding:0 6px">' + m.score + '</span>' +
+      '<div class="team-cell grow">' + crest(m.away, 'crest') + T[m.away].name + '</div>' +
+      '<span class="mono dim" style="flex:none;width:96px;text-align:right">' + m.date.slice(5) + ' ' + m.time + '</span>' +
+      '<span class="tag a">' + m.conf.toFixed(2) + '</span>' +
+      '</a>';
+  }
+  window.__helpers = { clamp, jit, metrics, teamLine, probBlock, fixtureRow, standingOf };
+
+  /* ============================ 首页概览 ============================ */
+  const HOME_TICKER = [
+    ['英超', '曼城 2-1 阿森纳', '哈兰德 12′ · 福登 67′'],
+    ['西甲', '皇马 3-0 塞维利亚', '姆巴佩梅开二度'],
+    ['德甲', '拜仁 4-1 法兰克福', '凯恩帽子戏法'],
+    ['意甲', '国米 1-0 尤文', '劳塔罗制胜球'],
+    ['数据', '新增入库 96.4 万条事件', '较昨日 +7.2%'],
+    ['模型', '集成模型 v4 上线', '样本外准确率 55.1%']
+  ];
+
+  window.VIEWS.home = {
+    html() {
+      const m = window.UPCOMING[0];
+      const hm = metrics(m.home), am = metrics(m.away);
+      const kpis = [
+        { l: '收录比赛', v: 12840, u: '场', d: '+5.8% 本月', up: true },
+        { l: '球员样本', v: 5200, u: '名', d: '+3.4% 本月', up: true },
+        { l: '预测准确率', v: 55.1, u: '%', d: '+0.6pp 环比', up: true, fixed: 1 },
+        { l: '在线模型', v: 4, u: '个', d: 'v4 生产中', up: true }
+      ];
+      const fns = [
+        ['leagues', 'trophy', '联赛数据', '积分榜 · Elo · 技术风格'],
+        ['teams', 'shield', '球队分析', '双队对比 · 能力雷达'],
+        ['players', 'user', '球员分析', '能力雷达 · 身价走势'],
+        ['predict', 'target', '比赛预测', '单场 · 批量 · 复盘'],
+        ['agent', 'spark', 'AI 智能分析', '自然语言问答 · 6 工具'],
+        ['live', 'activity', '实时比分', '进行中比赛 · 推送']
+      ];
+      return `
+      <div class="view">
+        <div class="panel hero rise" style="--i:0">
+          <div class="hero-main">
+            <span class="hero-tag">${ico('cal')} 焦点赛事 · ${L[m.league].name} ${window.MATCH.round} · ${m.date.slice(5)} ${m.time}</span>
+            <div class="od-row" style="gap:20px;margin:20px 0 6px">
+              <div class="hero-team">${crest(m.home, 'crest-xl')}<span>${T[m.home].name}</span></div>
+              <div class="hero-vs">VS</div>
+              <div class="hero-team">${crest(m.away, 'crest-xl')}<span>${T[m.away].name}</span></div>
+            </div>
+            <div class="od-row" style="gap:14px;margin-bottom:18px">
+              <div class="pill-list">
+                <span class="tag">${L[m.league].en}</span>
+                <span class="tag">Elo ${T[m.home].elo} / ${T[m.away].elo}</span>
+                <span class="tag g">预测比分 ${m.score}</span>
+              </div>
+            </div>
+            ${probBlock(m.prob, ['主胜', '平局', '客胜'])}
+            <div class="od-row" style="gap:10px;margin-top:20px">
+              <a class="btn btn-primary" href="#/predict" data-goto="predict">${ico('target')}查看完整预测</a>
+              <a class="btn btn-ghost" href="#/match" data-goto="match">${ico('ball')}进入比赛详情</a>
+            </div>
+          </div>
+          <div class="hero-side">
+            <span class="section-label">模型输出</span>
+            <div class="kpi-row">
+              <div class="mini-kpi"><span class="l">模型</span><span class="v" style="font-size:15px">${m.model}</span><span class="d">置信度 ${m.conf.toFixed(2)}</span></div>
+              <div class="mini-kpi"><span class="l">主队状态</span><span class="v">${formChips(T[m.home].form)}</span><span class="d">近 5 场</span></div>
+              <div class="mini-kpi"><span class="l">客队状态</span><span class="v">${formChips(T[m.away].form)}</span><span class="d">近 5 场</span></div>
+            </div>
+            <div class="divider"></div>
+            <div class="kv">
+              <dt>场均进球</dt><dd>${hm.gfP.toFixed(2)} / ${am.gfP.toFixed(2)}</dd>
+              <dt>场均失球</dt><dd>${hm.gaP.toFixed(2)} / ${am.gaP.toFixed(2)}</dd>
+              <dt>xG 预期进球</dt><dd>${hm.xgF} / ${am.xgF}</dd>
+              <dt>传球成功率</dt><dd>${hm.passAcc.toFixed(0)}% / ${am.passAcc.toFixed(0)}%</dd>
+            </div>
+          </div>
+        </div>
+
+        <div class="ticker rise" style="--i:1">
+          <span class="tk-label">${ico('activity')}快讯</span>
+          <div class="tk-track"><div class="tk-inner">
+            ${HOME_TICKER.concat(HOME_TICKER).map(t => '<span class="tk-item"><span class="tag">' + t[0] + '</span><b>' + t[1] + '</b> ' + t[2] + '</span>').join('')}
+          </div></div>
+        </div>
+
+        <div class="grid cols-4 rise" style="--i:2">
+          ${kpis.map(k => `<div class="panel"><div class="stat">
+            <span class="stat-label">${k.l}</span>
+            <span class="stat-value">${count(k.v, k.fixed)}<span class="unit">${k.u}</span></span>
+            <span class="stat-foot"><span class="stat-delta ${k.up ? 'up' : 'down'}">${ico('arrow-up')}${k.d}</span></span>
+          </div></div>`).join('')}
+        </div>
+
+        <div class="split rise" style="--i:3">
+          <div class="panel">
+            <div class="panel-head"><h3>核心功能</h3><span class="sub">用户端 8 个模块</span></div>
+            <div class="panel-body">
+              <div class="fn-grid">
+                ${fns.map(f => `<a class="fn-card" href="#/${f[0]}" data-goto="${f[0]}">
+                  <span class="fi">${ico(f[1])}</span>
+                  <span class="grow"><b>${f[2]}</b><p>${f[3]}</p></span>
+                  <span class="go">${ico('chevron')}</span></a>`).join('')}
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>数据入库趋势</h3><span class="sub">近 6 个月 · 万条</span></div>
+            <div class="panel-body">
+              ${columnChart([
+                { label: '10月', value: 62, display: '62' },
+                { label: '11月', value: 71, display: '71' },
+                { label: '12月', value: 58, display: '58' },
+                { label: '1月', value: 84, display: '84' },
+                { label: '2月', value: 92, display: '92' },
+                { label: '3月', value: 96, display: '96' }
+              ], { width: 560, height: 210 })}
+            </div>
+          </div>
+        </div>
+
+        <div class="panel rise" style="--i:4">
+          <div class="panel-head"><h3>近期预测</h3><span class="sub">集成模型 v4 · 示例</span>
+            <div class="head-actions"><a class="btn btn-sm btn-ghost" href="#/predict" data-goto="predict">全部预测</a></div>
+          </div>
+          <div class="rows">${window.UPCOMING.map(fixtureRow).join('')}</div>
+        </div>
+      </div>`;
+    }
+  };
+
+  /* ============================ 联赛数据 ============================ */
+  function leaguePanel(key) {
+    const l = L[key], rows = ST[key];
+    const body = rows.map((r, i) => {
+      const t = T[r[0]], p = r[1] + r[2] + r[3], gd = r[4] - r[5], pts = r[1] * 3 + r[2];
+      const rankCls = i < 4 ? 'ucl' : (i >= rows.length - 2 ? 'rel' : '');
+      return `<tr>
+        <td class="rank ${rankCls}">${i + 1}</td>
+        <td>${teamLine(r[0])}</td>
+        <td class="num">${p}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td><td class="num">${r[3]}</td>
+        <td class="num">${r[4]}:${r[5]}</td><td class="num">${gd > 0 ? '+' : ''}${gd}</td>
+        <td class="num" style="font-weight:650">${pts}</td>
+        <td>${formChips(t.form)}</td>
+        <td class="num dim">${t.elo}</td>
+      </tr>`;
+    }).join('');
+    const style = Object.entries(l.style);
+    const topTeams = [...rows].sort((a, b) => T[b[0]].elo - T[a[0]].elo).slice(0, 6);
+    return `
+      <div class="split">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>积分榜</h3><span class="sub">${l.name} · 2025/26 赛季</span>
+            <div class="head-actions">
+              <div class="pill-list" id="leagueChips">
+                ${Object.keys(L).map(k => `<button class="chip ${k === key ? 'on' : ''}" data-league="${k}">
+                  ${leagueCrest(k, 'crest', L[k].name)}<span>${L[k].name}</span></button>`).join('')}
+              </div>
+            </div>
+          </div>
+          <div class="panel-body flush table-wrap">
+            <table class="tbl"><thead><tr>
+              <th>#</th><th>球队</th><th class="num">场</th><th class="num">胜</th><th class="num">平</th><th class="num">负</th>
+              <th class="num">进:失</th><th class="num">净</th><th class="num">分</th><th>近 5 场</th><th class="num">Elo</th>
+            </tr></thead><tbody>${body}</tbody></table>
+          </div>
+          <div class="panel-body" style="padding-top:0">
+            <div class="legend" style="margin-top:12px">
+              <span class="lg"><i style="background:var(--accent)"></i>欧冠资格区</span>
+              <span class="lg"><i style="background:var(--red)"></i>降级区</span>
+            </div>
+          </div>
+        </div>
+        <div class="od-stack" style="--od-gap:16px">
+          <div class="panel">
+            <div class="panel-head" style="border-bottom:0;padding-bottom:6px">
+              ${leagueCrest(key, 'crest-lg', l.name)}
+              <div><h3>${l.name}</h3><span class="sub">${l.en} · ${l.country}</span></div>
+            </div>
+            <div class="panel-body">
+              <span class="section-label" style="margin-bottom:12px">联赛技术风格</span>
+              ${style.map(([k, v]) => meter(k, v, { display: v })).join('')}
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>实力分布</h3><span class="sub">Elo 评分 Top 6</span></div>
+            <div class="panel-body">
+              ${columnChart(topTeams.map((r, i) => ({ label: T[r[0]].short, value: T[r[0]].elo - 1650, display: T[r[0]].elo, color: i === 0 ? 'var(--accent)' : '#2c4a3b', dim: i !== 0 })))}
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+  window.VIEWS.leagues = {
+    html() { return '<div class="view" id="leagueRoot">' + leaguePanel('premier-league') + '</div>'; },
+    mount(root) {
+      const rootEl = root.querySelector('#leagueRoot');
+      rootEl.addEventListener('click', e => {
+        const b = e.target.closest('[data-league]');
+        if (!b) return;
+        rootEl.innerHTML = leaguePanel(b.dataset.league);
+        hydrate(rootEl);
+      });
+    }
+  };
+
+  /* ============================ 球队分析 ============================ */
+  function compareView(home, away) {
+    const hm = metrics(home), am = metrics(away);
+    const h = T[home], a = T[away];
+    const rows = [
+      ['场均进球', hm.gfP.toFixed(2), am.gfP.toFixed(2)],
+      ['场均失球', hm.gaP.toFixed(2), am.gaP.toFixed(2)],
+      ['控球率', hm.poss.toFixed(1) + '%', am.poss.toFixed(1) + '%'],
+      ['预期进球 xG', hm.xgF, am.xgF],
+      ['场均射门', hm.shots, am.shots],
+      ['传球成功率', hm.passAcc.toFixed(0) + '%', am.passAcc.toFixed(0) + '%']
+    ];
+    const duals = rows.map(r => {
+      const hv = parseFloat(r[1]), av = parseFloat(r[2]);
+      const total = hv + av || 1;
+      const lw = (hv / total * 100).toFixed(0), rw = (av / total * 100).toFixed(0);
+      return `<div class="dual">
+        <span class="v l">${r[1]}</span>
+        <div><div class="track"><span class="seg l" data-w="${lw}" style="width:0"></span><span class="seg r" data-w="${rw}" style="width:0"></span></div>
+        <div style="text-align:center;font-size:11.5px;color:var(--text-3);margin-top:6px">${r[0]}</div></div>
+        <span class="v r">${r[2]}</span>
+      </div>`;
+    }).join('');
+    const h2h = [
+      ['2025-11-02', 'premier-league', away, 1, 1, home],
+      ['2025-04-06', 'premier-league', home, 2, 0, away],
+      ['2024-12-14', 'premier-league', away, 2, 2, home],
+      ['2024-05-19', 'premier-league', home, 1, 2, away]
+    ];
+    return `
+      <div class="panel rise" style="--i:0">
+        <div class="panel-body">
+          <div class="od-row" style="gap:16px;flex-wrap:wrap">
+            <div class="field" style="flex:1;min-width:200px">
+              <label for="selHome">主队 / 基准队</label>
+              <select class="select" id="selHome">${Object.keys(T).map(s => `<option value="${s}" ${s === home ? 'selected' : ''}>${T[s].name} · ${L[standingOf(s) ? standingOf(s).league : 'premier-league'].name}</option>`).join('')}</select>
+            </div>
+            <span class="hero-vs" style="margin-top:22px">VS</span>
+            <div class="field" style="flex:1;min-width:200px">
+              <label for="selAway">客队 / 对比队</label>
+              <select class="select" id="selAway">${Object.keys(T).map(s => `<option value="${s}" ${s === away ? 'selected' : ''}>${T[s].name} · ${L[standingOf(s) ? standingOf(s).league : 'premier-league'].name}</option>`).join('')}</select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="grid cols-3 rise" style="--i:1">
+        <div class="panel"><div class="stat"><span class="stat-label">${h.en}</span>
+          <div class="od-row" style="gap:10px;margin:4px 0 2px">${crest(home, 'crest-lg')}<span class="stat-value" style="font-size:26px">${h.elo}</span></div>
+          <span class="stat-foot dim">Elo 评分 · ${formChips(h.form)}</span></div></div>
+        <div class="panel"><div class="stat" style="align-items:center;text-align:center">
+          <span class="stat-label">综合对比</span>
+          <span class="stat-value" style="font-size:22px">${Math.abs(h.elo - a.elo) >= 0 ? (h.elo >= a.elo ? h.name : a.name) : ''} 领先</span>
+          <span class="stat-foot dim">Elo 差 ${Math.abs(h.elo - a.elo)} 分</span></div></div>
+        <div class="panel"><div class="stat"><span class="stat-label">${a.en}</span>
+          <div class="od-row" style="gap:10px;margin:4px 0 2px">${crest(away, 'crest-lg')}<span class="stat-value" style="font-size:26px">${a.elo}</span></div>
+          <span class="stat-foot dim">Elo 评分 · ${formChips(a.form)}</span></div></div>
+      </div>
+      <div class="split rise" style="--i:2">
+        <div class="panel">
+          <div class="panel-head"><h3>能力雷达</h3><span class="sub">六维能力模型</span></div>
+          <div class="panel-body od-row" style="justify-content:center;gap:26px;flex-wrap:wrap">
+            ${radar(['进攻', '防守', '控球', '定位球', '体能', '经验'], [
+              { name: h.name, color: '#2f86e0', values: Object.values(hm.radar) },
+              { name: a.name, color: '#2aa3c9', values: Object.values(am.radar) }
+            ], 280)}
+            <div class="od-stack" style="--od-gap:14px;min-width:180px">
+              <span class="legend"><span class="lg"><i style="background:var(--accent)"></i>${h.name}</span></span>
+              <span class="legend"><span class="lg"><i style="background:var(--blue)"></i>${a.name}</span></span>
+              <div class="divider"></div>
+              <div class="kv">
+                <dt>进攻</dt><dd>${hm.radar.进攻} / ${am.radar.进攻}</dd>
+                <dt>防守</dt><dd>${hm.radar.防守} / ${am.radar.防守}</dd>
+                <dt>经验</dt><dd>${hm.radar.经验} / ${am.radar.经验}</dd>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>关键指标对比</h3></div>
+          <div class="panel-body od-stack" style="--od-gap:18px">${duals}</div>
+        </div>
+      </div>
+      <div class="panel rise" style="--i:3">
+        <div class="panel-head"><h3>历史交锋</h3><span class="sub">近 4 次</span></div>
+        <div class="rows">${h2h.map(r => `
+          <div class="row-item">
+            <span class="mono dim" style="width:96px;flex:none">${r[0]}</span>
+            <div class="team-cell grow" style="justify-content:flex-end">${T[r[2]].name}${crest(r[2], 'crest')}</div>
+            <span class="mono" style="font-weight:650;flex:none;padding:0 10px">${r[3]} : ${r[4]}</span>
+            <div class="team-cell grow">${crest(r[5], 'crest')}${T[r[5]].name}</div>
+            <span class="tag b" style="flex:none">${L[r[1]].name}</span>
+          </div>`).join('')}</div>
+      </div>`;
+  }
+  window.VIEWS.teams = {
+    html() { return '<div class="view" id="teamsRoot">' + compareView('man-city', 'liverpool') + '</div>'; },
+    mount(root) {
+      const rootEl = root.querySelector('#teamsRoot');
+      rootEl.addEventListener('change', e => {
+        if (e.target.id !== 'selHome' && e.target.id !== 'selAway') return;
+        const h = rootEl.querySelector('#selHome').value, a = rootEl.querySelector('#selAway').value;
+        rootEl.innerHTML = compareView(h, a);
+        hydrate(rootEl);
+      });
+    }
+  };
+
+  /* ============================ 球员分析 ============================ */
+  function playerValueTrend(p) {
+    const out = []; let v = p.value * 0.72;
+    for (let i = 0; i < 8; i++) { v = v * (1 + (jit(p.slug, 'v' + i) - 0.35) * 0.14); out.push(+v.toFixed(0)); }
+    out[out.length - 1] = p.value;
+    return out;
+  }
+  function playerDetail(p) {
+    const t = T[p.team];
+    const attrs = Object.entries(p.attrs);
+    return `
+      <div class="panel">
+        <div class="panel-head">
+          ${avatar(p.name)}
+          <div class="grow"><h3>${p.name}</h3><span class="sub">${p.en} · ${t.name}</span></div>
+          <div class="head-actions">
+            <span class="tag g">${p.pos}</span><span class="tag">#${p.age} 岁</span>
+          </div>
+        </div>
+        <div class="panel-body od-stack" style="--od-gap:18px">
+          <div class="kpi-row">
+            <div class="mini-kpi"><span class="l">出场</span><span class="v">${p.apps}</span><span class="d">本赛季</span></div>
+            <div class="mini-kpi"><span class="l">进球</span><span class="v accent">${p.goals}</span><span class="d">场均 ${(p.goals / p.apps).toFixed(2)}</span></div>
+            <div class="mini-kpi"><span class="l">助攻</span><span class="v">${p.assists}</span><span class="d">参与 ${p.goals + p.assists}</span></div>
+            <div class="mini-kpi"><span class="l">身价</span><span class="v">€${p.value}<span style="font-size:12px">M</span></span><span class="d">${p.nation}</span></div>
+          </div>
+          <div class="od-row" style="gap:24px;flex-wrap:wrap;justify-content:center">
+            <div>${radar(['射门', '传球', '盘带', '防守', '速度', '身体'], [{ name: p.name, color: '#2f86e0', values: attrs.map(a => a[1]) }], 260)}</div>
+            <div class="grow" style="min-width:240px">
+              <span class="section-label" style="margin-bottom:12px">能力评分</span>
+              ${attrs.map(a => meter(a[0], a[1], { display: a[1] })).join('')}
+            </div>
+          </div>
+          <div>
+            <span class="section-label" style="margin-bottom:8px">身价走势 · 近 8 个转会窗（€M）</span>
+            ${areaChart(playerValueTrend(p), { labels: ['23夏', '', '24冬', '', '24夏', '', '25夏', '26冬'], color: 'var(--accent)' })}
+          </div>
+          <div class="grid cols-2" style="gap:12px">
+            <div class="tool-card"><span class="ti">${ico('activity')}</span><b>伤病记录</b><span>${p.slug === 'yamal' ? '无重大伤病史' : '近 2 季累计缺阵 9 场'}</span></div>
+            <div class="tool-card"><span class="ti">${ico('refresh')}</span><b>转会动态</b><span>${p.slug === 'wirtz' ? '2025 夏窗加盟，合同至 2030' : '合同期内，暂无转会传闻'}</span></div>
+          </div>
+        </div>
+      </div>`;
+  }
+  function playerList(query, selected) {
+    const list = window.PLAYERS.filter(p =>
+      !query || p.name.includes(query) || p.en.toLowerCase().includes(query.toLowerCase()) || T[p.team].name.includes(query));
+    if (!list.length) return '<div class="empty">没有匹配的球员，试试其他关键词</div>';
+    return '<div class="rows">' + list.map(p => `
+      <button class="row-item" data-player="${p.slug}" style="width:100%;text-align:left;${p.slug === selected ? 'background:var(--accent-soft)' : ''}">
+        ${avatar(p.name, 'sm')}
+        <div class="grow"><b style="font-size:13px">${p.name}</b><div class="dim" style="font-size:11.5px">${T[p.team].name} · ${p.pos}</div></div>
+        <span class="tag">${p.goals}球${p.assists}助</span>
+      </button>`).join('') + '</div>';
+  }
+  window.VIEWS.players = {
+    html() {
+      const p = window.PLAYERS[0];
+      return `<div class="view">
+        <div class="split-r">
+          <div class="panel rise" style="--i:0">
+            <div class="panel-head"><h3>球员库</h3><span class="sub">${window.PLAYERS.length} 名样本</span></div>
+            <div class="panel-body" style="padding-bottom:0">
+              <div class="search">${ico('search')}<input class="input" id="playerSearch" placeholder="搜索球员 / 球队 / 英文名" autocomplete="off"></div>
+            </div>
+            <div class="panel-body tight" id="playerListWrap" style="border-top:1px solid var(--line);margin-top:14px">
+              ${playerList('', 'haaland')}
+            </div>
+          </div>
+          <div id="playerDetailWrap">${playerDetail(p)}</div>
+        </div>
+      </div>`;
+    },
+    mount(root) {
+      const wrap = root.querySelector('#playerListWrap');
+      const detail = root.querySelector('#playerDetailWrap');
+      const input = root.querySelector('#playerSearch');
+      let selected = 'haaland';
+      input.addEventListener('input', () => { wrap.innerHTML = playerList(input.value, selected); });
+      wrap.addEventListener('click', e => {
+        const b = e.target.closest('[data-player]');
+        if (!b) return;
+        selected = b.dataset.player;
+        wrap.innerHTML = playerList(input.value, selected);
+        detail.innerHTML = playerDetail(window.PLAYERS.find(p => p.slug === selected));
+        hydrate(detail);
+      });
+    }
+  };
+
+  /* ============================ 比赛详情 ============================ */
+  function dualStat(s) {
+    const total = s.home + s.away || 1;
+    const lw = (s.home / total * 100).toFixed(0), rw = (s.away / total * 100).toFixed(0);
+    const fmt = v => s.fixed ? (+v).toFixed(1) : v;
+    return `<div class="dual">
+      <span class="v l">${fmt(s.home)}${s.unit}</span>
+      <div><div class="track"><span class="seg l" data-w="${lw}" style="width:0"></span><span class="seg r" data-w="${rw}" style="width:0"></span></div>
+      <div style="text-align:center;font-size:11.5px;color:var(--text-3);margin-top:6px">${s.label}</div></div>
+      <span class="v r">${fmt(s.away)}${s.unit}</span>
+    </div>`;
+  }
+  const PITCH_POS = {
+    home: [[50, 92], [84, 76], [62, 78], [38, 78], [16, 76], [58, 60], [42, 60], [82, 44], [50, 46], [18, 44], [50, 26]],
+    away: [[50, 8], [16, 24], [38, 22], [62, 22], [84, 24], [30, 42], [50, 40], [70, 42], [80, 62], [50, 64], [20, 62]]
+  };
+  function lineupDots() {
+    let dots = '';
+    PITCH_POS.home.forEach((p, i) => {
+      dots += `<span class="dot" style="left:${p[0]}%;top:${p[1]}%">${window.MATCH.lineups.home.xi[i][0]}</span>`;
+    });
+    PITCH_POS.away.forEach((p, i) => {
+      dots += `<span class="dot away" style="left:${p[0]}%;top:${p[1]}%">${window.MATCH.lineups.away.xi[i][0]}</span>`;
+    });
+    return dots;
+  }
+  function xiList(side) {
+    const lu = window.MATCH.lineups[side], t = T[window.MATCH[side]];
+    return `<div>
+      <span class="section-label" style="margin-bottom:10px">${t.name} · ${lu.formation}</span>
+      <div class="od-stack" style="--od-gap:6px">
+        ${lu.xi.map(([n, name]) => `<div class="od-row" style="gap:10px;font-size:12.5px">
+          <span class="mono dim" style="width:22px;text-align:right">${n}</span><span>${name}</span></div>`).join('')}
+      </div></div>`;
+  }
+  window.VIEWS.match = {
+    html() {
+      const M = window.MATCH;
+      return `<div class="view">
+        <div class="panel rise" style="--i:0">
+          <div class="panel-body">
+            <div class="od-cluster" style="justify-content:center;gap:10px;margin-bottom:8px">
+              <span class="tag g">${L[M.league].name} · ${M.round}</span>
+              <span class="tag">${M.date}</span>
+              <span class="tag">${M.venue}</span>
+              <span class="tag">主裁 ${M.referee}</span>
+            </div>
+            <div class="fixture" style="border:0;background:none;padding:10px 0">
+              <div class="side">${crest(M.home, 'crest-xl')}<span class="name">${T[M.home].name}</span></div>
+              <div class="od-stack" style="align-items:center">
+                <span class="score">${M.score[0]} <span style="color:var(--text-3)">:</span> ${M.score[1]}</span>
+                <span class="tag g">${M.status === 'FT' ? '已结束' : '进行中'}</span>
+              </div>
+              <div class="side away"><span class="name">${T[M.away].name}</span>${crest(M.away, 'crest-xl')}</div>
+            </div>
+          </div>
+        </div>
+        <div class="split rise" style="--i:1">
+          <div class="panel">
+            <div class="panel-head"><h3>技术统计</h3><span class="sub">${T[M.home].name} / ${T[M.away].name}</span></div>
+            <div class="panel-body od-stack" style="--od-gap:18px">${M.stats.map(dualStat).join('')}</div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>伤停名单</h3></div>
+            <div class="rows">${M.injuries.map(x => `
+              <div class="row-item">
+                ${crest(x[0], 'crest')}
+                <div class="grow"><b style="font-size:13px">${x[2]}</b><div class="dim" style="font-size:11.5px">${x[1]} · ${x[3]}</div></div>
+                <span class="tag r">${x[4]}</span>
+              </div>`).join('')}</div>
+            <div class="panel-body" style="padding-top:0">
+              <div class="hintline">伤停信息为演示数据，接口来自伤病记录表 injuries。</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel rise" style="--i:2">
+          <div class="panel-head"><h3>首发阵容</h3><span class="sub">进攻方向：主队向上 · 客队向下</span></div>
+          <div class="panel-body split-r" style="gap:24px;align-items:start">
+            <div class="od-stack" style="--od-gap:22px">${xiList('home')}${xiList('away')}</div>
+            <div class="pitch">
+              <div class="line" style="left:6%;right:6%;top:50%;height:0"></div>
+              <div class="line" style="left:50%;top:0;bottom:0;width:0"></div>
+              <div class="line" style="left:22%;right:22%;top:0;height:16%;border-top:0;border-radius:0 0 50% 50%"></div>
+              <div class="line" style="left:22%;right:22%;bottom:0;height:16%;border-bottom:0;border-radius:50% 50% 0 0"></div>
+              ${lineupDots()}
+            </div>
+          </div>
+        </div>
+        <div class="panel rise" style="--i:3">
+          <div class="panel-head"><h3>事件时间轴</h3><span class="sub">${M.events.length} 个关键事件</span></div>
+          <div class="panel-body">
+            <div class="timeline">
+              ${M.events.map(e => `<div class="tl-item ${e.type}">
+                <span class="tl-minute">${e.min}′ · ${T[e.team === 'home' ? M.home : M.away].name}</span>
+                <div class="tl-title">${e.title}</div>
+                <div class="tl-desc">${e.desc}</div>
+              </div>`).join('')}
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+  };
+
+  /* ============================ 比赛预测 ============================ */
+  function singlePrediction(home, away) {
+    const hm = metrics(home), am = metrics(away);
+    const base = hm.gfP - am.gaP - (am.gfP - hm.gaP) * 0.6;
+    let win = clamp(Math.round(44 + base * 12), 20, 70);
+    let lose = clamp(Math.round(44 - base * 12), 18, 66);
+    let draw = 100 - win - lose;
+    if (draw < 18) { const adj = 18 - draw; win -= adj / 2; lose -= adj / 2; draw = 18; }
+    win = Math.round(win); lose = Math.round(lose); draw = 100 - win - lose;
+    const over = clamp(Math.round(48 + (hm.gfP + am.gfP) * 9), 30, 80);
+    const btts = clamp(Math.round(52 + (am.gfP + hm.gfP - 2.4) * 10), 30, 82);
+    const score = win >= lose ? '2-1' : '1-1';
+    let heat = '<div class="heat" style="grid-template-columns:34px repeat(5,1fr)"><span class="hl">主\\客</span>' +
+      [0, 1, 2, 3, 4].map(a => '<span class="hl">' + a + '</span>').join('');
+    const matrix = [];
+    for (let h = 0; h < 5; h++) {
+      const row = [];
+      heat += '<span class="hl">' + h + '</span>';
+      for (let a = 0; a < 5; a++) {
+        const p = Math.exp(-((h - 1.7) ** 2) / 2.4 - ((a - 1.1) ** 2) / 2.2);
+        row.push(p);
+      }
+      matrix.push(row);
+    }
+    const maxP = Math.max.apply(null, matrix.flat());
+    matrix.forEach((row, hi) => {
+      row.forEach((v, ai) => {
+        const a = v / maxP * 0.9 + 0.03;
+        heat += '<span class="hc" style="background:rgba(47,134,224,' + a.toFixed(3) + ');color:' + (a > 0.55 ? '#131a21' : 'var(--text-2)') + '">' + (a * 100).toFixed(0) + '</span>';
+      });
+    });
+    heat += '</div>';
+    return `
+      <div class="split">
+        <div class="panel">
+          <div class="panel-head"><h3>胜平负预测</h3><span class="sub">集成模型 v4 · 置信度 0.71</span></div>
+          <div class="panel-body od-stack" style="--od-gap:20px">
+            ${probBlock([win, draw, lose], [T[home].name + ' 胜', '平局', T[away].name + ' 胜'])}
+            <div class="divider"></div>
+            <div class="grid cols-2" style="gap:12px">
+              <div class="tool-card"><span class="ti">${ico('target')}</span><b>预测比分</b><span style="font-size:20px" class="mono accent">${score}</span></div>
+              <div class="tool-card"><span class="ti">${ico('activity')}</span><b>大 2.5 球</b><span style="font-size:20px" class="mono">${over}%</span></div>
+              <div class="tool-card"><span class="ti">${ico('ball')}</span><b>双方进球</b><span style="font-size:20px" class="mono">${btts}%</span></div>
+              <div class="tool-card"><span class="ti">${ico('cpu')}</span><b>输出示例</b><span style="font-size:20px" class="mono">${heat ? '' : ''}${win}/${draw}/${lose}</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>比分概率分布</h3><span class="sub">泊松模型 · %</span></div>
+          <div class="panel-body">${heat}</div>
+        </div>
+      </div>`;
+  }
+  function batchPrediction() {
+    return `<div class="panel">
+      <div class="panel-head"><h3>批量预测</h3><span class="sub">未来 7 天 · ${window.UPCOMING.length} 场</span>
+        <div class="head-actions"><button class="btn btn-sm btn-ghost">${ico('arrow-down')}导出 CSV</button></div>
+      </div>
+      <div class="panel-body flush table-wrap">
+        <table class="tbl"><thead><tr><th>联赛</th><th>对阵</th><th>时间</th><th class="num">主胜</th><th class="num">平</th><th class="num">客胜</th><th>推荐</th><th class="num">置信度</th></tr></thead>
+        <tbody>${window.UPCOMING.map(m => {
+          const best = m.prob.indexOf(Math.max.apply(null, m.prob));
+          const lbl = ['主胜', '平局', '客胜'][best];
+          const cls = ['g', '', 'b'][best];
+          return `<tr>
+            <td><span class="tag b">${L[m.league].name}</span></td>
+            <td><div class="team-cell">${crest(m.home, 'crest')}<b>${T[m.home].name}</b><span class="dim">vs</span>${crest(m.away, 'crest')}<b>${T[m.away].name}</b></div></td>
+            <td class="dim mono">${m.date.slice(5)} ${m.time}</td>
+            <td class="num">${m.prob[0]}%</td><td class="num">${m.prob[1]}%</td><td class="num">${m.prob[2]}%</td>
+            <td><span class="tag ${cls}">${lbl}</span></td>
+            <td class="num">${m.conf.toFixed(2)}</td>
+          </tr>`;
+        }).join('')}</tbody></table>
+      </div>
+    </div>`;
+  }
+  function historyReview() {
+    const rows = [
+      ['2026-03-08', 'man-city', 'arsenal', '2-1', '主胜', '主胜', true, 0.62],
+      ['2026-03-08', 'real-madrid', 'sevilla', '3-0', '主胜', '主胜', true, 0.41],
+      ['2026-03-07', 'bayern', 'frankfurt', '4-1', '主胜', '主胜', true, 0.35],
+      ['2026-03-07', 'juventus', 'inter', '0-1', '平局', '客胜', false, 0.88],
+      ['2026-03-06', 'psg', 'monaco', '2-2', '主胜', '平局', false, 0.79],
+      ['2026-03-06', 'liverpool', 'chelsea', '2-0', '主胜', '主胜', true, 0.54]
+    ];
+    const hits = rows.filter(r => r[6]).length;
+    return `<div class="od-stack" style="--od-gap:16px">
+      <div class="grid cols-4">
+        <div class="panel"><div class="stat"><span class="stat-label">样本场次</span><span class="stat-value">${count(1280)}</span><span class="stat-foot dim">近 12 个月</span></div></div>
+        <div class="panel"><div class="stat"><span class="stat-label">命中率</span><span class="stat-value">${count(55.1, 1)}<span class="unit">%</span></span><span class="stat-foot"><span class="stat-delta up">+0.6pp</span></span></div></div>
+        <div class="panel"><div class="stat"><span class="stat-label">Brier 分数</span><span class="stat-value">0.188</span><span class="stat-foot dim">越低越好</span></div></div>
+        <div class="panel"><div class="stat"><span class="stat-label">对数损失</span><span class="stat-value">0.974</span><span class="stat-foot dim">LogLoss</span></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>近期复盘</h3><span class="sub">预测 vs 实际 · ${hits}/${rows.length} 命中</span></div>
+        <div class="panel-body flush table-wrap">
+          <table class="tbl"><thead><tr><th>日期</th><th>对阵</th><th class="num">比分</th><th>预测</th><th>实际</th><th>结果</th><th class="num">LogLoss</th></tr></thead>
+          <tbody>${rows.map(r => `<tr>
+            <td class="dim mono">${r[0].slice(5)}</td>
+            <td><div class="team-cell">${T[r[1]].name}<span class="dim">vs</span>${T[r[2]].name}</div></td>
+            <td class="num mono">${r[3]}</td>
+            <td><span class="tag">${r[4]}</span></td>
+            <td><span class="tag">${r[5]}</span></td>
+            <td><span class="tag ${r[6] ? 'g' : 'r'}">${r[6] ? '命中' : '未中'}</span></td>
+            <td class="num">${r[7].toFixed(2)}</td>
+          </tr>`).join('')}</tbody></table>
+        </div>
+      </div>
+    </div>`;
+  }
+  window.VIEWS.predict = {
+    html() {
+      return `<div class="view">
+        <div class="rise" style="--i:0"><div class="segmented" id="predTabs">
+          <button class="on" data-tab="single">单场预测</button>
+          <button data-tab="batch">批量预测</button>
+          <button data-tab="history">历史复盘</button>
+        </div></div>
+        <div id="predBody">${singlePrediction('man-city', 'arsenal')}</div>
+      </div>`;
+    },
+    mount(root) {
+      const tabs = root.querySelector('#predTabs'), body = root.querySelector('#predBody');
+      tabs.addEventListener('click', e => {
+        const b = e.target.closest('[data-tab]'); if (!b) return;
+        tabs.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+        const t = b.dataset.tab;
+        body.innerHTML = t === 'single' ? singlePrediction('man-city', 'arsenal')
+          : t === 'batch' ? batchPrediction() : historyReview();
+        body.firstElementChild.classList.add('rise');
+        hydrate(body);
+      });
+    }
+  };
+
+  /* ============================ AI 智能分析 ============================ */
+  const AGENT_TOOLS = [
+    ['shield', '球队数据', 'Elo / 状态 / 交锋'],
+    ['user', '球员检索', '能力 / 身价 / 伤病'],
+    ['target', '比赛预测', '胜平负 / 比分分布'],
+    ['trophy', '联赛榜单', '积分 / 排名 / 趋势'],
+    ['activity', '伤病信息', '名单 / 预计复出'],
+    ['database', '数据查询', 'NL → SQL 检索']
+  ];
+  function agentReply(text) {
+    const q = text;
+    const tools = [];
+    let body = '';
+    if (/曼城|阿森纳|对比|球队/.test(q)) {
+      tools.push('球队数据', '比赛预测');
+      body = '我调用了 <b>球队数据</b> 与 <b>比赛预测</b> 两个工具。曼城近 5 场 4 胜 1 平，场均进球 2.31；阿森纳近 5 场 3 胜 1 平 1 负，防守端场均失球仅 0.89。综合 Elo 差与主客场因素，模型给出 <b>曼城胜 46% · 平 27% · 阿森纳胜 27%</b>，预测比分 2-1。建议关注定位球与两翼转换。';
+    } else if (/姆巴佩|哈兰德|球员|身价/.test(q)) {
+      tools.push('球员检索');
+      body = '已检索球员库。哈兰德本赛季 26 场 24 球，射门与身体评分 96/94；姆巴佩 25 场 26 球，速度 97 为库内最高。两人身价均为 €180M。需要我拉出生涯对比曲线吗？';
+    } else if (/预测|胜率|比分/.test(q)) {
+      tools.push('比赛预测');
+      body = '已运行集成模型 v4。给出胜平负概率、比分分布与大小球概率；置信度低于 0.6 的场次建议谨慎参考。可以告诉我具体对阵，我会输出完整分布。';
+    } else if (/伤|停赛|缺阵/.test(q)) {
+      tools.push('伤病信息');
+      body = '已查询伤病记录表。当前阿森纳有 2 名球员伤缺（廷贝尔赛季报销、富安健洋预计 3 周），曼城阿克脚踝预计 2 周。这会影响后防轮换深度。';
+    } else {
+      tools.push('数据查询');
+      body = '已理解你的问题，并用 <b>数据查询</b> 工具在 27 张数据表中检索。可以用自然语言直接问我：某队近期状态、两名球员对比、某场比赛的预测概率或历史交锋。';
+    }
+    return { tools, body };
+  }
+  window.VIEWS.agent = {
+    html() {
+      return `<div class="view">
+        <div class="split rise" style="--i:0">
+          <div class="panel" style="height:min(660px,calc(100vh - 210px))">
+            <div class="panel-head"><h3>AI 智能分析</h3><span class="sub">自然语言问答 · 6 个数据工具</span>
+              <div class="head-actions"><span class="dot ok"></span><span class="dim" style="font-size:11.5px">在线</span></div></div>
+            <div class="chat">
+              <div class="chat-log" id="chatLog">
+                <div class="msg user"><span class="who">我</span><div class="bubble">帮我对比曼城和阿森纳近期的进攻效率，并给出周日比赛的建议。</div></div>
+                <div class="msg ai"><span class="who">AI</span><div class="bubble">
+                  我调用了<b>球队数据</b>与<b>比赛预测</b>两个工具。曼城近 5 场 4 胜 1 平，场均进球 2.31；阿森纳防守端场均失球仅 0.89。模型给出 <b>曼城胜 46% · 平 27% · 阿森纳胜 27%</b>，预测比分 2-1。
+                  <div class="tools"><span class="tag g">球队数据</span><span class="tag g">比赛预测</span></div>
+                </div></div>
+              </div>
+              <div class="chat-input">
+                <input class="input" id="chatInput" placeholder="问点什么，例如：姆巴佩和哈兰德谁更强？" autocomplete="off">
+                <button class="btn btn-primary" id="chatSend">${ico('send')}发送</button>
+              </div>
+            </div>
+          </div>
+          <div class="od-stack" style="--od-gap:16px">
+            <div class="panel">
+              <div class="panel-head"><h3>可用工具</h3><span class="sub">6 个</span></div>
+              <div class="panel-body grid cols-2" style="gap:10px">
+                ${AGENT_TOOLS.map(t => `<div class="tool-card"><span class="ti">${ico(t[0])}</span><b>${t[1]}</b><span>${t[2]}</span></div>`).join('')}
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><h3>快捷提问</h3></div>
+              <div class="panel-body pill-list">
+                ${['对比曼城与阿森纳', '哈兰德近期状态', '周日曼城比赛预测', '阿森纳有哪些伤员'].map(q => `<button class="chip" data-ask="${q}">${q}</button>`).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    },
+    mount(root) {
+      const log = root.querySelector('#chatLog'), input = root.querySelector('#chatInput');
+      function push(role, html) {
+        const div = document.createElement('div');
+        div.className = 'msg ' + role;
+        div.innerHTML = '<span class="who">' + (role === 'user' ? '我' : 'AI') + '</span><div class="bubble">' + html + '</div>';
+        log.appendChild(div); log.scrollTop = log.scrollHeight; return div;
+      }
+      function ask(text) {
+        if (!text.trim()) return;
+        push('user', text.replace(/</g, '&lt;'));
+        input.value = '';
+        const typing = push('ai', '<span class="typing"><i></i><i></i><i></i></span>');
+        setTimeout(() => {
+          const r = agentReply(text);
+          typing.querySelector('.bubble').innerHTML = r.body +
+            '<div class="tools">' + r.tools.map(t => '<span class="tag g">' + t + '</span>').join('') + '</div>';
+          log.scrollTop = log.scrollHeight;
+        }, 720);
+      }
+      root.querySelector('#chatSend').addEventListener('click', () => ask(input.value));
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') ask(input.value); });
+      root.querySelectorAll('[data-ask]').forEach(b => b.addEventListener('click', () => ask(b.dataset.ask)));
+    }
+  };
+
+  /* ============================ 实时比分 ============================ */
+  const LIVE = [
+    { league: 'premier-league', home: 'liverpool', away: 'chelsea', hs: 1, as: 0, min: 63, events: '萨拉赫 41′' },
+    { league: 'la-liga', home: 'barcelona', away: 'atletico', hs: 2, as: 2, min: 78, events: '亚马尔 70′ · 格列兹曼 74′' },
+    { league: 'serie-a', home: 'ac-milan', away: 'roma', hs: 0, as: 1, min: 34, events: '迪巴拉 22′' },
+    { league: 'bundesliga', home: 'dortmund', away: 'rb-leipzig', hs: 3, as: 1, min: 88, events: '多点开花' }
+  ];
+  window.VIEWS.live = {
+    html() {
+      return `<div class="view">
+        <div class="grid cols-4 rise" style="--i:0">
+          <div class="panel"><div class="stat"><span class="stat-label">进行中</span><span class="stat-value">${count(4)}<span class="unit">场</span></span><span class="stat-foot"><span class="dot live"></span>实时推送中</span></div></div>
+          <div class="panel"><div class="stat"><span class="stat-label">今日赛事</span><span class="stat-value">${count(32)}</span><span class="stat-foot dim">6 大联赛</span></div></div>
+          <div class="panel"><div class="stat"><span class="stat-label">推送延迟</span><span class="stat-value">1.2<span class="unit">秒</span></span><span class="stat-foot dim">P95</span></div></div>
+          <div class="panel"><div class="stat"><span class="stat-label">数据源</span><span class="stat-value" style="font-size:20px">在线</span><span class="stat-foot dim">football-data</span></div></div>
+        </div>
+        <div class="panel rise" style="--i:1">
+          <div class="panel-head"><h3>进行中比赛</h3><span class="sub">比分实时更新</span></div>
+          <div class="rows" id="liveRows">
+            ${LIVE.map((m, i) => liveRow(m, i)).join('')}
+          </div>
+        </div>
+        <div class="split rise" style="--i:2">
+          <div class="panel">
+            <div class="panel-head"><h3>服务状态</h3><span class="sub">端口探测 · /health</span></div>
+            <div class="panel-body">
+              ${window.SERVICES.map(s => `<div class="check">
+                <span class="ci ${s.status === 'ok' || s.status === 'live' ? 'ok' : 'warn'}">${ico('check')}</span>
+                <div class="grow"><b style="font-size:13px">${s.name}</b><div class="dim" style="font-size:11.5px">端口 ${s.port}</div></div>
+                <span class="cv">${s.note}</span></div>`).join('')}
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>最近完场</h3></div>
+            <div class="rows">
+              ${[['inter', 'juventus', '1-0'], ['bayern', 'frankfurt', '4-1'], ['real-madrid', 'sevilla', '3-0']].map(r => `
+                <div class="row-item">
+                  <div class="team-cell grow" style="justify-content:flex-end">${T[r[0]].name}${crest(r[0], 'crest')}</div>
+                  <span class="mono" style="font-weight:650;padding:0 8px">${r[2]}</span>
+                  <div class="team-cell grow">${crest(r[1], 'crest')}${T[r[1]].name}</div>
+                  <span class="tag">完场</span>
+                </div>`).join('')}
+            </div>
+          </div>
+        </div>
+      </div>`;
+    },
+    mount(root) {
+      const state = LIVE.map(m => ({ ...m }));
+      const rows = root.querySelector('#liveRows');
+      function render() {
+        rows.innerHTML = state.map((m, i) => liveRow(m, i)).join('');
+      }
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let timer = null;
+      if (!reduce) {
+        timer = setInterval(() => {
+          state.forEach(m => { m.min = Math.min(90, m.min + 1); });
+          render();
+        }, 4000);
+      }
+      return () => { if (timer) clearInterval(timer); };
+    }
+  };
+  function liveRow(m, i) {
+    const l = L[m.league];
+    const live = m.min < 90;
+    return `<div class="row-item">
+      <span class="tag b" style="flex:none">${l.name}</span>
+      <div class="team-cell grow" style="justify-content:flex-end">${T[m.home].name}${crest(m.home, 'crest')}</div>
+      <span class="mono" style="font-weight:700;font-size:16px;padding:0 12px;flex:none">${m.hs} : ${m.as}</span>
+      <div class="team-cell grow">${crest(m.away, 'crest')}${T[m.away].name}</div>
+      <span class="dim" style="flex:none;max-width:200px;font-size:12px;text-align:right">${m.events}</span>
+      <span class="tag ${live ? 'r' : ''}" style="flex:none;width:64px;justify-content:center">
+        ${live ? '<span class="dot live"></span>' + m.min + '′' : '完场'}</span>
+    </div>`;
+  }
+})();
+</script>
+<script>/* ============================================================
+   管理后台视图（6）：数据概览 / 数据浏览 / API 接口测试
+                      数据库管理 / 数据更新控制 / 模型管理
+   ============================================================ */
+(function () {
+  const T = window.TEAMS, L = window.LEAGUES;
+  window.VIEWS = window.VIEWS || {};
+
+  function statusTone(s) { return s === 'ok' || s === 'live' ? 'ok' : s === 'warn' ? 'warn' : 'bad'; }
+
+  /* ============================ 数据概览 ============================ */
+  window.VIEWS.overview = {
+    html() {
+      const checks = [
+        ['数据源连接', 'ok', '3/3 在线'],
+        ['数据库连接池', 'ok', '12 / 20 使用中'],
+        ['外部 API 配额', 'warn', '剩余 38%'],
+        ['模型服务', 'ok', 'v4 · 延迟 42ms'],
+        ['定时同步任务', 'ok', '下次 06:00'],
+        ['磁盘占用', 'ok', '128 GB / 512 GB']
+      ];
+      const segs = [
+        { label: '比赛事件', value: 964000, color: 'var(--accent)' },
+        { label: '传球数据', value: 620000, color: '#3a6f9e' },
+        { label: '球员统计', value: 145600, color: 'var(--blue)' },
+        { label: '其他数据', value: 210400, color: '#cbd5df' }
+      ];
+      return `<div class="view">
+        <div class="grid cols-3 rise" style="--i:0">
+          ${window.MODULES.map(m => `<div class="panel"><div class="stat">
+            <div class="od-row" style="gap:10px"><span class="fi" style="width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)">${ico(m.icon)}</span>
+            <span class="stat-label">${m.name}</span></div>
+            <span class="stat-value">${count(m.value, m.fixed)}<span class="unit">${m.unit}</span></span>
+            <span class="stat-foot">${m.delta ? '<span class="stat-delta up">+' + m.delta + '%</span>' : '<span class="dim">结构稳定</span>'}</span>
+          </div></div>`).join('')}
+        </div>
+        <div class="split rise" style="--i:1">
+          <div class="panel">
+            <div class="panel-head"><h3>数据分布</h3><span class="sub">按记录类型 · 总量 ${fmtInt(1940000)} 条</span></div>
+            <div class="panel-body od-row" style="gap:26px;flex-wrap:wrap;justify-content:center">
+              ${donut(segs, 190)}
+              <div class="od-stack" style="--od-gap:12px;min-width:220px">
+                ${segs.map(s => `<div class="legend"><span class="lg"><i style="background:${s.color}"></i>${s.label}</span>
+                  <span class="mono dim" style="margin-left:auto">${fmtInt(s.value)}</span></div>
+                  <div class="meter-track" style="height:5px"><div class="meter-fill" data-w="${(s.value / 1940000 * 100).toFixed(1)}" style="width:0;background:${s.color}"></div></div>`).join('')}
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>系统状态检查</h3><span class="sub">6 项</span></div>
+            <div class="panel-body">
+              ${checks.map(c => `<div class="check"><span class="ci ${c[1]}">${ico(c[1] === 'ok' ? 'check' : 'alert')}</span>
+                <div class="grow"><b style="font-size:13px">${c[0]}</b></div><span class="cv">${c[2]}</span></div>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="panel rise" style="--i:2">
+          <div class="panel-head"><h3>入库趋势</h3><span class="sub">近 12 周 · 万条</span></div>
+          <div class="panel-body">${areaChart([38, 41, 45, 44, 52, 49, 58, 61, 57, 68, 74, 82], { labels: ['W1', '', '', 'W4', '', '', 'W7', '', '', 'W10', '', 'W12'], height: 170 })}</div>
+        </div>
+      </div>`;
+    }
+  };
+
+  /* ============================ 数据浏览 ============================ */
+  const GALLERY = [
+    { topic: 'strength', title: '球队 Elo 排名', sub: 'Top 12', svg: () => columnChart([['RMA', 260, '1910'], ['MC', 255, '1905'], ['FCB', 245, '1895'], ['BAR', 240, '1890'], ['PSG', 230, '1880'], ['ARS', 228, '1878']].map(x => ({ label: x[0], value: x[1], display: x[2], color: 'var(--accent)' })), { height: 180, width: 480 }) },
+    { topic: 'strength', title: '实力雷达对比', sub: '三队', svg: () => radar(['进攻', '防守', '控球', '转换', '定位球', '体能'], [{ name: 'A', color: '#2f86e0', values: [88, 82, 86, 78, 72, 80] }, { name: 'B', color: '#2aa3c9', values: [80, 88, 74, 84, 78, 76] }], 220) },
+    { topic: 'standings', title: '积分差距', sub: '前六', svg: () => areaChart([62, 60, 59, 49, 47, 43], { labels: ['1', '2', '3', '4', '5', '6'], height: 170, width: 480 }) },
+    { topic: 'player', title: '射手榜', sub: '进球数', svg: () => columnChart([['凯恩', 28, '28'], ['姆巴佩', 26, '26'], ['哈兰德', 24, '24'], ['劳塔罗', 22, '22'], ['莱万', 21, '21'], ['萨拉赫', 20, '20']].map(x => ({ label: x[0], value: x[1], display: x[2], color: 'var(--accent)' })), { height: 180, width: 480 }) },
+    { topic: 'player', title: '身价分布', sub: '€M', svg: () => donut([{ label: 'a', value: 200, color: 'var(--accent)' }, { label: 'b', value: 180, color: 'var(--blue)' }, { label: 'c', value: 150, color: 'var(--amber)' }, { label: 'd', value: 120, color: '#cbd5df' }], 170) },
+    { topic: 'result', title: '胜平负占比', sub: '本赛季', svg: () => donut([{ label: '主胜', value: 44, color: 'var(--accent)' }, { label: '平', value: 26, color: '#b8c2cc' }, { label: '客胜', value: 30, color: 'var(--blue)' }], 170) },
+    { topic: 'goals', title: '进球时段分布', sub: '0-90′', svg: () => columnChart([['0-15', 42, '42'], ['16-30', 55, '55'], ['31-45', 61, '61'], ['46-60', 58, '58'], ['61-75', 66, '66'], ['76-90', 79, '79']].map(x => ({ label: x[0], value: x[1], display: x[2], color: 'var(--accent)' })), { height: 180, width: 480 }) },
+    { topic: 'passing', title: '传球网络密度', sub: '示例', svg: () => heatmap([[12, 34, 8, 5], [22, 46, 18, 6], [9, 28, 41, 12], [4, 12, 16, 30]], ['后场', '中场', '前场', '禁区'], ['后场', '中场', '前场', '禁区']) },
+    { topic: 'defense', title: '防守强度', sub: '抢断 / 拦截', svg: () => areaChart([62, 58, 65, 61, 70, 66, 74, 71, 78], { labels: ['', '', '', '', '', '', '', '', ''], height: 160, width: 480, color: 'var(--blue)' }) },
+    { topic: 'setpiece', title: '定位球得分', sub: '占比', svg: () => donut([{ label: '角球', value: 18, color: 'var(--accent)' }, { label: '任意球', value: 9, color: 'var(--amber)' }, { label: '点球', value: 7, color: 'var(--blue)' }, { label: '运动战', value: 66, color: '#cbd5df' }], 170) },
+    { topic: 'injury', title: '伤病类型', sub: '记录数', svg: () => columnChart([['肌肉', 34, '34'], ['膝', 18, '18'], ['踝', 14, '14'], ['脚', 9, '9'], ['其他', 12, '12']].map(x => ({ label: x[0], value: x[1], display: x[2], color: 'var(--red)' })), { height: 180, width: 480 }) },
+    { topic: 'model', title: '模型准确率', sub: '样本外', svg: () => columnChart([['Ens', 55.1, '55.1'], ['GBDT', 54.6, '54.6'], ['NN', 53.8, '53.8'], ['LR', 52.1, '52.1']].map((x, i) => ({ label: x[0], value: x[1] - 45, display: x[2], color: i ? '#2c4a3b' : 'var(--accent)', dim: i !== 0 })), { height: 180, width: 480 }) }
+  ];
+  function galleryGrid(topic) {
+    const list = GALLERY.filter(g => !topic || topic === 'all' || g.topic === topic);
+    if (!list.length) return '<div class="empty">该主题暂无图表</div>';
+    return '<div class="grid cols-3">' + list.map((g, i) => `
+      <div class="chart-card rise" style="--i:${i}">
+        <div class="ctop"><h4>${g.title}</h4><span class="tag">${g.sub}</span></div>
+        <div class="csub">主题：${(window.TOPICS.find(t => t.id === g.topic) || {}).name || g.topic}</div>
+        ${g.svg()}
+      </div>`).join('') + '</div>';
+  }
+  window.VIEWS.browse = {
+    html() {
+      return `<div class="view">
+        <div class="rise" style="--i:0">
+          <div class="pill-list" id="topicChips" style="margin-bottom:2px">
+            <button class="chip on" data-topic="all">全部 · ${GALLERY.length} 张</button>
+            ${window.TOPICS.map(t => `<button class="chip" data-topic="${t.id}">${ico(t.icon)}<span>${t.name}</span><span class="dim">${t.charts}</span></button>`).join('')}
+          </div>
+        </div>
+        <div id="galleryBody">${galleryGrid('all')}</div>
+      </div>`;
+    },
+    mount(root) {
+      const chips = root.querySelector('#topicChips'), body = root.querySelector('#galleryBody');
+      chips.addEventListener('click', e => {
+        const b = e.target.closest('[data-topic]'); if (!b) return;
+        chips.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c === b));
+        body.innerHTML = galleryGrid(b.dataset.topic);
+        hydrate(body);
+      });
+    }
+  };
+
+  /* ============================ API 接口测试 ============================ */
+  const ENDPOINTS = [
+    { m: 'GET', p: '/api/teams', desc: '球队列表', res: () => ({ count: 220, data: [{ id: 65, name: 'Manchester City', elo: 1905 }, { id: 57, name: 'Arsenal', elo: 1878 }] }) },
+    { m: 'GET', p: '/api/matches?league=PL&limit=2', desc: '比赛列表', res: () => ({ count: 2, data: [{ id: 12840, home: 'Manchester City', away: 'Arsenal', score: '2-1', date: '2026-03-08' }, { id: 12839, home: 'Liverpool', away: 'Chelsea', score: '2-0', date: '2026-03-07' }] }) },
+    { m: 'GET', p: '/api/players?team=65', desc: '球队球员', res: () => ({ count: 24, data: [{ id: 9, name: 'Erling Haaland', position: 'FW', goals: 24 }] }) },
+    { m: 'GET', p: '/api/standings?league=PL', desc: '积分榜', res: () => ({ league: 'PL', season: '2025/26', data: [{ rank: 1, team: 'Manchester City', points: 62 }, { rank: 2, team: 'Arsenal', points: 60 }] }) },
+    { m: 'GET', p: '/api/predictions/12841', desc: '单场预测', res: () => ({ match_id: 12841, probability: { home: 0.46, draw: 0.27, away: 0.27 }, predicted_score: '2-1', model: 'ensemble-v4', confidence: 0.71 }) },
+    { m: 'GET', p: '/api/models/metrics', desc: '模型指标', res: () => ({ models: [{ id: 'ensemble', acc: 0.551, logloss: 0.974, brier: 0.188 }, { id: 'gbdt', acc: 0.546, logloss: 0.982, brier: 0.191 }] }) }
+  ];
+  function jsonHTML(obj) {
+    const s = JSON.stringify(obj, null, 2)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/"([^"]+)":/g, '<span class="k">"$1"</span>:')
+      .replace(/: "([^"]*)"/g, ': <span class="s">"$1"</span>')
+      .replace(/: (\d+\.?\d*)/g, ': <span class="n">$1</span>')
+      .replace(/: (true|false|null)/g, ': <span class="b">$1</span>');
+    return s;
+  }
+  window.VIEWS.api = {
+    html() {
+      return `<div class="view">
+        <div class="split rise" style="--i:0">
+          <div class="panel">
+            <div class="panel-head"><h3>请求</h3><span class="sub">RESTful 在线调试</span></div>
+            <div class="panel-body od-stack" style="--od-gap:16px">
+              <div class="field"><label for="epUrl">接口地址</label>
+                <div class="api-line"><span class="api-method">GET</span>
+                  <input class="input mono" id="epUrl" value="http://127.0.0.1:8000/api/teams" style="flex:1"></div>
+              </div>
+              <div class="field"><label>快捷接口</label>
+                <div class="endpoint-list" id="epList">
+                  ${ENDPOINTS.map((e, i) => `<button class="endpoint ${i === 0 ? 'on' : ''}" data-ep="${i}">
+                    <span class="m">${e.m}</span><span class="p">${e.p}</span><span class="dim">${e.desc}</span></button>`).join('')}
+                </div>
+              </div>
+              <div class="od-row" style="gap:10px">
+                <button class="btn btn-primary" id="sendBtn">${ico('play')}发送请求</button>
+                <button class="btn btn-ghost">${ico('code')}查看文档</button>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>响应</h3><span class="sub" id="epMeta">等待发送</span>
+              <div class="head-actions"><span class="tag g" id="epStatus">—</span></div></div>
+            <div class="panel-body"><pre class="code" id="epResp">{\n  "hint": "选择一个接口并点击「发送请求」"\n}</pre></div>
+          </div>
+        </div>
+      </div>`;
+    },
+    mount(root) {
+      let cur = 0;
+      const url = root.querySelector('#epUrl'), resp = root.querySelector('#epResp');
+      const meta = root.querySelector('#epMeta'), status = root.querySelector('#epStatus');
+      function send() {
+        status.textContent = '请求中'; status.className = 'tag a';
+        resp.textContent = '// 正在请求 ' + url.value + ' …';
+        setTimeout(() => {
+          status.textContent = '200 OK'; status.className = 'tag g';
+          meta.textContent = '耗时 ' + (28 + (cur * 7) % 40) + 'ms · application/json';
+          resp.innerHTML = jsonHTML(ENDPOINTS[cur].res());
+        }, 520 + (cur * 40) % 300);
+      }
+      root.querySelector('#epList').addEventListener('click', e => {
+        const b = e.target.closest('[data-ep]'); if (!b) return;
+        cur = +b.dataset.ep;
+        root.querySelectorAll('.endpoint').forEach(x => x.classList.toggle('on', x === b));
+        url.value = 'http://127.0.0.1:8000' + ENDPOINTS[cur].p;
+      });
+      root.querySelector('#sendBtn').addEventListener('click', send);
+    }
+  };
+
+  /* ============================ 数据库管理 ============================ */
+  function tableDetail(t) {
+    const sample = t.cols.map((c, i) => i === 0 ? 1 : (i === 1 ? '示例值' : (i === 2 ? (t.rows > 1000 ? Math.round(t.rows / 8) : 6) : '—')));
+    return `
+      <div class="panel">
+        <div class="panel-head"><h3>${t.name}</h3><span class="sub">${t.cols.length} 字段 · ${fmtInt(t.rows)} 行</span>
+          <div class="head-actions"><button class="btn btn-sm btn-ghost">${ico('table')}查看数据</button></div></div>
+        <div class="panel-body od-stack" style="--od-gap:16px">
+          <span class="section-label">字段结构</span>
+          <div class="schema-cols">
+            ${t.cols.map((c, i) => `<div class="schema-col">
+              ${i === 0 ? '<span class="pk">' + ico('key') + '</span>' : '<span class="dim" style="width:16px"></span>'}
+              <b style="font-weight:550">${c}</b>
+              <span class="ty">${i === 0 ? 'INTEGER PK' : (c.includes('id') ? 'INTEGER FK' : (['elo', 'value', 'fee'].includes(c) ? 'NUMERIC' : (c.includes('date') || c.includes('ts') ? 'TIMESTAMP' : 'TEXT')))}</span>
+            </div>`).join('')}
+          </div>
+          <span class="section-label">示例数据</span>
+          <div class="table-wrap">
+            <table class="tbl" style="min-width:520px"><thead><tr>${t.cols.map(c => '<th>' + c + '</th>').join('')}</tr></thead>
+              <tbody><tr>${sample.map(v => '<td class="' + (typeof v === 'number' ? 'num' : '') + '">' + v + '</td>').join('')}</tr>
+              <tr>${sample.map((v, i) => '<td class="' + (typeof v === 'number' ? 'num' : '') + ' dim">' + (typeof v === 'number' ? v + 1 : '…') + '</td>').join('')}</tr></tbody></table>
+          </div>
+        </div>
+      </div>`;
+  }
+  window.VIEWS.database = {
+    html() {
+      return `<div class="view">
+        <div class="split-r rise" style="--i:0">
+          <div class="panel">
+            <div class="panel-head"><h3>数据表</h3><span class="sub">${window.TABLES.length} 张</span></div>
+            <div class="panel-body" style="padding-bottom:8px">
+              <div class="search">${ico('search')}<input class="input" id="tblSearch" placeholder="搜索表名" autocomplete="off"></div>
+            </div>
+            <div class="panel-body tight" id="tblList" style="max-height:560px;overflow-y:auto"></div>
+          </div>
+          <div id="tblDetail"></div>
+        </div>
+      </div>`;
+    },
+    mount(root) {
+      const list = root.querySelector('#tblList'), detail = root.querySelector('#tblDetail'), input = root.querySelector('#tblSearch');
+      let cur = 'teams';
+      function renderList(q) {
+        const items = window.TABLES.filter(t => !q || t.name.includes(q));
+        list.innerHTML = items.length ? items.map(t => `<button class="db-item ${t.name === cur ? 'on' : ''}" data-tbl="${t.name}">
+          ${ico('table')}<b style="font-weight:550">${t.name}</b><span class="r">${fmtInt(t.rows)}</span></button>`).join('')
+          : '<div class="empty">无匹配表</div>';
+      }
+      function renderDetail() { detail.innerHTML = tableDetail(window.TABLES.find(t => t.name === cur)); }
+      renderList(''); renderDetail();
+      input.addEventListener('input', () => renderList(input.value));
+      list.addEventListener('click', e => {
+        const b = e.target.closest('[data-tbl]'); if (!b) return;
+        cur = b.dataset.tbl; renderList(input.value); renderDetail(); hydrate(detail);
+      });
+    }
+  };
+
+  /* ============================ 数据更新控制 ============================ */
+  window.VIEWS.update = {
+    html() {
+      return `<div class="view">
+        <div class="split rise" style="--i:0">
+          <div class="od-stack" style="--od-gap:16px">
+            <div class="panel">
+              <div class="panel-head"><h3>API Key 配置</h3><span class="sub">外部数据源凭据</span></div>
+              <div class="panel-body od-stack" style="--od-gap:14px">
+                <div class="field"><label for="k1">football-data.org Token</label>
+                  <div class="api-line"><span class="fi" style="color:var(--accent)">${ico('key')}</span><input class="input mono" id="k1" type="password" value="demo_xT9f2Kq7Lm" style="flex:1"><button class="btn btn-ghost btn-sm">显示</button></div>
+                  <span class="hintline">用于拉取赛程与结果，免费额度 10 次/分钟。</span></div>
+                <div class="field"><label for="k2">TheSportsDB Key</label>
+                  <div class="api-line"><span class="fi" style="color:var(--accent)">${ico('key')}</span><input class="input mono" id="k2" type="password" value="3" style="flex:1"><button class="btn btn-ghost btn-sm">显示</button></div>
+                  <span class="hintline">用于球队徽标与球员照片补全。</span></div>
+                <div class="od-row" style="gap:10px"><button class="btn btn-primary">${ico('check')}保存配置</button><button class="btn btn-ghost">测试连接</button></div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><h3>赛程同步</h3><span class="sub">选择要同步的赛事</span></div>
+              <div class="panel-body od-stack" style="--od-gap:14px">
+                <div class="pill-list" id="compChips">
+                  ${Object.keys(L).map((k, i) => `<button class="chip ${i < 3 ? 'on' : ''}" data-comp="${k}">${leagueCrest(k, 'crest', L[k].name)}<span>${L[k].name}</span></button>`).join('')}
+                  <button class="chip" data-comp="champions-league">${ico('trophy')}<span>欧冠</span></button>
+                </div>
+                <div class="grid cols-2" style="gap:12px">
+                  <div class="field"><label for="s1">起始日期</label><input class="input" id="s1" type="date" value="2026-03-01"></div>
+                  <div class="field"><label for="s2">结束日期</label><input class="input" id="s2" type="date" value="2026-03-31"></div>
+                </div>
+                <div class="od-row" style="gap:10px;align-items:center">
+                  <button class="btn btn-primary" id="syncBtn">${ico('refresh')}开始同步</button>
+                  <span class="hintline" id="syncMsg">上次同步：2026-03-09 06:12</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>更新日志</h3><span class="sub">最近 5 条</span>
+              <div class="head-actions"><span class="tag g">自动同步已开启</span></div></div>
+            <div class="panel-body">
+              <div class="timeline">
+                ${window.UPDATE_LOG.map(u => `<div class="tl-item ${u.level === 'ok' ? 'goal' : 'card'}">
+                  <span class="tl-minute">${u.ts}</span>
+                  <div class="tl-title">${u.title}</div>
+                  <div class="tl-desc">${u.desc}</div>
+                </div>`).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    },
+    mount(root) {
+      root.querySelectorAll('#compChips .chip').forEach(c => c.addEventListener('click', () => c.classList.toggle('on')));
+      let t = null;
+      const btn = root.querySelector('#syncBtn'), msg = root.querySelector('#syncMsg');
+      btn.addEventListener('click', () => {
+        btn.disabled = true; btn.style.opacity = '.75';
+        const steps = ['连接数据源…', '拉取赛程…', '合并结果…', '写入数据库…', '完成 ✓'];
+        let i = 0;
+        (function tick() {
+          msg.textContent = steps[i];
+          if (i++ < steps.length - 1) { clearTimeout(t); t = setTimeout(tick, 520); }
+          else { btn.disabled = false; btn.style.opacity = '1'; msg.textContent = '本次新增 480 场赛程 · 214 条事件'; }
+        })();
+      });
+      return () => { if (t) clearTimeout(t); };
+    }
+  };
+
+  /* ============================ 模型管理 ============================ */
+  function modelDetail(m) {
+    const bins = [
+      { pred: 0.15, actual: 0.18, count: 120 }, { pred: 0.28, actual: 0.31, count: 180 },
+      { pred: 0.4, actual: 0.37, count: 240 }, { pred: 0.52, actual: 0.55, count: 300 },
+      { pred: 0.64, actual: 0.61, count: 260 }, { pred: 0.78, actual: 0.82, count: 210 },
+      { pred: 0.9, actual: 0.88, count: 150 }
+    ];
+    const cm = [[172, 34, 22], [40, 96, 58], [24, 55, 179]];
+    const feats = [['Elo 评分差', 0.21], ['xG 预期进球差', 0.18], ['近期状态(5 场)', 0.15], ['主客场因素', 0.14], ['控球率差', 0.11], ['伤病指数', 0.09], ['休息天数', 0.07], ['其他', 0.05]];
+    return `
+      <div class="od-stack" style="--od-gap:16px">
+        <div class="grid cols-4">
+          <div class="panel"><div class="stat"><span class="stat-label">样本外准确率</span><span class="stat-value">${(m.acc * 100).toFixed(1)}<span class="unit">%</span></span><span class="stat-foot"><span class="stat-delta up">${m.id === 'ensemble' ? '+0.6pp' : '—'}</span></span></div></div>
+          <div class="panel"><div class="stat"><span class="stat-label">LogLoss</span><span class="stat-value">${m.logloss.toFixed(3)}</span></div></div>
+          <div class="panel"><div class="stat"><span class="stat-label">Brier</span><span class="stat-value">${m.brier.toFixed(3)}</span></div></div>
+          <div class="panel"><div class="stat"><span class="stat-label">Macro F1</span><span class="stat-value">${m.f1.toFixed(3)}</span></div></div>
+        </div>
+        <div class="split">
+          <div class="panel">
+            <div class="panel-head"><h3>混淆矩阵</h3><span class="sub">主胜 / 平 / 客胜 · 680 场</span></div>
+            <div class="panel-body">${confusion(cm, ['主胜', '平', '客胜'])}
+              <div class="hintline" style="margin-top:12px">对角线为正确预测。平局（中列）误分较多，是分类难点。</div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>校准曲线</h3><span class="sub">预测概率 vs 实际频率</span></div>
+            <div class="panel-body">${calibChart(bins)}</div>
+          </div>
+        </div>
+        <div class="split">
+          <div class="panel">
+            <div class="panel-head"><h3>特征重要度</h3><span class="sub">归一化贡献</span></div>
+            <div class="panel-body od-stack" style="--od-gap:14px">
+              ${feats.map(f => meter(f[0], (f[1] / feats[0][1]) * 100, { display: (f[1] * 100).toFixed(0) + '%' })).join('')}
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>显著性检验</h3><span class="sub">McNemar · 集成 vs GBDT</span></div>
+            <div class="panel-body od-stack" style="--od-gap:14px">
+              <div class="kv">
+                <dt>集成正确 / GBDT 错误</dt><dd>48</dd>
+                <dt>GBDT 正确 / 集成错误</dt><dd>35</dd>
+                <dt>卡方统计量</dt><dd>1.59</dd>
+                <dt>p 值</dt><dd>0.21</dd>
+              </div>
+              <div class="tag a" style="align-self:flex-start">p &gt; 0.05 · 差异不显著</div>
+              <div class="hintline">样本 680 场，选择置信水平 0.05。集成模型略优，但需更多样本确认。</div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+  window.VIEWS.models = {
+    html() {
+      const m = window.MODELS[0];
+      return `<div class="view">
+        <div class="grid cols-4 rise" style="--i:0">
+          ${window.MODELS.map(mo => `<button class="panel" data-model="${mo.id}" style="text-align:left;${mo.id === m.id ? 'border-color:rgba(47,134,224,.42);background:var(--accent-soft)' : ''}">
+            <div class="stat">
+              <div class="od-row" style="gap:8px"><span class="fi" style="width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--panel-3);color:var(--accent)">${ico('cpu')}</span>
+                <span class="tag ${mo.status === 'production' ? 'g' : mo.status === 'challenger' ? 'a' : ''}">${mo.status === 'production' ? '生产' : mo.status === 'challenger' ? '候选' : '基线'}</span></div>
+              <b style="font-size:14px;font-weight:600">${mo.name}</b>
+              <span class="stat-value" style="font-size:22px">${(mo.acc * 100).toFixed(1)}<span class="unit">% 准确率</span></span>
+              <span class="stat-foot dim">${mo.algo}</span>
+            </div></button>`).join('')}
+        </div>
+        <div id="modelDetail" class="rise" style="--i:1">${modelDetail(m)}</div>
+      </div>`;
+    },
+    mount(root) {
+      const detail = root.querySelector('#modelDetail');
+      root.addEventListener('click', e => {
+        const b = e.target.closest('[data-model]'); if (!b) return;
+        root.querySelectorAll('[data-model]').forEach(x => {
+          const on = x === b;
+          x.style.borderColor = on ? 'rgba(47,134,224,.42)' : '';
+          x.style.background = on ? 'var(--accent-soft)' : '';
+        });
+        detail.innerHTML = modelDetail(window.MODELS.find(m => m.id === b.dataset.model));
+        hydrate(detail);
+      });
+    }
+  };
+})();
+</script>
+<script>/* ============================================================
+   路由 · 导航 · 动效 · 应用外壳
+   ============================================================ */
+(function () {
+  const PAGES = window.PAGES;
+  const content = document.getElementById('content');
+  const nav = document.getElementById('nav');
+  const titleEl = document.getElementById('viewTitle');
+  const subEl = document.getElementById('viewSub');
+  const app = document.getElementById('app');
+  const scrim = document.getElementById('scrim');
+  const menuBtn = document.getElementById('menuBtn');
+  const progress = document.getElementById('routeProgress');
+  const realBtn = document.getElementById('realBtn');
+  const bySlug = s => PAGES.find(p => p.slug === s) || PAGES[0];
+
+  menuBtn.innerHTML = ico('menu');
+
+  /* ---------------- 侧边导航 ---------------- */
+  const groups = {};
+  PAGES.forEach(p => (groups[p.group] = groups[p.group] || []).push(p));
+  nav.innerHTML = Object.keys(groups).map(g =>
+    '<div class="nav-group">' + g + ' · ' + groups[g].length + '</div>' +
+    groups[g].map((p, i) => `<button class="nav-item" data-slug="${p.slug}" title="${p.label}">
+      ${ico(p.icon)}<span class="nav-label">${p.label}</span><span class="nav-key mono">${String(i + 1).padStart(2, '0')}</span>
+    </button>`).join('')
+  ).join('');
+
+  /* ---------------- 服务状态 ---------------- */
+  const dotFor = s => '<span class="dot ' + (s === 'ok' || s === 'live' ? (s === 'live' ? 'live' : 'ok') : 'warn') + '"></span>';
+  document.getElementById('svcMini').innerHTML = window.SERVICES.map(s =>
+    '<div class="row">' + dotFor(s.status) + '<span>' + s.name + '</span><span class="port">' + s.port + '</span></div>').join('');
+  document.getElementById('sbServices').innerHTML = window.SERVICES.map(s =>
+    '<span class="s">' + dotFor(s.status) + s.name + ' · <b class="mono" style="color:var(--text-2)">' + s.port + '</b></span>').join('');
+
+  /* ---------------- 时钟 ---------------- */
+  const clock = document.getElementById('sbClock');
+  function tickClock() {
+    const d = new Date();
+    const p = n => String(n).padStart(2, '0');
+    clock.textContent = d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' +
+      p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+  }
+  tickClock(); setInterval(tickClock, 1000);
+
+  /* ---------------- 路由 ---------------- */
+  let current = null, cleanup = null;
+  let realUrl = 'http://127.0.0.1:8501/?page=home';
+
+  function setActive(slug) {
+    nav.querySelectorAll('.nav-item').forEach(it => it.classList.toggle('active', it.dataset.slug === slug));
+  }
+  function startProgress() {
+    progress.classList.remove('done');
+    progress.style.width = '0'; progress.classList.add('on');
+    requestAnimationFrame(() => { progress.style.width = '72%'; });
+  }
+  function endProgress() {
+    progress.classList.add('done');
+    setTimeout(() => { progress.classList.remove('on', 'done'); progress.style.width = '0'; }, 520);
+  }
+
+  function go(slug, push) {
+    slug = slug || 'home';
+    if (!window.VIEWS[slug]) slug = 'home';
+    if (cleanup) { try { cleanup(); } catch (e) { } cleanup = null; }
+
+    startProgress();
+    const v = window.VIEWS[slug], page = bySlug(slug);
+    current = slug;
+    content.innerHTML = v.html();
+    const view = content.querySelector('.view');
+    if (view) { view.style.animation = 'viewIn .34s var(--ease-out) both'; }
+    content.scrollTop = 0;
+    hydrate(content);
+    if (v.mount) cleanup = v.mount(content) || null;
+
+    setActive(slug);
+    titleEl.textContent = page.label;
+    subEl.textContent = page.desc + ' · ' + page.group;
+    document.title = page.label + ' · 足球数据分析与 AI 预测系统';
+    realUrl = 'http://127.0.0.1:' + page.port + '/?page=' + page.slug;
+    if (push !== false && location.hash !== '#' + slug) history.replaceState(null, '', '#' + slug);
+    requestAnimationFrame(endProgress);
+  }
+
+  /* ---------------- 抽屉导航 ---------------- */
+  function openDrawer() { app.classList.add('nav-open'); scrim.hidden = false; requestAnimationFrame(() => scrim.classList.add('show')); menuBtn.setAttribute('aria-expanded', 'true'); }
+  function closeDrawer() { app.classList.remove('nav-open'); scrim.classList.remove('show'); menuBtn.setAttribute('aria-expanded', 'false'); setTimeout(() => { if (!app.classList.contains('nav-open')) scrim.hidden = true; }, 220); }
+  menuBtn.addEventListener('click', () => app.classList.contains('nav-open') ? closeDrawer() : openDrawer());
+  scrim.addEventListener('click', closeDrawer);
+  window.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+  window.addEventListener('resize', () => { if (window.innerWidth > 1024) closeDrawer(); });
+
+  /* ---------------- 事件委托 ---------------- */
+  nav.addEventListener('click', e => {
+    const b = e.target.closest('.nav-item'); if (!b) return;
+    closeDrawer();
+    if (b.dataset.slug === current) return;
+    location.hash = b.dataset.slug;
+    go(b.dataset.slug);
+  });
+  document.addEventListener('click', e => {
+    const a = e.target.closest('[data-goto]'); if (!a) return;
+    e.preventDefault();
+    closeDrawer();
+    const slug = a.dataset.goto;
+    go(slug);
+  });
+  realBtn.addEventListener('click', () => {
+    const w = window.open(realUrl, '_blank', 'noopener');
+    if (!w) { realBtn.textContent = '已被浏览器拦截'; setTimeout(() => { realBtn.innerHTML = '<span>真实系统</span>'; }, 1600); }
+  });
+
+  window.addEventListener('hashchange', () => {
+    const slug = (location.hash || '').replace('#', '') || 'home';
+    if (slug !== current) go(slug, false);
+  });
+
+  /* ---------------- 初始化 ---------------- */
+  const initial = (location.hash || '').replace('#', '') || 'home';
+  go(initial === '__all' ? 'home' : initial, false);
+})();
+</script>
+</body>
+</html>

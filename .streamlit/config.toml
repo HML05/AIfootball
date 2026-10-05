@@ -1,0 +1,44 @@
+# ============================================================
+# 足球分析系统 · Streamlit 全局主题 (config.toml)
+# ------------------------------------------------------------
+# 作用:
+#   theme.py 的整站 CSS 只能作用于 DOM 元素; 而 Streamlit 的
+#   部分原生组件(数据表格 canvas、下拉菜单、tooltip、日期选择器等)
+#   渲染在 body 之外或 canvas 之内, CSS 无法穿透。这些只能在此声明,
+#   才能与设计令牌保持同一套视觉语言。
+#
+# 字体:
+#   font / headingFont / codeFont 使用关键字而非具体字体名。
+#   关键字会被映射到 Streamlit 内置的本地字体文件
+#   (sans-serif -> Source Sans, serif -> Source Serif, monospace -> Source Code Pro),
+#   离线可用; 若填写具体字体名会触发 Google Fonts 拉取, 离线会失败。
+#   headingFont 取 serif: 与登录页 docs/console/login.html 的衬线展示标题同调。
+#
+# 颜色(对齐 v5「赛事公报」晨报旗舰; 与 theme.py _LIGHT 令牌同套):
+#   暖米纸画布 + 纸面板 + 绯红强调
+#   bg0 #f2ecdc / surface #fbf7ec / line #d9d2c2
+#   accent #db3356 / accent-deep #b8254a / ink #0e2a22
+#
+# 注意:
+#   修改本文件需要重启 Streamlit 服务才能生效。
+# ============================================================
+
+[theme]
+base = "light"
+primaryColor = "#db3356"
+backgroundColor = "#f2ecdc"
+secondaryBackgroundColor = "#fbf7ec"
+textColor = "#0e2a22"
+linkColor = "#b8254a"
+borderColor = "#d9d2c2"
+dataframeBorderColor = "#d9d2c2"
+
+font = "sans-serif"
+headingFont = "serif"
+codeFont = "monospace"
+baseFontSize = 16
+
+# 静态资源: frontend/static/* 会被挂在 /app/static/* 下
+# (首页「中央 3D 场景」用的 stadium3d.jpg 就走这里, 不再往 HTML 里塞 base64)
+[server]
+enableStaticServing = true

@@ -1,0 +1,278 @@
+#root {
+  width: 100%;
+}
+
+.font-sans-talvex {
+  font-family: 'Plus Jakarta Sans', 'Inter', 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* ================= 主题变量 ================= */
+.theme-light {
+  --c-bg: #f4eddc;
+  --c-text: #26251f;
+  --c-muted: #8b8672;
+  --c-faint: #b3ad97;
+  --c-ink: #2b2b27;
+  --c-on-ink: #fbf6e9;
+  --c-yellow: #f6c945;
+  --c-line: rgba(38, 37, 31, 0.07);
+  --c-hatch: #d9d2b8;
+  --glass-hi: rgba(255, 255, 255, 0.62);
+  --glass-lo: rgba(255, 251, 240, 0.32);
+  --glass-border: rgba(255, 255, 255, 0.65);
+  --glass-soft-hi: rgba(255, 255, 255, 0.5);
+  --glass-soft-lo: rgba(255, 251, 240, 0.22);
+  --glass-soft-border: rgba(255, 255, 255, 0.55);
+  --card-shadow: rgba(43, 43, 39, 0.08);
+  --blob-opacity: 1;
+  --track: #ede5ce;
+  --panel: rgba(253, 250, 242, 0.95);
+}
+
+.theme-dark {
+  --c-bg: #181815;
+  --c-text: #f1ecdf;
+  --c-muted: #a49e8b;
+  --c-faint: #6f6a5c;
+  --c-ink: #2a2a25;
+  --c-on-ink: #f5f1e4;
+  --c-yellow: #f6c945;
+  --c-line: rgba(241, 236, 223, 0.1);
+  --c-hatch: #4a463c;
+  --glass-hi: rgba(255, 255, 255, 0.08);
+  --glass-lo: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-soft-hi: rgba(255, 255, 255, 0.06);
+  --glass-soft-lo: rgba(255, 255, 255, 0.02);
+  --glass-soft-border: rgba(255, 255, 255, 0.09);
+  --card-shadow: rgba(0, 0, 0, 0.35);
+  --blob-opacity: 0.3;
+  --track: rgba(255, 255, 255, 0.1);
+  --panel: rgba(33, 33, 29, 0.95);
+}
+
+/* 语义化颜色工具类 */
+.t-1 { color: var(--c-text); }
+.t-2 { color: var(--c-muted); }
+.t-3 { color: var(--c-faint); }
+.bg-ink { background-color: var(--c-ink); }
+.on-ink { color: var(--c-on-ink); }
+.line-c { border-color: var(--c-line); }
+.track-c { background-color: var(--track); }
+
+.app-root {
+  background-color: var(--c-bg);
+  color: var(--c-text);
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+/* ---------- 玻璃拟态 ---------- */
+.glass {
+  background: linear-gradient(135deg, var(--glass-hi), var(--glass-lo));
+  backdrop-filter: blur(18px) saturate(1.5);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 10px 34px var(--card-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: background 0.5s ease, border-color 0.5s ease;
+}
+
+.glass-soft {
+  background: linear-gradient(135deg, var(--glass-soft-hi), var(--glass-soft-lo));
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  border: 1px solid var(--glass-soft-border);
+  box-shadow:
+    0 8px 26px var(--card-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: background 0.5s ease, border-color 0.5s ease;
+}
+
+/* 浮层（通知 / 菜单）：比卡片更实，保证文字在任意背景上可读 */
+.glass-pop {
+  background: var(--panel);
+  backdrop-filter: blur(22px) saturate(1.3);
+  -webkit-backdrop-filter: blur(22px) saturate(1.3);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 26px 60px -22px var(--card-shadow),
+    0 2px 10px rgba(43, 43, 39, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.glass-dark {
+  background: linear-gradient(150deg, rgba(48, 48, 43, 0.96), rgba(32, 32, 28, 0.92));
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 16px 44px rgba(20, 20, 17, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09);
+}
+
+/* ---------- 载入骨架 ---------- */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.75; }
+}
+.skeleton {
+  background-color: var(--track);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+/* ---------- 队徽 / 头像 ---------- */
+.crest {
+  object-fit: contain;
+  background-color: rgba(255, 255, 255, 0.72);
+  padding: 2px;
+}
+.theme-dark .crest {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+/* ---------- 入场动效 ---------- */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+.anim-in {
+  animation: fade-up 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--d, 0ms);
+}
+
+/* ---------- 卡片悬停 ---------- */
+.card-hover {
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.5s ease, border-color 0.5s ease;
+}
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 22px 48px var(--card-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* ---------- 背景漂浮光斑 ---------- */
+.blob-layer { opacity: var(--blob-opacity); transition: opacity 0.5s ease; }
+@keyframes drift-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(50px, -36px) scale(1.1); }
+}
+@keyframes drift-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-46px, 34px) scale(0.94); }
+}
+.blob-a { animation: drift-a 16s ease-in-out infinite; }
+.blob-b { animation: drift-b 20s ease-in-out infinite; }
+
+/* ---------- 柱状图生长 ---------- */
+@keyframes bar-grow {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+.bar-grow {
+  transform-origin: bottom;
+  animation: bar-grow 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--d, 0ms);
+  transition: filter 0.25s ease;
+}
+.bar-grow:hover { filter: brightness(1.15); }
+
+@keyframes bar-grow-x {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.bar-grow-x {
+  transform-origin: left;
+  animation: bar-grow-x 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--d, 0ms);
+  transition: filter 0.25s ease;
+}
+
+/* ---------- Sprint 斜纹条 ---------- */
+.hatch-bar {
+  background-image: repeating-linear-gradient(-55deg, var(--c-hatch) 0px, var(--c-hatch) 2px, transparent 2px, transparent 8px);
+  background-color: var(--glass-soft-lo);
+  animation: hatch-move 24s linear infinite;
+}
+@keyframes hatch-move {
+  to { background-position: 272px 0; }
+}
+
+/* ---------- Focus timer 呼吸光晕 ---------- */
+@keyframes ring-glow {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(246, 201, 69, 0)); }
+  50% { filter: drop-shadow(0 0 10px rgba(246, 201, 69, 0.55)); }
+}
+.ring-running { animation: ring-glow 2.4s ease-in-out infinite; }
+
+/* ---------- 日历事件 ---------- */
+.event-card {
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.5s ease, border-color 0.5s ease;
+  cursor: pointer;
+}
+.event-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 14px 34px var(--card-shadow);
+  z-index: 10;
+}
+
+/* ---------- 待办事项行 ---------- */
+.action-row {
+  transition: background 0.25s ease, padding-left 0.25s ease;
+  border-radius: 16px;
+  cursor: pointer;
+}
+.action-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+  padding-left: 8px;
+}
+
+/* ---------- 铃铛摆动 ---------- */
+@keyframes bell-ring {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(12deg); }
+  40% { transform: rotate(-10deg); }
+  60% { transform: rotate(6deg); }
+  80% { transform: rotate(-4deg); }
+}
+.bell-hover:hover svg {
+  animation: bell-ring 0.7s ease;
+  transform-origin: top center;
+}
+
+/* ---------- 表格行 ---------- */
+.table-row {
+  transition: background 0.25s ease;
+}
+.table-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ---------- 图表描边入场 ---------- */
+@keyframes draw-line {
+  from { stroke-dashoffset: var(--path-len, 1200); }
+  to { stroke-dashoffset: 0; }
+}
+.draw-line {
+  stroke-dasharray: var(--path-len, 1200);
+  animation: draw-line 1.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--d, 0ms);
+}
+@keyframes fade-slow {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.fade-slow {
+  animation: fade-slow 1.2s ease both;
+  animation-delay: var(--d, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-in, .bar-grow, .bar-grow-x, .blob-a, .blob-b, .hatch-bar, .ring-running, .draw-line, .fade-slow {
+    animation: none !important;
+  }
+  .card-hover, .event-card, .action-row {
+    transition: none !important;
+  }
+}

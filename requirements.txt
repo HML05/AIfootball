@@ -1,0 +1,54 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# 运行依赖（主应用：FastAPI + 界面数据接口 + 预测 + 登录）
+#
+# 版本按本机实际运行环境固定（Python 3.13 实测通过；3.11 / 3.12 亦可）。
+# 校验方式：python scripts/check_deps.py
+#
+# 安装：pip install -r requirements.txt
+# 服务器只需要这一份就能把主应用跑起来；自检 / 训练 / 图表导出用的包见
+# requirements-dev.txt（不装也能跑主应用）。
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Web 框架
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+python-multipart==0.0.32
+
+# 数据处理
+pandas==2.3.3
+numpy==2.4.1
+
+# 数据库（SQLite）
+sqlalchemy==2.0.52
+
+# 机器学习（预测与可解释性）
+xgboost==3.4.1
+scikit-learn==1.9.0
+shap==0.52.0
+joblib==1.6.0
+
+# 定时任务（数据同步：每 5 分钟实时比分 + 每日/每周任务）
+APScheduler==3.11.3
+
+# 网络请求
+requests==2.33.1
+
+# 网页解析（数据抓取）
+lxml==6.1.2
+
+# 工具
+python-dotenv==1.2.2
+pydantic==2.13.5
+
+# 登录二维码（扫码登录用；缺了不影响账号密码登录，但扫码页签会失效）
+qrcode==8.2
+pillow==12.1.0
+
+# 参照版 Streamlit 前端（frontend/，端口 8501/8502）—— 不装不影响主应用
+streamlit==1.62.0
+altair==6.2.2
+
+# 说明：以下包当前**没有**被主应用导入，故不在此列出（装了只会变重）：
+#   langchain / langchain-openai / openai  → 仅 src/agent/*（AI Agent，需 LLM key，当前未启用）
+#   plotly                                → 仅 src/visualization/charts.py（未被引用）
+#   aiosqlite / httpx / beautifulsoup4    → 源码里没有任何 import

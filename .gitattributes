@@ -1,0 +1,19 @@
+# 统一换行：本项目源码本来就是 LF，部署目标是 Linux。
+# Git 在 Windows 上默认 autocrlf=true 会把提交内容改写成 CRLF，部署到 Linux 后
+# sh 脚本会报 "bad interpreter"，所以这里显式固定为 LF。
+* text=auto eol=lf
+
+# 二进制文件不要做任何换行/编码转换
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.mp4  binary
+*.woff binary
+*.woff2 binary
+*.ttf  binary
+*.joblib binary
+*.pkl  binary
+*.pt   binary
+*.db   binary

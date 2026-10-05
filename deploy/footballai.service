@@ -1,0 +1,61 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# systemd 单元示例 —— 让服务常驻并开机自启（Linux）
+#
+# 安装（详见 docs/deploy.md）：
+#   sudo cp deploy/footballai.service /etc/systemd/system/footballai.service
+#   sudo nano /etc/systemd/system/footballai.service     # 改 User / 路径
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now footballai
+#   systemctl status footballai --no-pager
+#   journalctl -u footballai -f
+#
+# 关键点：
+#   * --workers 1  应用启动时会拉起 APScheduler（5 个定时任务），多 worker 会重复跑任务
+#   * 监听 127.0.0.1，由 nginx 反代对外（同源 + HTTPS）；想直接对外就改成 0.0.0.0
+#   * EnvironmentFile 里的值会覆盖 config/settings.py 的默认值（settings 用 os.getenv 读）
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[Unit]
+Description=FootballAI - 足球数据分析与 AI 预测系统
+Documentation=https://github.com/你的账号/AIfootball
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=football
+Group=football
+WorkingDirectory=/opt/footballai
+
+# 环境变量：DEBUG=false、UI_REQUIRE_AUTH=true、各种 API key 都放这里
+EnvironmentFile=/opt/footballai/.env
+# 中文日志不乱码
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONIOENCODING=utf-8
+
+# 用项目自带的 venv 解释器（python -m uvicorn 才会用 venv 里的包）
+ExecStart=/opt/footballai/.venv/bin/python -m uvicorn src.main:app \
+    --host 127.0.0.1 --port 8000 --workers 1 --proxy-headers --forwarded-allow-ips='*'
+
+# 崩了自动拉起；重启前等 3 秒
+Restart=always
+RestartSec=3
+TimeoutStopSec=20
+KillSignal=SIGINT
+
+# 日志进 journald（查：journalctl -u footballai -f）
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=footballai
+
+# 内存护栏：启动即载 shap + 模型，常驻约 0.7~1.2 GB；小内存机器别设太紧
+# MemoryMax=1500M
+
+# 基本加固
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/opt/footballai
+
+[Install]
+WantedBy=multi-user.target

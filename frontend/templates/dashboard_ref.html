@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>足球分析系统</title>
+<style>
+/* ================================================================
+   Matchday Gazette / 赛事公报 v5.0 — 足球数据公报
+   暖米纸 + 深林墨 + 绯红 · 衬线版头 · 编号栏目 · 栏线纸面
+   保留全部 class 钩子与 CSS 变量名（ref_page.py DOM 补丁依赖）
+   ================================================================ */
+:root{  /* 晨报 Gazette · 暖米纸 (light, 旗舰) */
+  --bg:#f2ecdc;
+  --text:#0e2a22;--sub:#65736b;
+  --acc:#db3356;--acc-s:#db3356;--on-acc:#fdf7ee;
+  --accwash:rgba(219,51,86,.08);
+  --stripe:rgba(14,42,34,.05);--chalk:rgba(14,42,34,.16);
+  --glow:0 10px 22px -12px rgba(219,51,86,.45);
+  --track:#eae3d1;--green:#1e7a4c;--ring1:#db3356;--ring2:#e3dcc6;
+  --img-filter:saturate(1.0) contrast(1.0);
+  --veil:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,0) 40%);
+  --dot-y:#a8740a;--dot-g:#1e7a4c;
+  --lg-bg:#fbf7ec;
+  --lg-bd:rgba(14,42,34,.14);
+  --lg-blur:blur(0px);
+  --lg-spec:none;
+  --lg-out:0 1px 0 rgba(14,42,34,.06),0 10px 24px -16px rgba(14,42,34,.18);
+  --lg-inn:none;
+  --hair:rgba(14,42,34,.13);
+  --hair-strong:rgba(14,42,34,.26);
+}
+body.theme-sunset{  /* 晚报 Evening · 林墨纸 (dark) */
+  --bg:#0e2a22;
+  --text:#f2ecdc;--sub:#92a197;
+  --acc:#e04464;--acc-s:#e04464;--on-acc:#fdf7ee;
+  --accwash:rgba(224,68,100,.14);
+  --stripe:rgba(242,236,220,.035);--chalk:rgba(242,236,220,.14);
+  --glow:0 10px 22px -12px rgba(224,68,100,.40);
+  --track:#1d4033;--green:#4cc38a;--ring1:#e04464;--ring2:#24503f;
+  --img-filter:brightness(.6) saturate(1.0);
+  --veil:linear-gradient(180deg,rgba(8,23,18,.2),rgba(8,23,18,0) 40%,rgba(8,23,18,.2));
+  --dot-y:#e0a83c;--dot-g:#4cc38a;
+  --lg-bg:#16352a;
+  --lg-bd:rgba(242,236,220,.14);
+  --lg-blur:blur(0px);
+  --lg-spec:none;
+  --lg-out:0 1px 0 rgba(0,0,0,.25),0 14px 28px -18px rgba(0,0,0,.5);
+  --lg-inn:none;
+  --hair:rgba(242,236,220,.13);
+  --hair-strong:rgba(242,236,220,.26);
+}
+body.theme-night{  /* 午夜版 Late · 纯墨 */
+  --bg:#081712;
+  --text:#e8e2d2;--sub:#7d8d83;
+  --acc:#d63a5c;--acc-s:#d63a5c;--on-acc:#fdf7ee;
+  --accwash:rgba(214,58,92,.13);
+  --stripe:rgba(242,236,220,.028);--chalk:rgba(242,236,220,.10);
+  --glow:0 10px 20px -12px rgba(214,58,92,.35);
+  --track:#16281f;--green:#3fb57c;--ring1:#d63a5c;--ring2:#1c3328;
+  --img-filter:brightness(.45) saturate(.95);
+  --veil:linear-gradient(180deg,rgba(4,12,9,.3),rgba(4,12,9,0) 40%,rgba(4,12,9,.3));
+  --dot-y:#cf9a30;--dot-g:#3fb57c;
+  --lg-bg:#0f231b;
+  --lg-bd:rgba(242,236,220,.11);
+  --lg-blur:blur(0px);
+  --lg-spec:none;
+  --lg-out:0 1px 0 rgba(0,0,0,.3),0 14px 28px -18px rgba(0,0,0,.6);
+  --lg-inn:none;
+  --hair:rgba(242,236,220,.10);
+  --hair-strong:rgba(242,236,220,.22);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;color:var(--text);
+  background:var(--bg);transition:background .6s;overflow:hidden;
+  counter-reset:gzcol}
+/* 衬线版头/大数字: 拉丁 Georgia/Times, 中文宋体系; 密集数据等宽 */
+h1,h3,.num,.v,.hp,.ai-big b{font-family:Georgia,"Times New Roman","Songti SC","STSong","SimSun",serif}
+.pct,.sc,.bp,.rk,.em,.kpi .tag,.tag{font-variant-numeric:tabular-nums}
+/* ===== 纸面墨点(替代旧光斑/LED) ===== */
+.fx span{position:fixed;width:4px;height:4px;border-radius:1px;pointer-events:none;z-index:0;
+  background:var(--text);opacity:.14;transition:all .6s}
+.fx span:nth-child(1){left:2vw;top:3vh}
+.fx span:nth-child(2){left:91vw;top:9vh;background:var(--acc-s);opacity:.5}
+.fx span:nth-child(3){left:95vw;top:74vh;width:3px;height:3px}
+.fx span:nth-child(4){left:72vw;top:2vh;width:3px;height:3px}
+.fx span:nth-child(5){left:80vw;top:93vh}
+.fx span:nth-child(6){left:46vw;top:96vh;width:3px;height:3px;background:var(--acc-s);opacity:.4}
+.app{position:relative;z-index:1;min-width:1300px;max-width:1780px;margin:0 auto;
+  height:100vh;padding:14px 20px 16px}
+/* ===== 大外框：占满一屏，内部布局，页面永不滚动 ===== */
+.frame{position:relative;height:100%;border-radius:10px;overflow:hidden;
+  border:1px solid var(--lg-bd);box-shadow:var(--lg-out);transition:all .6s;
+  display:flex;flex-direction:column}
+/* ===== ★ 背景：公报纸面 —— 栏线(196px 栏距) + 中缝折线 ===== */
+.stage{position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:
+    repeating-linear-gradient(90deg,var(--stripe) 0 1px,transparent 1px 196px),
+    var(--bg)}
+.stage img{display:none}
+.stage .veil{position:absolute;inset:0;background:
+  repeating-linear-gradient(90deg,transparent 0 calc(50% - 4px),var(--chalk) calc(50% - 4px) calc(50% - 3px),transparent calc(50% - 3px) calc(50% + 3px),var(--chalk) calc(50% + 3px) calc(50% + 4px),transparent calc(50% + 4px));
+  transition:background .8s}
+/* ===== ★ 纸面件（统一配方：纸底 + 墨色发丝缝 + 1px 底影） ===== */
+.g,.pill,.menu-top,.donut::before,.navbar,.sidebar{
+  position:relative;
+  background:var(--lg-bg);border:1px solid var(--lg-bd);
+  backdrop-filter:var(--lg-blur);-webkit-backdrop-filter:var(--lg-blur);
+  box-shadow:var(--lg-out);transition:all .6s}
+.g{border-radius:6px}
+.pill{border-radius:999px}
+/* ===== 导航条：报头(masthead) —— 底部双细线 ===== */
+.navbar{z-index:6;flex:none;display:flex;align-items:center;
+  justify-content:space-between;padding:12px 22px;border-radius:6px;margin:12px 14px 0;
+  border-bottom:3px double var(--hair-strong)}
+.navbar>* ,.sidebar>*{position:relative;z-index:1}
+.g>*{position:relative;z-index:1}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{width:42px;height:42px;border-radius:6px;display:grid;place-items:center;flex:none;
+  background:var(--acc);box-shadow:var(--glow);
+  font-size:22px;line-height:1;color:var(--on-acc)}
+.brand h1{font-size:22px;font-weight:700;letter-spacing:2px}
+.nav-right{display:flex;gap:10px}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:8px 17px;cursor:pointer;
+  font-size:12.5px;font-family:inherit;font-weight:600;color:var(--text);
+  background:transparent;border:1px solid var(--hair-strong);box-shadow:none}
+.pill:hover{border-color:var(--acc-s);color:var(--acc-s)}
+#themeBtn{color:var(--on-acc);background:var(--acc);border:1px solid var(--acc);font-weight:700}
+#themeBtn:hover{color:var(--on-acc)}
+/* ===== 主体：侧栏固定 + 右侧内容区内部滚动 ===== */
+.frame-body{position:relative;z-index:2;flex:1;min-height:0;
+  display:grid;grid-template-columns:232px 1fr;gap:14px;padding:14px}
+/* ===== ★ 侧边栏：完全静止，不跟随滚动 ===== */
+.sidebar{border-radius:6px;padding:16px 14px 14px;
+  display:flex;flex-direction:column;overflow:hidden auto}
+.menu-top{display:flex;align-items:center;gap:10px;width:100%;padding:11px 14px;border-radius:6px;
+  cursor:pointer;font-size:14px;font-weight:700;font-family:inherit;color:var(--text);margin-bottom:14px}
+.menu-top .mi{background:var(--acc);border-color:transparent;color:var(--on-acc)}
+.menu-top .chev{margin-left:auto}
+.menu a{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:5px;cursor:pointer;
+  font-size:13.5px;font-weight:600;color:var(--text);transition:.25s;margin-bottom:4px}
+.mi{width:25px;height:25px;border:1px solid currentColor;border-radius:5px;
+  display:grid;place-items:center;flex:none;font-size:12px;line-height:1;font-style:normal}
+.menu .chev{margin-left:auto;font-size:10px;opacity:.55}
+.menu a:hover{background:var(--accwash)}
+.menu a.active{background:var(--accwash);color:var(--acc-s);font-weight:700;
+  border:1px solid var(--acc-s);margin:-1px 0 3px}
+.menu a.active .mi{border-color:var(--acc-s)}
+.side-foot{margin-top:auto;padding:13px 8px 4px;font-size:10.5px;color:var(--sub);
+  opacity:.95;line-height:2;border-top:3px double var(--hair-strong)}
+/* ===== ★ 滚动区：只有这里滚动，背景与侧栏不动 ===== */
+.main{position:relative;min-width:0;overflow-y:auto;overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;padding-bottom:6px}
+.main::-webkit-scrollbar{width:6px}
+.main::-webkit-scrollbar-thumb{background:var(--track);border-radius:4px}
+.main::-webkit-scrollbar-thumb:hover{background:var(--sub)}
+.main::-webkit-scrollbar-track{background:transparent}
+.main-grid{display:grid;grid-template-columns:1fr 306px;gap:16px;min-height:calc(100% - 16px)}
+.left-col{display:grid;grid-template-rows:auto 1fr auto;gap:16px}
+/* ===== KPI（纸卡 + 衬线大数字 + 编号眉题） ===== */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.kpi{padding:15px 19px 13px;position:relative}
+.kpi .tag{display:flex;align-items:center;gap:7px;font-size:10.5px;color:var(--sub);
+  font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
+  font-family:ui-monospace,"Cascadia Mono",Consolas,"Microsoft YaHei",monospace}
+.kpi .tag i{width:7px;height:7px;border-radius:1.5px;background:var(--acc-s);flex:none}
+.kpi .num{font-size:34px;font-weight:700;letter-spacing:0;margin:4px 0 7px;
+  color:var(--text);font-variant-numeric:tabular-nums}
+.kpi .trend{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--green);font-weight:600}
+.kpi .trend::before{content:"";width:14px;height:3px;border-radius:1px;background:var(--green)}
+.kpi .plus{position:absolute;top:13px;right:13px;width:28px;height:28px;border-radius:6px;
+  cursor:pointer;color:var(--acc-s);background:transparent;font-size:16px;line-height:1;
+  border:1px solid var(--hair-strong)}
+.kpi .plus:hover{border-color:var(--acc-s)}
+/* ===== 底部行 ===== */
+.bottom{display:grid;grid-template-columns:1.42fr 1fr;gap:16px}
+.focus{padding:16px 22px 13px}
+.focus h3,.todo h3,.pad h3{font-size:15.5px;font-weight:700;letter-spacing:.5px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding-bottom:8px;border-bottom:3px double var(--hair-strong);margin-bottom:2px}
+.chev{opacity:.45;font-size:12px;font-style:normal}
+.odds{display:flex;align-items:center;margin:13px 0 10px}
+.odd{flex:1;text-align:center;padding:3px 6px}
+.odd+.odd{border-left:1px solid var(--hair)}
+.odd .k{font-size:10.5px;color:var(--sub);font-weight:600;letter-spacing:1.5px;
+  font-family:ui-monospace,"Cascadia Mono",Consolas,"Microsoft YaHei",monospace}
+.odd .v{font-size:29px;font-weight:700;margin:3px 0;font-variant-numeric:tabular-nums}
+.odd .s{font-size:10px;color:var(--sub);opacity:.85}
+.donut{width:112px;height:112px;border-radius:50%;flex:none;position:relative;margin-left:12px;
+  background:conic-gradient(var(--ring2) 0 14%,var(--ring1) 14% 100%)}
+.donut::before{content:"";position:absolute;inset:16px;border-radius:50%}
+.donut::after{content:"→";position:absolute;inset:0;display:grid;place-items:center;
+  font-size:28px;font-weight:900;color:var(--acc-s);font-style:normal}
+.donut .dot{position:absolute;top:6px;right:16px;width:11px;height:11px;border-radius:50%;
+  background:var(--lg-bg);box-shadow:0 0 0 3.5px var(--ring1)}
+.mini-stats{display:flex;border-top:1px solid var(--hair);padding-top:10px}
+.mini-stats div{flex:1;text-align:center}
+.mini-stats .k{font-size:10px;color:var(--sub)}
+.mini-stats .v{font-size:12.5px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums}
+.mini-stats div+div{border-left:1px solid var(--hair)}
+.bars{padding:16px 22px;display:flex;flex-direction:column;justify-content:space-around;gap:12px}
+.brow{display:flex;align-items:center;gap:11px}
+.brow .bl{width:80px;flex:none;font-size:11.5px;color:var(--sub);display:flex;align-items:center;gap:7px}
+.brow .bl i{width:6px;height:6px;border-radius:1px;background:var(--acc-s);flex:none}
+.brow .bar{flex:1}
+.brow .bp{width:42px;flex:none;text-align:right;font-size:12.5px;font-weight:700;
+  font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+.bar{height:6px;border-radius:2px;background:var(--track);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:2px;background:var(--text);transition:width .6s}
+/* ===== 右列 ===== */
+.rightcol{display:flex;flex-direction:column;gap:13px}
+.card{padding:14px 16px}
+.sq{width:40px;height:40px;border-radius:6px;display:grid;place-items:center;color:var(--on-acc);
+  background:var(--acc);flex:none;font-size:18px}
+.user-card{display:flex;align-items:center;gap:12px}
+.user-card .info{flex:1;min-width:0}
+.user-card .lbl{font-size:11.5px;color:var(--sub);margin-bottom:8px}
+.stat{display:flex;align-items:center;gap:12px}
+.stat .info{flex:1;min-width:0}
+.stat .pct{font-size:21px;font-weight:700;font-variant-numeric:tabular-nums;
+  font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+.stat .bar{margin-top:7px}
+.todo{flex:1;display:flex;flex-direction:column;min-height:0}
+.todo h3 a{font-size:11px;color:var(--sub);text-decoration:none;font-weight:600}
+.todo ul{flex:1;list-style:none;margin-top:10px;display:flex;flex-direction:column;justify-content:space-evenly}
+.todo li{display:flex;align-items:center;gap:10px;font-size:12px;padding:4px 0}
+.todo li::before{content:"";width:8px;height:8px;border-radius:1.5px;flex:none}
+.todo li.y::before{background:var(--dot-y)}
+.todo li.g::before{background:var(--dot-g)}
+/* ===== ★ 下方滚动面板 ===== */
+.panel-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.panel-row.wide{grid-template-columns:1.6fr 1fr}
+.panel-row.single{grid-template-columns:1fr}
+.pad{padding:16px 20px 14px}
+.lb-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--hair);font-size:12.5px}
+.lb-row:last-child{border-bottom:none}
+.rk{width:21px;height:21px;border-radius:4px;background:var(--track);display:grid;place-items:center;
+  font-style:normal;font-weight:700;font-size:11px;flex:none;color:var(--text);
+  font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+.lb-row:first-child .rk{background:var(--acc-s);color:var(--on-acc)}
+.lb-row:first-child .bar i{background:var(--acc-s)}
+.lb-row b{width:60px;font-weight:700;flex:none}
+.lb-row .bar{flex:1}
+.lb-row em{width:36px;text-align:right;font-style:normal;font-weight:700;
+  font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+.m-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--hair);font-size:12.5px}
+.m-row:last-child{border-bottom:none}
+.m-row .t{flex:1;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m-row .t.r{text-align:right}
+.sc{font-weight:700;font-size:13.5px;padding:2px 12px;border-radius:4px;background:var(--track);
+  flex:none;font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+.st{font-style:normal;font-size:10px;padding:3px 9px;border-radius:3px;flex:none;font-weight:600;
+  font-family:ui-monospace,"Cascadia Mono",Consolas,"Microsoft YaHei",monospace;letter-spacing:.5px}
+.st.end{background:var(--track);color:var(--sub)}
+.st.live{background:rgba(30,122,76,.12);color:var(--green)}
+.st.soon{background:rgba(168,116,10,.13);color:var(--dot-y)}
+.ai-big{display:flex;align-items:baseline;gap:9px;font-size:13px;color:var(--sub);margin:8px 0 10px}
+.ai-big b{font-size:32px;font-weight:700;color:var(--acc-s);font-variant-numeric:tabular-nums}
+.ai-tags{display:flex;gap:8px}
+.ai-tags span{flex:1;text-align:center;padding:8px 0;border-radius:5px;background:var(--track);
+  font-size:11px;font-weight:700}
+.ai-tags span.hot{background:var(--acc);color:var(--on-acc)}
+.ai-tip{font-size:11px;color:var(--sub);line-height:1.8;border-top:1px solid var(--hair);
+  padding-top:10px;margin-top:12px}
+.hot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:10px}
+.hot{padding:12px 14px;border-radius:5px;background:var(--track)}
+.hot .hn{font-size:11.5px;font-weight:700;display:flex;align-items:center;gap:6px}
+.hot .hp{font-size:22px;font-weight:700;margin:5px 0 7px;font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body class="theme-day">
+<div class="fx"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+<div class="app">
+<div class="frame">
+  <!-- ★ 背景：钉死在框内，永不移动（不再用 fixed，bug 根除） -->
+  <div class="stage">
+    <img src="/app/static/hero_stadium.jpg" alt="" onerror="this.style.display='none'">
+    <div class="veil"></div>
+  </div>
+
+  <header class="navbar">
+    <div class="brand"><span class="logo">⚽</span><h1>足球分析系统</h1></div>
+    <div class="nav-right">
+      <button class="pill">💬 消息</button>
+      <button class="pill">个人中心</button>
+      <button class="pill">🚪 退出系统</button>
+      <button class="pill" id="themeBtn">🌇 黄昏模式</button>
+    </div>
+  </header>
+
+  <div class="frame-body">
+    <!-- 侧栏：静止，永不滚动 -->
+    <aside class="sidebar">
+      <button class="menu-top"><span class="mi">👤</span>首页概览<span class="chev">▾</span></button>
+      <nav class="menu">
+        <a><span class="mi">🏠</span>首页概览<span class="chev">▾</span></a>
+        <a class="active"><span class="mi">📊</span>联赛数据<span class="chev">▾</span></a>
+        <a><span class="mi">🛡️</span>球队分析<span class="chev">▾</span></a>
+        <a><span class="mi">🏃</span>球员分析<span class="chev">▾</span></a>
+        <a><span class="mi">📅</span>比赛详情<span class="chev">▾</span></a>
+        <a><span class="mi">🎯</span>比赛预测<span class="chev">▾</span></a>
+        <a><span class="mi">🤖</span>AI智能分析<span class="chev">▾</span></a>
+        <a><span class="mi">⚡</span>实时比分<span class="chev">▾</span></a>
+      </nav>
+      <div class="side-foot">数据更新时间：2025-06-01 08:00<br>系统版本 v2.4.1 © 足球分析系统</div>
+    </aside>
+
+    <!-- ★ 唯一的滚动区：面板从静止的体育场上滑过 -->
+    <main class="main">
+      <div class="main-grid">
+        <div class="left-col">
+          <section class="kpis">
+            <div class="kpi g"><div class="tag"><i></i>数据总量</div><div class="num">12,698</div><div class="trend">较昨日 ↑ 3.2%</div></div>
+            <div class="kpi g"><div class="tag"><i></i>覆盖赛事</div><div class="num">11,315</div><div class="trend">较昨日 ↑ 2.1%</div></div>
+            <div class="kpi g"><div class="tag"><i></i>收录球队</div><div class="num">1,803</div><div class="trend">较昨日 ↑ 1.4%</div></div>
+            <div class="kpi g"><div class="tag"><i></i>收录球员</div><div class="num">4,745</div><div class="trend">较昨日 ↑ 4.8%</div><button class="plus">+</button></div>
+          </section>
+          <div></div>
+          <section class="bottom">
+            <div class="focus g">
+              <h3>焦点赛事 <span class="chev">▾</span></h3>
+              <div class="odds">
+                <div class="odd"><div class="k">主胜</div><div class="v">80.0%</div><div class="s">近10场胜率</div></div>
+                <div class="odd"><div class="k">平局</div><div class="v">5.0%</div><div class="s">历史平局率</div></div>
+                <div class="odd"><div class="k">客胜</div><div class="v">15%</div><div class="s">客场作战率</div></div>
+                <div class="donut"><span class="dot"></span></div>
+              </div>
+              <div class="mini-stats">
+                <div><div class="k">近期战绩</div><div class="v">0.89</div></div>
+                <div><div class="k">场均进球</div><div class="v">2.8</div></div>
+                <div><div class="k">场均失球</div><div class="v">0.73</div></div>
+                <div><div class="k">控球率</div><div class="v">62%</div></div>
+                <div><div class="k">近10场</div><div class="v">8胜</div></div>
+              </div>
+            </div>
+            <div class="bars g">
+              <div class="brow"><span class="bl"><i></i>数据覆盖率</span><div class="bar"><i style="width:92%"></i></div><span class="bp">92%</span></div>
+              <div class="brow"><span class="bl"><i></i>联赛覆盖</span><div class="bar"><i style="width:86%"></i></div><span class="bp">86%</span></div>
+              <div class="brow"><span class="bl"><i></i>模型准确率</span><div class="bar"><i style="width:78%"></i></div><span class="bp">78%</span></div>
+              <div class="brow"><span class="bl"><i></i>实时更新率</span><div class="bar"><i style="width:64%"></i></div><span class="bp">64%</span></div>
+            </div>
+          </section>
+        </div>
+        <aside class="rightcol">
+          <div class="card g user-card"><div class="sq">👥</div><div class="info"><div class="lbl">用户数据概览</div><div class="bar"><i style="width:72%"></i></div></div><span class="chev">▾</span></div>
+          <div class="card g stat"><div class="sq">📄</div><div class="info"><div class="pct">80.0%</div><div class="bar"><i style="width:80%"></i></div></div><span class="chev">▾</span></div>
+          <div class="card g stat"><div class="sq">📊</div><div class="info"><div class="pct">52.8%</div><div class="bar"><i style="width:52.8%"></i></div></div><span class="chev">▾</span></div>
+          <div class="card g stat"><div class="sq">🏃</div><div class="info"><div class="pct">52.8%</div><div class="bar"><i style="width:52.8%"></i></div></div><span class="chev">▾</span></div>
+          <div class="card g stat"><div class="sq">🕐</div><div class="info"><div class="pct">14.2%</div><div class="bar"><i style="width:14.2%"></i></div></div><span class="chev">▾</span></div>
+          <div class="card g todo"><h3>完整度 <a href="#">实现进度 ›</a></h3>
+            <ul><li class="y">联赛基础数据待补录</li><li class="y">部分球队阵容信息缺失</li><li class="g">球员伤病数据已同步</li><li class="g">历史交锋数据已更新</li><li class="g">实时比分通道运行正常</li></ul>
+          </div>
+        </aside>
+      </div>
+
+      <!-- 往下滚动出现的新面板 -->
+      <section class="panel-row">
+        <div class="g pad">
+          <h3>联赛积分榜 <span class="chev">▾</span></h3>
+          <div class="lb-row"><i class="rk">1</i><b>曼城</b><span class="bar"><i style="width:91%"></i></span><em>91</em></div>
+          <div class="lb-row"><i class="rk">2</i><b>阿森纳</b><span class="bar"><i style="width:89%"></i></span><em>89</em></div>
+          <div class="lb-row"><i class="rk">3</i><b>利物浦</b><span class="bar"><i style="width:82%"></i></span><em>82</em></div>
+          <div class="lb-row"><i class="rk">4</i><b>切尔西</b><span class="bar"><i style="width:75%"></i></span><em>75</em></div>
+          <div class="lb-row"><i class="rk">5</i><b>热刺</b><span class="bar"><i style="width:70%"></i></span><em>70</em></div>
+        </div>
+        <div class="g pad">
+          <h3>射手榜 <span class="chev">▾</span></h3>
+          <div class="lb-row"><i class="rk">1</i><b>哈兰德</b><span class="bar"><i style="width:90%"></i></span><em>27球</em></div>
+          <div class="lb-row"><i class="rk">2</i><b>萨拉赫</b><span class="bar"><i style="width:73%"></i></span><em>22球</em></div>
+          <div class="lb-row"><i class="rk">3</i><b>帕尔默</b><span class="bar"><i style="width:70%"></i></span><em>21球</em></div>
+          <div class="lb-row"><i class="rk">4</i><b>孙兴慜</b><span class="bar"><i style="width:60%"></i></span><em>18球</em></div>
+          <div class="lb-row"><i class="rk">5</i><b>福登</b><span class="bar"><i style="width:57%"></i></span><em>17球</em></div>
+        </div>
+      </section>
+
+      <section class="panel-row wide">
+        <div class="g pad">
+          <h3>近期比赛 <span class="chev">▾</span></h3>
+          <div class="m-row"><span class="t">曼城</span><b class="sc">2 : 1</b><span class="t r">曼联</span><i class="st end">已结束</i></div>
+          <div class="m-row"><span class="t">阿森纳</span><b class="sc">1 : 1</b><span class="t r">利物浦</span><i class="st live">进行中</i></div>
+          <div class="m-row"><span class="t">切尔西</span><b class="sc">vs</b><span class="t r">热刺</span><i class="st soon">未开始</i></div>
+          <div class="m-row"><span class="t">纽卡斯尔</span><b class="sc">3 : 0</b><span class="t r">西汉姆</span><i class="st end">已结束</i></div>
+        </div>
+        <div class="g pad">
+          <h3>AI 智能预测 <span class="chev">▾</span></h3>
+          <div class="ai-big">推荐 · 主胜<b>80.0%</b></div>
+          <div class="ai-tags"><span class="hot">主胜 80%</span><span>平局 5%</span><span>客胜 15%</span></div>
+          <div class="ai-tip">模型综合近期战绩、伤病与历史交锋，推荐「曼城让一球胜」· 置信度 A+ · 建议关注上半场进球数。</div>
+        </div>
+      </section>
+
+      <section class="panel-row single">
+        <div class="g pad">
+          <h3>热门球队关注度 <span class="chev">▾</span></h3>
+          <div class="hot-grid">
+            <div class="hot"><div class="hn">⚽ 曼城</div><div class="hp">96%</div><div class="bar"><i style="width:96%"></i></div></div>
+            <div class="hot"><div class="hn">⚽ 皇马</div><div class="hp">92%</div><div class="bar"><i style="width:92%"></i></div></div>
+            <div class="hot"><div class="hn">⚽ 巴萨</div><div class="hp">88%</div><div class="bar"><i style="width:88%"></i></div></div>
+            <div class="hot"><div class="hn">⚽ 拜仁</div><div class="hp">85%</div><div class="bar"><i style="width:85%"></i></div></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+</div>
+<script>
+const ORDER=['theme-day','theme-sunset','theme-night'],LABEL={'theme-day':'📰 晨报版','theme-sunset':'🌆 晚报版','theme-night':'🌑 午夜版'},btn=document.getElementById('themeBtn');
+function apply(c){document.body.classList.remove(...ORDER);document.body.classList.add(c);btn.textContent=LABEL[c];localStorage.setItem('fx-theme',c)}
+btn.onclick=()=>{const i=ORDER.findIndex(c=>document.body.classList.contains(c));apply(ORDER[(i+1)%ORDER.length])};
+apply(localStorage.getItem('fx-theme')||'theme-day');
+</script>
+</body></html>

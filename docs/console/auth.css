@@ -1,0 +1,410 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Football Labs · 注册 / 忘记密码 共享样式
+   ---------------------------------------------------------------------------
+   与 login.html 同一个设计家族:
+     · 令牌直接从 login.html 的 :root 抄来 (纸白 / 炭墨 / 砖橙 / 球场蓝 / 毛玻璃)
+     · 同一个右侧毛玻璃卡 (428px), 同样的 eyebrow 小字距标签 + 衬线大标题 + 橙色句点
+     · 输入框按本系列要求做成"下划线式": 透明底 + 底部 1px 线, 聚焦时线变 --warm
+     · 主按钮 --warm-deep 底 + 白字, hover 提亮
+   背景: 黄昏球场视频铺满 + 深色渐变遮罩, 视频不可用时留纯 CSS 渐变天空兜底。
+   依赖: 只依赖系统已装字体, 不发任何外部请求 (无 CDN / 无外部字体 / 无外部 JS)。
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ---- 底 ---- */
+  --paper:      #FFFFFF;
+  --paper-2:    #F1F5F9;
+  --paper-3:    #E4EBF2;
+  --ink:        #131A21;
+  --muted:      #5C6773;   /* 对 #F2F5F9 约 5.1:1 (AA) */
+
+  /* ---- 冷暖两束球场灯光 ---- */
+  --warm:       #E2552B;
+  --warm-deep:  #A82F14;   /* 按钮底: 白字 6.8:1 (AA) */
+  --warm-lite:  #CE3E1E;
+  --cool:       #3F7CA8;
+
+  /* ---- 毛玻璃 ---- */
+  --glass:      rgba(255, 255, 255, .56);
+  --glass-strong: rgba(255, 255, 255, .78);
+  --glass-line: rgba(255, 255, 255, .74);
+
+  /* ---- 玻璃的"光影": 一层细噪点 + 一道斜向光痕 ---- */
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+  --glass-grad: linear-gradient(158deg,
+    rgba(255,255,255,.56) 0%, rgba(255,255,255,.22) 58%, rgba(255,255,255,.42) 100%);
+  --streak: linear-gradient(126deg,
+    rgba(255,236,198,.60) 0%, rgba(255,238,206,.16) 21%, rgba(255,255,255,0) 44%,
+    rgba(206,230,250,.24) 76%, rgba(186,218,244,.40) 100%);
+
+  --shadow-lg: 0 34px 80px -30px rgba(14, 28, 45, .34), 0 12px 28px -16px rgba(14, 28, 45, .20);
+  --shadow-sm: 0 10px 26px -14px rgba(14, 28, 45, .26);
+
+  --r:    22px;
+  --r-sm: 14px;
+  --r-xs: 10px;
+  --hair: rgba(19, 26, 33, .12);
+
+  --serif: 'Cormorant Garamond', 'PP Editorial New', Georgia, 'Times New Roman', 'Songti SC', serif;
+  --mono:  ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Consolas, 'Courier New', monospace;
+  --sans:  -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+
+  --gate-w: 428px;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+html { background: #0B1626; }
+body {
+  background: #0B1626;
+  color: var(--ink);
+  font: 14px/1.55 var(--sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ═════════════════════ 背景: 黄昏球场视频 + 深色遮罩 ═════════════════════ */
+.bgwrap {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  /* 纯 CSS 渐变天空兜底: 视频没加载出来 / 被拦时也不留白 */
+  background:
+    radial-gradient(120% 70% at 12% 6%,  rgba(255,178,122,.30) 0%, rgba(255,178,122,0) 58%),
+    radial-gradient(120% 80% at 92% 96%, rgba(143,198,232,.26) 0%, rgba(143,198,232,0) 60%),
+    linear-gradient(180deg, #0B1626 0%, #17273B 38%, #33465A 64%, #1D2A38 100%);
+}
+.bgwrap video.bg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 50%;
+}
+/* 深色渐变遮罩: 保证右侧卡片上的白字/深字都有足够对比 */
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(rgba(9,18,31,.55), rgba(9,18,31,.75));
+}
+
+/* ═════════════════════ 布局: 右侧毛玻璃卡 ═════════════════════ */
+main {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 24px;
+  min-height: 100dvh;
+}
+
+.gate {
+  position: relative;
+  flex: 0 0 var(--gate-w);
+  width: var(--gate-w);
+  display: flex;
+  flex-direction: column;
+  padding: 40px 40px 32px;
+  border-radius: var(--r);
+  /* 磨砂: 一层细噪点(soft-light) + 一道斜向光痕 + 白到透明灰的斜向渐变, 压在内容之下 */
+  background-color: var(--glass);
+  background-image: var(--noise), var(--streak), var(--glass-grad);
+  background-size: 160px 160px, 100% 100%, 100% 100%;
+  background-repeat: repeat, no-repeat, no-repeat;
+  background-blend-mode: soft-light, normal, normal;
+  border: 1px solid var(--glass-line);
+  box-shadow: 0 34px 80px -30px rgba(14,28,45,.34), inset 0 1px 0 rgba(255,255,255,.9);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  animation: gate-in .85s cubic-bezier(.2, .75, .2, 1) both;
+}
+@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+  .gate { background: rgba(255, 255, 255, .93); }
+}
+/* 提交中: 顶部走一条暖光进度线 */
+.gate::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0;
+  height: 2px;
+  width: 0;
+  background: linear-gradient(90deg, var(--warm), #F0A05C);
+  transition: width .9s cubic-bezier(.3, .8, .2, 1);
+}
+.gate.is-entering::before { width: 100%; }
+
+.gate-inner { width: 100%; margin: auto 0; }
+.gate-inner > * { animation: rise .7s cubic-bezier(.2, .75, .2, 1) both; }
+.gate-inner > *:nth-child(1) { animation-delay: .12s; }
+.gate-inner > *:nth-child(2) { animation-delay: .18s; }
+.gate-inner > *:nth-child(3) { animation-delay: .24s; }
+.gate-inner > *:nth-child(4) { animation-delay: .30s; }
+.gate-inner > *:nth-child(5) { animation-delay: .36s; }
+.gate-inner > *:nth-child(6) { animation-delay: .42s; }
+.gate-inner > *:nth-child(7) { animation-delay: .48s; }
+/* 页内切换步骤时用: 立即进场, 不重播开场的 stagger 延迟
+   (否则 #fStep2 从 hidden 显形后会空白约 1 秒才可见) */
+.gate-inner > *.reveal {
+  animation: rise .34s cubic-bezier(.2, .75, .2, 1) both;
+  animation-delay: 0s;
+}
+
+.eyebrow {
+  margin: 0 0 14px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.gate-title {
+  margin: 0 0 10px;
+  font: 400 44px/1.06 var(--serif);
+  letter-spacing: -.01em;
+  padding-bottom: 6px;
+}
+.gate-title .accent { color: var(--warm); }
+.gate-sub {
+  margin: 0 0 24px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+/* ═════════════════════ 表单 ═════════════════════ */
+.field { display: block; margin-bottom: 15px; }
+.field-label {
+  display: block;
+  margin: 0 0 8px 1px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.field-label .opt {
+  letter-spacing: .06em;
+  text-transform: none;
+  color: rgba(92, 103, 115, .78);
+}
+.field input {
+  display: block;
+  width: 100%;
+  padding: 9px 1px;
+  border: 0;
+  border-bottom: 1px solid var(--hair);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font: 15px/1.4 var(--sans);
+  outline: none;
+  transition: border-color .22s, box-shadow .22s;
+}
+.field input::placeholder { color: #8A939C; }
+.field input:hover { border-bottom-color: rgba(19, 26, 33, .30); }
+.field input:focus,
+.field:focus-within input {
+  border-bottom-color: var(--warm);
+  box-shadow: 0 1px 0 0 var(--warm);
+}
+.field input:disabled { color: var(--muted); }
+
+.btn {
+  position: relative;
+  width: 100%;
+  margin-top: 22px;
+  padding: 15px 18px;
+  border: 0;
+  border-radius: var(--r-xs);
+  background: var(--warm-deep);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 14px 28px -14px rgba(168, 47, 20, .75), inset 0 1px 0 rgba(255, 255, 255, .28);
+  transition: box-shadow .3s, transform .12s, filter .3s, background .3s;
+}
+.btn:hover:not(:disabled) {
+  background: var(--warm-lite);
+  filter: brightness(1.06);
+  box-shadow: 0 18px 34px -14px rgba(168, 47, 20, .85), inset 0 1px 0 rgba(255, 255, 255, .3);
+}
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn:disabled { opacity: .55; cursor: default; }
+.btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 32%, rgba(255, 255, 255, .26) 50%, transparent 68%);
+  transform: translateX(-130%);
+  transition: transform .8s cubic-bezier(.3, .7, .2, 1);
+}
+.btn:hover:not(:disabled)::after { transform: translateX(130%); }
+
+/* ═════════════════════ 提示行 (按钮下方) ═════════════════════ */
+.msg {
+  min-height: 18px;
+  margin: 14px 0 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.7;
+  letter-spacing: .04em;
+  color: var(--muted);
+}
+.msg.is-err {
+  padding: 9px 12px;
+  border-radius: var(--r-xs);
+  background: rgba(226, 85, 43, .10);
+  border: 1px solid rgba(226, 85, 43, .22);
+  color: var(--warm-deep);
+}
+.msg.is-ok { color: var(--ink); }
+
+/* ═════════════════════ 链接 / 页脚小字 ═════════════════════ */
+.link {
+  appearance: none;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid rgba(19, 26, 33, .22);
+  padding: 2px 0;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color .2s, border-color .2s;
+}
+.link:hover { color: var(--warm); border-bottom-color: var(--warm); }
+.link:focus-visible { outline: 2px solid var(--warm); outline-offset: 3px; }
+
+.gate-alt {
+  margin: 22px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid rgba(19, 26, 33, .09);
+  font-size: 12px;
+  color: var(--muted);
+}
+.gate-alt .link { margin-left: 8px; }
+
+.gate-foot {
+  margin: 16px 0 0;
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.6;
+  letter-spacing: .17em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ═════════════════════ 忘记密码: 重置码 ═════════════════════ */
+.code-card {
+  margin: 4px 0 18px;
+  padding: 16px 16px 14px;
+  border-radius: var(--r-sm);
+  border: 1px dashed rgba(226, 85, 43, .45);
+  background: rgba(255, 255, 255, .66);
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+.code-card .code-lbl {
+  display: block;
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.code {
+  display: block;
+  font: 700 34px/1.1 var(--mono);
+  letter-spacing: .18em;
+  color: var(--ink);
+  text-indent: .18em;    /* 抵掉字距在末尾多出来的空白, 视觉居中 */
+}
+.code-card .code-note {
+  margin: 10px 0 0;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.code-card .copy-row { margin: 12px 0 0; }
+
+/* 表单块之间的间距 (第一步 / 第二步) */
+.step { display: block; }
+.step-actions { margin-top: 4px; }
+.relink { margin: 2px 0 0; font-size: 12px; }
+
+/* 兜底提示 (重置码不返回时) */
+.code-note {
+  margin: 0 0 16px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+/* ═════════════════════ 动效 ═════════════════════ */
+@keyframes gate-in {
+  from { opacity: 0; transform: translateX(30px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(11px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ═════════════════════ 响应式 ═════════════════════ */
+@media (max-width: 1180px) {
+  :root { --gate-w: 392px; }
+  .gate { padding: 34px 32px 28px; }
+  .gate-title { font-size: 40px; }
+}
+
+@media (max-width: 720px) {
+  main {
+    align-items: flex-start;
+    padding: 12px;
+  }
+  .gate {
+    flex: 1 1 auto;
+    width: 100%;
+    max-height: none;
+    padding: 28px 20px 24px;
+    overflow: visible;
+    animation: none;
+  }
+  .gate-title { font-size: 34px; }
+  .gate-sub { margin-bottom: 20px; }
+  .code { font-size: 28px; }
+}
+
+@media (max-width: 400px) {
+  .gate { padding: 24px 16px 20px; }
+  .gate-title { font-size: 30px; }
+  .code { font-size: 24px; letter-spacing: .12em; }
+}
+
+/* 关掉动效时: 保留构图与层次, 去掉一切位移和时间 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

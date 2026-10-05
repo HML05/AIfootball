@@ -1,0 +1,119 @@
+[
+ {
+  "key": "alias",
+  "main": "Wolves",
+  "main_id": 29,
+  "dups": [
+   {
+    "id": 182,
+    "name": "Wolverhampton",
+    "matches": 46,
+    "players": 23
+   }
+  ]
+ },
+ {
+  "key": "alias",
+  "main": "Nott'm Forest",
+  "main_id": 22,
+  "dups": [
+   {
+    "id": 241,
+    "name": "Nottingham",
+    "matches": 0,
+    "players": 25
+   }
+  ]
+ },
+ {
+  "key": "alias",
+  "main": "Brighton",
+  "main_id": 5,
+  "dups": [
+   {
+    "id": 242,
+    "name": "Brighton Hove",
+    "matches": 0,
+    "players": 30
+   }
+  ]
+ },
+ {
+  "key": "alias",
+  "main": "Bayern Munich",
+  "main_id": 60,
+  "dups": [
+   {
+    "id": 249,
+    "name": "Bayern",
+    "matches": 0,
+    "players": 30
+   }
+  ]
+ },
+ {
+  "key": "alias",
+  "main": "Hamburg",
+  "main_id": 70,
+  "dups": [
+   {
+    "id": 251,
+    "name": "Hsv",
+    "matches": 0,
+    "players": 23
+   }
+  ]
+ },
+ {
+  "key": "alias",
+  "main": "Werder Bremen",
+  "main_id": 84,
+  "dups": [
+   {
+    "id": 252,
+    "name": "Bremen",
+    "matches": 0,
+    "players": 21
+   }
+  ]
+ },
+ {
+  "key": "alias",
+  "main": "Ein Frankfurt",
+  "main_id": 65,
+  "dups": [
+   {
+    "id": 253,
+    "name": "Frankfurt",
+    "matches": 0,
+    "players": 7
+   }
+  ]
+ },
+ {
+  "key": "alias",
+  "main": "Barcelona",
+  "main_id": 34,
+  "dups": [
+   {
+    "id": 276,
+    "name": "Barca",
+    "matches": 0,
+    "players": 25
+   }
+  ]
+ },
+ {
+  "key": "alias",
+  "main": "Ath Madrid",
+  "main_id": 33,
+  "dups": [
+   {
+    "id": 294,
+    "name": "Atleti",
+    "matches": 0,
+    "players": 33
+   }
+  ]
+ }
+]

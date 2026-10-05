@@ -1,0 +1,83 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# nginx 反代示例 —— 让「网页」和「接口」同源（https://你的域名/ 与 /api/...）
+#
+# 为什么要同源：控制台页（docs/console/*.html）与前端 SPA 都按同源优先取接口；
+# 同源后不需要 CORS、不需要在页面里写死后端地址，HTTPS 下也不会有混合内容拦截。
+#
+# 用法（详见 docs/deploy.md）：
+#   sudo cp deploy/nginx.conf.example /etc/nginx/sites-available/footballai
+#   sudo nano /etc/nginx/sites-available/footballai      # 改 server_name 与证书路径
+#   sudo ln -s /etc/nginx/sites-available/footballai /etc/nginx/sites-enabled/
+#   sudo nginx -t && sudo systemctl reload nginx
+#   sudo certbot --nginx -d 你的域名                     # 自动签证书并改写本文件
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# 把 HTTP 全部跳到 HTTPS（certbot 首次签发时可以临时注释掉）
+server {
+    listen 80;
+    listen [::]:80;
+    server_name example.com www.example.com;
+
+    location /.well-known/acme-challenge/ { root /var/www/html; }
+    location / { return 301 https://$host$request_uri; }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name example.com www.example.com;
+
+    # certbot --nginx 会自动填这两行
+    ssl_certificate     /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_session_cache shared:SSL:10m;
+
+    # 站点本身不大（dist 2.3 MB + 登录页 0.75 MB），但控制台页 + 截图上传留点余量
+    client_max_body_size 20m;
+    charset utf-8;
+
+    # 静态资源缓存：Vite 产物名带内容哈希，可以长缓存
+    location /assets/ {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # WebSocket（实时比分推送 /ws/…）
+    location /ws/ {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_read_timeout 3600s;   # 长连接别被 60 秒默认值掐断
+        proxy_send_timeout 3600s;
+    }
+
+    # 其余全部交给 FastAPI（SPA、/api/*、/docs、/console/*.html 都在同一个进程里）
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;    # 首次访问要载模型，别太短
+
+        # 上游挂了给个明确提示，而不是 nginx 默认的 502 白页
+        proxy_intercept_errors off;
+    }
+
+    # gzip：文本资源省一半左右
+    gzip on;
+    gzip_comp_level 5;
+    gzip_min_length 1024;
+    gzip_types text/plain text/css application/javascript application/json
+               image/svg+xml application/xml;
+
+    access_log /var/log/nginx/footballai.access.log;
+    error_log  /var/log/nginx/footballai.error.log;
+}

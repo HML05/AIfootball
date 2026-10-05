@@ -1,0 +1,2050 @@
+{
+ "matched": {
+  "1. Koln": {
+   "club_id": "3",
+   "name": "1.FC Köln",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/3.png?lm=1656580823",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Acad. Viseu": {
+   "club_id": "7788",
+   "name": "Académico Viseu FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/7788.png?lm=1615321282",
+   "country": "Portugal",
+   "competition": "Liga Portugal 2",
+   "division": "Liga Portugal 2"
+  },
+  "Ajaccio": {
+   "club_id": "1147",
+   "name": "AC Ajaccio",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1147.png?lm=1408538965",
+   "country": "France",
+   "competition": "",
+   "division": ""
+  },
+  "Ajax": {
+   "club_id": "610",
+   "name": "Ajax Amsterdam",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/610.png?lm=1750408025",
+   "country": "Netherlands",
+   "competition": "Eredivisie",
+   "division": "Eredivisie"
+  },
+  "Alaves": {
+   "club_id": "1108",
+   "name": "Deportivo Alavés",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1108.png?lm=1596131395",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Almeria": {
+   "club_id": "3302",
+   "name": "UD Almería",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/3302.png?lm=1736335439",
+   "country": "Spain",
+   "competition": "LaLiga2",
+   "division": "LaLiga2"
+  },
+  "Alverca": {
+   "club_id": "2521",
+   "name": "FC Alverca",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/2521.png?lm=1468133408",
+   "country": "Portugal",
+   "competition": "Liga Portugal",
+   "division": "Liga Portugal"
+  },
+  "Amadora": {
+   "club_id": "2431",
+   "name": "CF Estrela Amadora",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/2431.png?lm=1743687810",
+   "country": "Portugal",
+   "competition": "Liga Portugal",
+   "division": "Liga Portugal"
+  },
+  "Angers": {
+   "club_id": "1420",
+   "name": "Angers SCO",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1420.png?lm=1687525425",
+   "country": "France",
+   "competition": "Ligue 1",
+   "division": "Ligue 1"
+  },
+  "Angers Sco": {
+   "club_id": "1420",
+   "name": "Angers SCO",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1420.png?lm=1687525425",
+   "country": "France",
+   "competition": "Ligue 1",
+   "division": "Ligue 1"
+  },
+  "Arouca": {
+   "club_id": "8024",
+   "name": "FC Arouca",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/8024.png?lm=1530096604",
+   "country": "Portugal",
+   "competition": "Liga Portugal",
+   "division": "Liga Portugal"
+  },
+  "Arsenal": {
+   "club_id": "11",
+   "name": "Arsenal FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/11.png?lm=1489787850",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Aston Villa": {
+   "club_id": "405",
+   "name": "Aston Villa",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/405.png?lm=1717155982",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Atalanta": {
+   "club_id": "11998",
+   "name": "Atalanta Primavera",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/11998.png?lm=1568219998",
+   "country": "Italy",
+   "competition": "Primavera 1",
+   "division": "Primavera 1"
+  },
+  "Ath Bilbao": {
+   "club_id": "64918",
+   "name": "Athletic Club",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/64918.png?lm=1643019591",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série B",
+   "division": "Campeonato Brasileiro Série B"
+  },
+  "Ath Madrid": {
+   "club_id": "13",
+   "name": "Atlético de Madrid",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/13.png?lm=1719915566",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Atleti": {
+   "club_id": "13",
+   "name": "Atlético de Madrid",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/13.png?lm=1719915566",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Augsburg": {
+   "club_id": "167",
+   "name": "FC Augsburg",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/167.png?lm=1656582897",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Auxerre": {
+   "club_id": "290",
+   "name": "AJ Auxerre",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/290.png?lm=1635851977",
+   "country": "France",
+   "competition": "Ligue 1",
+   "division": "Ligue 1"
+  },
+  "Avs": {
+   "club_id": "110302",
+   "name": "Avs Futebol",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/110302.png?lm=1698968034",
+   "country": "Portugal",
+   "competition": "Liga Portugal",
+   "division": "Liga Portugal"
+  },
+  "Az": {
+   "club_id": "1090",
+   "name": "AZ Alkmaar",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1090.png?lm=1586848339",
+   "country": "Netherlands",
+   "competition": "Eredivisie",
+   "division": "Eredivisie"
+  },
+  "Bahia": {
+   "club_id": "10010",
+   "name": "Esporte Clube Bahia",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/10010.png?lm=1412879423",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série A",
+   "division": "Campeonato Brasileiro Série A"
+  },
+  "Barca": {
+   "club_id": "131",
+   "name": "FC Barcelona",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/131.png?lm=1406739548",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Barcelona": {
+   "club_id": "131",
+   "name": "FC Barcelona",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/131.png?lm=1406739548",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Bayern": {
+   "club_id": "27",
+   "name": "Bayern Munich",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/27.png?lm=1729503608",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Bayern Munich": {
+   "club_id": "27",
+   "name": "Bayern Munich",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/27.png?lm=1729503608",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Bielefeld": {
+   "club_id": "10",
+   "name": "Arminia Bielefeld",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/10.png?lm=1629204733",
+   "country": "Germany",
+   "competition": "2. Bundesliga",
+   "division": "2. Bundesliga"
+  },
+  "Birmingham": {
+   "club_id": "337",
+   "name": "Birmingham City",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/337.png?lm=1672321276",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Blackburn": {
+   "club_id": "164",
+   "name": "Blackburn Rovers",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/164.png?lm=1495228542",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Bochum": {
+   "club_id": "80",
+   "name": "VfL Bochum",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/80.png?lm=1656583090",
+   "country": "Germany",
+   "competition": "2. Bundesliga",
+   "division": "2. Bundesliga"
+  },
+  "Bologna": {
+   "club_id": "14848",
+   "name": "Bologna Primavera",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/14848.png?lm=1562673007",
+   "country": "Italy",
+   "competition": "Primavera 1",
+   "division": "Primavera 1"
+  },
+  "Bolton": {
+   "club_id": "355",
+   "name": "Bolton Wanderers",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/355.png?lm=1407653952",
+   "country": "England",
+   "competition": "League One",
+   "division": "League One"
+  },
+  "Bordeaux": {
+   "club_id": "40",
+   "name": "FC Girondins Bordeaux",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/40.png?lm=1627322046",
+   "country": "France",
+   "competition": "Championnat National 2 - Groupe A",
+   "division": "Championnat National 2 - Groupe A"
+  },
+  "Botafogo": {
+   "club_id": "9030",
+   "name": "Botafogo FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/9030.png?lm=1423676900",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série B",
+   "division": "Campeonato Brasileiro Série B"
+  },
+  "Bournemouth": {
+   "club_id": "989",
+   "name": "AFC Bournemouth",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/989.png?lm=1457991811",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Braga": {
+   "club_id": "1075",
+   "name": "SC Braga",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1075.png?lm=1432893871",
+   "country": "Portugal",
+   "competition": "Liga Portugal",
+   "division": "Liga Portugal"
+  },
+  "Bragantino": {
+   "club_id": "8793",
+   "name": "Red Bull Bragantino",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/8793.png?lm=1577915313",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série A",
+   "division": "Campeonato Brasileiro Série A"
+  },
+  "Bremen": {
+   "club_id": "86",
+   "name": "SV Werder Bremen",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/86.png?lm=1403082298",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Brentford": {
+   "club_id": "1148",
+   "name": "Brentford FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1148.png?lm=1625150543",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Brest": {
+   "club_id": "3911",
+   "name": "Stade Brestois 29",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/3911.png?lm=1408780312",
+   "country": "France",
+   "competition": "Ligue 1",
+   "division": "Ligue 1"
+  },
+  "Brighton": {
+   "club_id": "1237",
+   "name": "Brighton & Hove Albion",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1237.png?lm=1492718902",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Brighton Hove": {
+   "club_id": "1237",
+   "name": "Brighton & Hove Albion",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1237.png?lm=1492718902",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Bristol City": {
+   "club_id": "698",
+   "name": "Bristol City",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/698.png?lm=1571314125",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Brugge": {
+   "club_id": "2282",
+   "name": "Club Brugge KV",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/2282.png?lm=1716279106",
+   "country": "Belgium",
+   "competition": "Jupiler Pro League",
+   "division": "Jupiler Pro League"
+  },
+  "Burnley": {
+   "club_id": "1132",
+   "name": "Burnley FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1132.png?lm=1686818840",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Cadiz": {
+   "club_id": "2687",
+   "name": "Cádiz CF",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/2687.png?lm=1683542431",
+   "country": "Spain",
+   "competition": "LaLiga2",
+   "division": "LaLiga2"
+  },
+  "Cagliari": {
+   "club_id": "1390",
+   "name": "Cagliari Calcio",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1390.png?lm=1626441409",
+   "country": "Italy",
+   "competition": "Serie A",
+   "division": "Serie A"
+  },
+  "Cambuur": {
+   "club_id": "133",
+   "name": "SC Cambuur Leeuwarden",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/133.png?lm=1692824919",
+   "country": "Netherlands",
+   "competition": "Keuken Kampioen Divisie",
+   "division": "Keuken Kampioen Divisie"
+  },
+  "Cardiff": {
+   "club_id": "603",
+   "name": "Cardiff City",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/603.png?lm=1478337063",
+   "country": "Wales",
+   "competition": "League One",
+   "division": "League One"
+  },
+  "Casa Pia": {
+   "club_id": "3268",
+   "name": "Casa Pia AC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/3268.png?lm=1742856850",
+   "country": "Portugal",
+   "competition": "Liga Portugal",
+   "division": "Liga Portugal"
+  },
+  "Ceara": {
+   "club_id": "2029",
+   "name": "Ceará Sporting Club",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/2029.png?lm=1437429449",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série A",
+   "division": "Campeonato Brasileiro Série A"
+  },
+  "Celta": {
+   "club_id": "940",
+   "name": "Celta de Vigo",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/940.png?lm=1406966406",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Chapecoense": {
+   "club_id": "17776",
+   "name": "Associação Chapecoense de Futebol",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/17776.png?lm=1677130387",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série B",
+   "division": "Campeonato Brasileiro Série B"
+  },
+  "Charlton": {
+   "club_id": "358",
+   "name": "Charlton Athletic",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/358.png?lm=1448178743",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Chelsea": {
+   "club_id": "631",
+   "name": "Chelsea FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/631.png?lm=1682435911",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Clermont": {
+   "club_id": "3524",
+   "name": "Clermont Foot 63",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/3524.png?lm=1625739356",
+   "country": "France",
+   "competition": "Ligue 2",
+   "division": "Ligue 2"
+  },
+  "Clube Do Remo": {
+   "club_id": "10997",
+   "name": "Clube do Remo (PA)",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/10997.png?lm=1683554218",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série B",
+   "division": "Campeonato Brasileiro Série B"
+  },
+  "Como": {
+   "club_id": "14694",
+   "name": "Como Primavera",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/14694.png?lm=1565704080",
+   "country": "Italy",
+   "competition": "Primavera 2 - A",
+   "division": "Primavera 2 - A"
+  },
+  "Como 1907": {
+   "club_id": "1047",
+   "name": "Como 1907",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1047.png?lm=1565704078",
+   "country": "Italy",
+   "competition": "Serie A",
+   "division": "Serie A"
+  },
+  "Corinthians": {
+   "club_id": "199",
+   "name": "Sport Club Corinthians Paulista",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/199.png?lm=1649430398",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série A",
+   "division": "Campeonato Brasileiro Série A"
+  },
+  "Coritiba": {
+   "club_id": "776",
+   "name": "Coritiba Foot Ball Club",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/776.png?lm=1412879464",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série B",
+   "division": "Campeonato Brasileiro Série B"
+  },
+  "Coventry": {
+   "club_id": "990",
+   "name": "Coventry City",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/990.png?lm=1684518179",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Cremonese": {
+   "club_id": "2239",
+   "name": "US Cremonese",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/2239.png?lm=1501770762",
+   "country": "Italy",
+   "competition": "Serie A",
+   "division": "Serie A"
+  },
+  "Cruzeiro": {
+   "club_id": "609",
+   "name": "Cruzeiro Esporte Clube",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/609.png?lm=1757639240",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série A",
+   "division": "Campeonato Brasileiro Série A"
+  },
+  "Crystal Palace": {
+   "club_id": "873",
+   "name": "Crystal Palace",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/873.png?lm=1457723287",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Darmstadt": {
+   "club_id": "105",
+   "name": "SV Darmstadt 98",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/105.png?lm=1501493517",
+   "country": "Germany",
+   "competition": "2. Bundesliga",
+   "division": "2. Bundesliga"
+  },
+  "Den Haag": {
+   "club_id": "1268",
+   "name": "ADO Den Haag",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1268.png?lm=1420455700",
+   "country": "Netherlands",
+   "competition": "Keuken Kampioen Divisie",
+   "division": "Keuken Kampioen Divisie"
+  },
+  "Derby County": {
+   "club_id": "22",
+   "name": "Derby County",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/22.png?lm=1407654006",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Dortmund": {
+   "club_id": "16",
+   "name": "Borussia Dortmund",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/16.png?lm=1396275280",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Ein Frankfurt": {
+   "club_id": "24",
+   "name": "Eintracht Frankfurt",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/24.png?lm=1700074979",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Elche": {
+   "club_id": "1531",
+   "name": "Elche CF",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1531.png?lm=1421955260",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Elversberg": {
+   "club_id": "64",
+   "name": "SV 07 Elversberg",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/64.png?lm=1658300359",
+   "country": "Germany",
+   "competition": "2. Bundesliga",
+   "division": "2. Bundesliga"
+  },
+  "Empoli": {
+   "club_id": "749",
+   "name": "FC Empoli",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/749.png?lm=1626441481",
+   "country": "Italy",
+   "competition": "Serie B",
+   "division": "Serie B"
+  },
+  "Espanol": {
+   "club_id": "714",
+   "name": "RCD Espanyol Barcelona",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/714.png?lm=1406966369",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Espanyol": {
+   "club_id": "714",
+   "name": "RCD Espanyol Barcelona",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/714.png?lm=1406966369",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Estoril Praia": {
+   "club_id": "1465",
+   "name": "GD Estoril Praia",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1465.png?lm=1534340702",
+   "country": "Portugal",
+   "competition": "Liga Portugal",
+   "division": "Liga Portugal"
+  },
+  "Everton": {
+   "club_id": "29",
+   "name": "Everton FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/29.png?lm=1445949846",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Excelsior": {
+   "club_id": "798",
+   "name": "Excelsior Rotterdam",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/798.png?lm=1626701001",
+   "country": "Netherlands",
+   "competition": "Eredivisie",
+   "division": "Eredivisie"
+  },
+  "FC Koln": {
+   "club_id": "3",
+   "name": "1.FC Köln",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/3.png?lm=1656580823",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Famalicao": {
+   "club_id": "3329",
+   "name": "FC Famalicão",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/3329.png?lm=1737563329",
+   "country": "Portugal",
+   "competition": "Liga Portugal",
+   "division": "Liga Portugal"
+  },
+  "Fenerbahce": {
+   "club_id": "36",
+   "name": "Fenerbahce",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/36.png?lm=1753429185",
+   "country": "Türkiye",
+   "competition": "Süper Lig",
+   "division": "Süper Lig"
+  },
+  "Feyenoord": {
+   "club_id": "234",
+   "name": "Feyenoord Rotterdam",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/234.png?lm=1721654567",
+   "country": "Netherlands",
+   "competition": "Eredivisie",
+   "division": "Eredivisie"
+  },
+  "Fiorentina": {
+   "club_id": "8505",
+   "name": "Fiorentina Primavera",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/8505.png?lm=1722844765",
+   "country": "Italy",
+   "competition": "Primavera 1",
+   "division": "Primavera 1"
+  },
+  "Flamengo": {
+   "club_id": "614",
+   "name": "CR Flamengo",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/614.png?lm=1551023331",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série A",
+   "division": "Campeonato Brasileiro Série A"
+  },
+  "Fluminense": {
+   "club_id": "2462",
+   "name": "Fluminense Football Club",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/2462.png?lm=1648225934",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série A",
+   "division": "Campeonato Brasileiro Série A"
+  },
+  "Fortaleza": {
+   "club_id": "10870",
+   "name": "Fortaleza Esporte Clube",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/10870.png?lm=1631541450",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série A",
+   "division": "Campeonato Brasileiro Série A"
+  },
+  "Frankfurt": {
+   "club_id": "293",
+   "name": "FSV Frankfurt",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/293.png?lm=1403095352",
+   "country": "Germany",
+   "competition": "Regionalliga Südwest",
+   "division": "Regionalliga Südwest"
+  },
+  "Freiburg": {
+   "club_id": "60",
+   "name": "SC Freiburg",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/60.png?lm=1517249279",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Frosinone": {
+   "club_id": "8970",
+   "name": "Frosinone Calcio",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/8970.png?lm=1438547543",
+   "country": "Italy",
+   "competition": "Serie B",
+   "division": "Serie B"
+  },
+  "Fulham": {
+   "club_id": "931",
+   "name": "Fulham FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/931.png?lm=1556831687",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Galatasaray": {
+   "club_id": "141",
+   "name": "Galatasaray",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/141.png?lm=1406739071",
+   "country": "Türkiye",
+   "competition": "Süper Lig",
+   "division": "Süper Lig"
+  },
+  "Genoa": {
+   "club_id": "252",
+   "name": "Genoa CFC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/252.png?lm=1655305880",
+   "country": "Italy",
+   "competition": "Serie A",
+   "division": "Serie A"
+  },
+  "Getafe": {
+   "club_id": "3709",
+   "name": "Getafe CF",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/3709.png?lm=1408655116",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Gil Vicente": {
+   "club_id": "2424",
+   "name": "Gil Vicente FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/2424.png?lm=1624283300",
+   "country": "Portugal",
+   "competition": "Liga Portugal",
+   "division": "Liga Portugal"
+  },
+  "Girona": {
+   "club_id": "12321",
+   "name": "Girona FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/12321.png?lm=1730455718",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Go Ahead": {
+   "club_id": "1435",
+   "name": "Go Ahead Eagles",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1435.png?lm=1540316767",
+   "country": "Netherlands",
+   "competition": "Eredivisie",
+   "division": "Eredivisie"
+  },
+  "Granada": {
+   "club_id": "16795",
+   "name": "Granada CF",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/16795.png?lm=1724157697",
+   "country": "Spain",
+   "competition": "LaLiga2",
+   "division": "LaLiga2"
+  },
+  "Gremio": {
+   "club_id": "37474",
+   "name": "Grêmio Novorizontino",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/37474.png?lm=1420383136",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série B",
+   "division": "Campeonato Brasileiro Série B"
+  },
+  "Greuther Furth": {
+   "club_id": "65",
+   "name": "SpVgg Greuther Fürth",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/65.png?lm=1503682935",
+   "country": "Germany",
+   "competition": "2. Bundesliga",
+   "division": "2. Bundesliga"
+  },
+  "Groningen": {
+   "club_id": "202",
+   "name": "FC Groningen",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/202.png?lm=1657052745",
+   "country": "Netherlands",
+   "competition": "Eredivisie",
+   "division": "Eredivisie"
+  },
+  "Hamburg": {
+   "club_id": "41",
+   "name": "Hamburger SV",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/41.png?lm=1597319274",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Heerenveen": {
+   "club_id": "306",
+   "name": "SC Heerenveen",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/306.png?lm=1655978084",
+   "country": "Netherlands",
+   "competition": "Eredivisie",
+   "division": "Eredivisie"
+  },
+  "Heidenheim": {
+   "club_id": "2036",
+   "name": "1.FC Heidenheim 1846",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/2036.png?lm=1685457789",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Heracles": {
+   "club_id": "1304",
+   "name": "Heracles Almelo",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1304.png?lm=1488213735",
+   "country": "Netherlands",
+   "competition": "Eredivisie",
+   "division": "Eredivisie"
+  },
+  "Hertha": {
+   "club_id": "44",
+   "name": "Hertha BSC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/44.png?lm=1656580875",
+   "country": "Germany",
+   "competition": "2. Bundesliga",
+   "division": "2. Bundesliga"
+  },
+  "Hoffenheim": {
+   "club_id": "533",
+   "name": "TSG 1899 Hoffenheim",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/533.png?lm=1675591766",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Holstein Kiel": {
+   "club_id": "269",
+   "name": "Holstein Kiel",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/269.png?lm=1740400529",
+   "country": "Germany",
+   "competition": "2. Bundesliga",
+   "division": "2. Bundesliga"
+  },
+  "Hsv": {
+   "club_id": "41",
+   "name": "Hamburger SV",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/41.png?lm=1597319274",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Hull": {
+   "club_id": "3008",
+   "name": "Hull City",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/3008.png?lm=1562662491",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Inter": {
+   "club_id": "67212",
+   "name": "CF Intercity",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/67212.png?lm=1672773673",
+   "country": "Spain",
+   "competition": "Segunda Federación - Grupo V",
+   "division": "Segunda Federación - Grupo V"
+  },
+  "Internacional": {
+   "club_id": "6600",
+   "name": "Sport Club Internacional",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/6600.png?lm=1644878605",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série A",
+   "division": "Campeonato Brasileiro Série A"
+  },
+  "Ipswich": {
+   "club_id": "677",
+   "name": "Ipswich Town",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/677.png?lm=1407655249",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Juventude": {
+   "club_id": "10492",
+   "name": "Esporte Clube Juventude",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/10492.png?lm=1416046262",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série A",
+   "division": "Campeonato Brasileiro Série A"
+  },
+  "Juventus": {
+   "club_id": "506",
+   "name": "Juventus FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/506.png?lm=1626441487",
+   "country": "Italy",
+   "competition": "Serie A",
+   "division": "Serie A"
+  },
+  "Kbenhavn": {
+   "club_id": "190",
+   "name": "FC Copenhagen",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/190.png?lm=1722282896",
+   "country": "Denmark",
+   "competition": "Superliga",
+   "division": "Superliga"
+  },
+  "La Coruna": {
+   "club_id": "897",
+   "name": "Deportivo de La Coruña",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/897.png?lm=1563373966",
+   "country": "Spain",
+   "competition": "LaLiga2",
+   "division": "LaLiga2"
+  },
+  "Las Palmas": {
+   "club_id": "472",
+   "name": "UD Las Palmas",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/472.png?lm=1407484865",
+   "country": "Spain",
+   "competition": "LaLiga2",
+   "division": "LaLiga2"
+  },
+  "Lask": {
+   "club_id": "413",
+   "name": "LASK",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/413.png?lm=1683630300",
+   "country": "Austria",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Lazio": {
+   "club_id": "398",
+   "name": "SS Lazio",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/398.png?lm=1601537785",
+   "country": "Italy",
+   "competition": "Serie A",
+   "division": "Serie A"
+  },
+  "Le Havre": {
+   "club_id": "738",
+   "name": "Le Havre AC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/738.png?lm=1408780648",
+   "country": "France",
+   "competition": "Ligue 1",
+   "division": "Ligue 1"
+  },
+  "Le Mans": {
+   "club_id": "1164",
+   "name": "Le Mans FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1164.png?lm=1459583517",
+   "country": "France",
+   "competition": "Ligue 2",
+   "division": "Ligue 2"
+  },
+  "Lecce": {
+   "club_id": "1005",
+   "name": "US Lecce",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1005.png?lm=1689169528",
+   "country": "Italy",
+   "competition": "Serie A",
+   "division": "Serie A"
+  },
+  "Leeds": {
+   "club_id": "399",
+   "name": "Leeds United",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/399.png?lm=1645652224",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Leganes": {
+   "club_id": "1244",
+   "name": "CD Leganés",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1244.png?lm=1422972468",
+   "country": "Spain",
+   "competition": "LaLiga2",
+   "division": "LaLiga2"
+  },
+  "Leicester": {
+   "club_id": "1003",
+   "name": "Leicester City",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1003.png?lm=1472229265",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Lens": {
+   "club_id": "826",
+   "name": "RC Lens",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/826.png?lm=1595457059",
+   "country": "France",
+   "competition": "Ligue 1",
+   "division": "Ligue 1"
+  },
+  "Levante": {
+   "club_id": "3368",
+   "name": "Levante UD",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/3368.png?lm=1408655062",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Leverkusen": {
+   "club_id": "15",
+   "name": "Bayer 04 Leverkusen",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/15.png?lm=1710156317",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Lille": {
+   "club_id": "1082",
+   "name": "LOSC Lille",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1082.png?lm=1529521041",
+   "country": "France",
+   "competition": "Ligue 1",
+   "division": "Ligue 1"
+  },
+  "Lincoln City": {
+   "club_id": "1198",
+   "name": "Lincoln City",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1198.png?lm=1734285411",
+   "country": "England",
+   "competition": "League One",
+   "division": "League One"
+  },
+  "Liverpool": {
+   "club_id": "31",
+   "name": "Liverpool FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/31.png?lm=1727873452",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Lorient": {
+   "club_id": "1158",
+   "name": "FC Lorient",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1158.png?lm=1406642498",
+   "country": "France",
+   "competition": "Ligue 1",
+   "division": "Ligue 1"
+  },
+  "Luton": {
+   "club_id": "1031",
+   "name": "Luton Town",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1031.png?lm=1457723228",
+   "country": "England",
+   "competition": "League One",
+   "division": "League One"
+  },
+  "Lyon": {
+   "club_id": "17768",
+   "name": "Lyon - La Duchère",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/17768.png?lm=1624282751",
+   "country": "France",
+   "competition": "Championnat National 3 - Groupe H",
+   "division": "Championnat National 3 - Groupe H"
+  },
+  "M'gladbach": {
+   "club_id": "18",
+   "name": "Borussia Mönchengladbach",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/18.png?lm=1656585796",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Mainz": {
+   "club_id": "39",
+   "name": "1.FSV Mainz 05",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/39.png?lm=1564748880",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Malaga": {
+   "club_id": "1084",
+   "name": "Málaga CF",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1084.png?lm=1749674822",
+   "country": "Spain",
+   "competition": "LaLiga2",
+   "division": "LaLiga2"
+  },
+  "Mallorca": {
+   "club_id": "237",
+   "name": "RCD Mallorca",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/237.png?lm=1407484750",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Man City": {
+   "club_id": "281",
+   "name": "Manchester City",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/281.png?lm=1467356331",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Man United": {
+   "club_id": "985",
+   "name": "Manchester United",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/985.png?lm=1457975903",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Maritimo": {
+   "club_id": "1301",
+   "name": "CS Marítimo",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1301.png?lm=1656600130",
+   "country": "Portugal",
+   "competition": "Liga Portugal 2",
+   "division": "Liga Portugal 2"
+  },
+  "Marseille": {
+   "club_id": "26119",
+   "name": "Athlético Marseille (-2022)",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/26119.png?lm=1548608840",
+   "country": "France",
+   "competition": "",
+   "division": ""
+  },
+  "Metz": {
+   "club_id": "347",
+   "name": "FC Metz",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/347.png?lm=1625391843",
+   "country": "France",
+   "competition": "Ligue 1",
+   "division": "Ligue 1"
+  },
+  "Middlesbrough": {
+   "club_id": "641",
+   "name": "Middlesbrough FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/641.png?lm=1697546042",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Milan": {
+   "club_id": "5",
+   "name": "AC Milan",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/5.png?lm=1605166627",
+   "country": "Italy",
+   "competition": "Serie A",
+   "division": "Serie A"
+  },
+  "Millwall": {
+   "club_id": "1028",
+   "name": "Millwall FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1028.png?lm=1564722431",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Mineiro": {
+   "club_id": "330",
+   "name": "Clube Atlético Mineiro",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/330.png?lm=1411033853",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série A",
+   "division": "Campeonato Brasileiro Série A"
+  },
+  "Mirassol": {
+   "club_id": "3876",
+   "name": "Mirassol Futebol Clube (SP)",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/3876.png?lm=1585083395",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série A",
+   "division": "Campeonato Brasileiro Série A"
+  },
+  "Monaco": {
+   "club_id": "162",
+   "name": "AS Monaco",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/162.png?lm=1654781919",
+   "country": "Monaco",
+   "competition": "Ligue 1",
+   "division": "Ligue 1"
+  },
+  "Montpellier": {
+   "club_id": "969",
+   "name": "Montpellier HSC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/969.png?lm=1748640687",
+   "country": "France",
+   "competition": "Ligue 2",
+   "division": "Ligue 2"
+  },
+  "Monza": {
+   "club_id": "2919",
+   "name": "AC Monza",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/2919.png?lm=1562072734",
+   "country": "Italy",
+   "competition": "Serie B",
+   "division": "Serie B"
+  },
+  "Moreirense": {
+   "club_id": "979",
+   "name": "Moreirense FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/979.png?lm=1552324606",
+   "country": "Portugal",
+   "competition": "Liga Portugal",
+   "division": "Liga Portugal"
+  },
+  "Nacional": {
+   "club_id": "982",
+   "name": "CD Nacional",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/982.png?lm=1549988602",
+   "country": "Portugal",
+   "competition": "Liga Portugal",
+   "division": "Liga Portugal"
+  },
+  "Nantes": {
+   "club_id": "995",
+   "name": "FC Nantes",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/995.png?lm=1581355747",
+   "country": "France",
+   "competition": "Ligue 1",
+   "division": "Ligue 1"
+  },
+  "Napoli": {
+   "club_id": "6195",
+   "name": "SSC Napoli",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/6195.png?lm=1753167643",
+   "country": "Italy",
+   "competition": "Serie A",
+   "division": "Serie A"
+  },
+  "Nec": {
+   "club_id": "467",
+   "name": "NEC Nijmegen",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/467.png?lm=1460302949",
+   "country": "Netherlands",
+   "competition": "Eredivisie",
+   "division": "Eredivisie"
+  },
+  "Newcastle": {
+   "club_id": "762",
+   "name": "Newcastle United",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/762.png?lm=1472921161",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Nice": {
+   "club_id": "417",
+   "name": "OGC Nice",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/417.png?lm=1408779490",
+   "country": "France",
+   "competition": "Ligue 1",
+   "division": "Ligue 1"
+  },
+  "Norwich": {
+   "club_id": "1123",
+   "name": "Norwich City",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1123.png?lm=1655469640",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Nott'm Forest": {
+   "club_id": "703",
+   "name": "Nottingham Forest",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/703.png?lm=1598890289",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Nottingham": {
+   "club_id": "703",
+   "name": "Nottingham Forest",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/703.png?lm=1598890289",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Olympiakos": {
+   "club_id": "683",
+   "name": "Olympiacos Piraeus",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/683.png?lm=1717764764",
+   "country": "Greece",
+   "competition": "Super League 1",
+   "division": "Super League 1"
+  },
+  "Olympique Lyon": {
+   "club_id": "1041",
+   "name": "Olympique Lyon",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1041.png?lm=1656668172",
+   "country": "France",
+   "competition": "Ligue 1",
+   "division": "Ligue 1"
+  },
+  "Osasuna": {
+   "club_id": "8516",
+   "name": "CA Osasuna Promesas",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/8516.png?lm=1686070938",
+   "country": "Spain",
+   "competition": "Primera Federación - Grupo I",
+   "division": "Primera Federación - Grupo I"
+  },
+  "Oviedo": {
+   "club_id": "2497",
+   "name": "Real Oviedo",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/2497.png?lm=1417193316",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Oxford United": {
+   "club_id": "988",
+   "name": "Oxford United",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/988.png?lm=1522938199",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Paderborn": {
+   "club_id": "127",
+   "name": "SC Paderborn 07",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/127.png?lm=1532010365",
+   "country": "Germany",
+   "competition": "2. Bundesliga",
+   "division": "2. Bundesliga"
+  },
+  "Pae Aek": {
+   "club_id": "2441",
+   "name": "AEK Athens",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/2441.png?lm=1730987042",
+   "country": "Greece",
+   "competition": "Super League 1",
+   "division": "Super League 1"
+  },
+  "Palmeiras": {
+   "club_id": "1023",
+   "name": "Sociedade Esportiva Palmeiras",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1023.png?lm=1411204983",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série A",
+   "division": "Campeonato Brasileiro Série A"
+  },
+  "Paranaense": {
+   "club_id": "679",
+   "name": "Club Athletico Paranaense",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/679.png?lm=1548711363",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série B",
+   "division": "Campeonato Brasileiro Série B"
+  },
+  "Paris FC": {
+   "club_id": "10004",
+   "name": "Paris FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/10004.png?lm=1411995262",
+   "country": "France",
+   "competition": "Ligue 1",
+   "division": "Ligue 1"
+  },
+  "Paris SG": {
+   "club_id": "62382",
+   "name": "Paris 13 Atletico",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/62382.png?lm=1593006334",
+   "country": "France",
+   "competition": "Championnat National",
+   "division": "Championnat National"
+  },
+  "Parma": {
+   "club_id": "5243",
+   "name": "Parma Primavera",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/5243.png?lm=1530945992",
+   "country": "Italy",
+   "competition": "Primavera 1",
+   "division": "Primavera 1"
+  },
+  "Pisa": {
+   "club_id": "4172",
+   "name": "Pisa Sporting Club",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/4172.png?lm=1693294828",
+   "country": "Italy",
+   "competition": "Serie A",
+   "division": "Serie A"
+  },
+  "Porto": {
+   "club_id": "720",
+   "name": "FC Porto",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/720.png?lm=1486310161",
+   "country": "Portugal",
+   "competition": "Liga Portugal",
+   "division": "Liga Portugal"
+  },
+  "Portsmouth": {
+   "club_id": "1020",
+   "name": "Portsmouth FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1020.png?lm=1565282045",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Preston Ne": {
+   "club_id": "466",
+   "name": "Preston North End",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/466.png?lm=1414769167",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Psg": {
+   "club_id": "583",
+   "name": "Paris Saint-Germain",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/583.png?lm=1728026461",
+   "country": "France",
+   "competition": "Ligue 1",
+   "division": "Ligue 1"
+  },
+  "Psv": {
+   "club_id": "383",
+   "name": "PSV Eindhoven",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/383.png?lm=1682925949",
+   "country": "Netherlands",
+   "competition": "Eredivisie",
+   "division": "Eredivisie"
+  },
+  "Qpr": {
+   "club_id": "1039",
+   "name": "Queens Park Rangers",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1039.png?lm=1464680692",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "RB Leipzig": {
+   "club_id": "23826",
+   "name": "RB Leipzig",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/23826.png?lm=1619431624",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Rayo Vallecano": {
+   "club_id": "367",
+   "name": "Rayo Vallecano",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/367.png?lm=1653488445",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Real Betis": {
+   "club_id": "150",
+   "name": "Real Betis Balompié",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/150.png?lm=1663358526",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Real Madrid": {
+   "club_id": "418",
+   "name": "Real Madrid",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/418.png?lm=1729684474",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Real Sociedad": {
+   "club_id": "681",
+   "name": "Real Sociedad",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/681.png?lm=1614795530",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Recife": {
+   "club_id": "8718",
+   "name": "Sport Club do Recife",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/8718.png?lm=1708623979",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série A",
+   "division": "Campeonato Brasileiro Série A"
+  },
+  "Reims": {
+   "club_id": "1421",
+   "name": "Stade Reims",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1421.png?lm=1592601839",
+   "country": "France",
+   "competition": "Ligue 2",
+   "division": "Ligue 2"
+  },
+  "Rennes": {
+   "club_id": "273",
+   "name": "Stade Rennais FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/273.png?lm=1691503972",
+   "country": "France",
+   "competition": "Ligue 1",
+   "division": "Ligue 1"
+  },
+  "Rio Ave": {
+   "club_id": "2425",
+   "name": "Rio Ave FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/2425.png?lm=1516613968",
+   "country": "Portugal",
+   "competition": "Liga Portugal",
+   "division": "Liga Portugal"
+  },
+  "Roma": {
+   "club_id": "12",
+   "name": "AS Roma",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/12.png?lm=1751979202",
+   "country": "Italy",
+   "competition": "Serie A",
+   "division": "Serie A"
+  },
+  "Saint-Etienne": {
+   "club_id": "618",
+   "name": "AS Saint-Étienne",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/618.png?lm=1658260152",
+   "country": "France",
+   "competition": "Ligue 2",
+   "division": "Ligue 2"
+  },
+  "Salernitana": {
+   "club_id": "380",
+   "name": "US Salernitana 1919",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/380.png?lm=1601390035",
+   "country": "Italy",
+   "competition": "Serie C - Girone C",
+   "division": "Serie C - Girone C"
+  },
+  "Sampdoria": {
+   "club_id": "12001",
+   "name": "Sampdoria Primavera",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/12001.png?lm=1520934353",
+   "country": "Italy",
+   "competition": "Primavera 2 - A",
+   "division": "Primavera 2 - A"
+  },
+  "Santa Clara": {
+   "club_id": "2423",
+   "name": "CD Santa Clara",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/2423.png?lm=1718909294",
+   "country": "Portugal",
+   "competition": "Liga Portugal",
+   "division": "Liga Portugal"
+  },
+  "Santander": {
+   "club_id": "630",
+   "name": "Racing Santander",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/630.png?lm=1407484479",
+   "country": "Spain",
+   "competition": "LaLiga2",
+   "division": "LaLiga2"
+  },
+  "Santos": {
+   "club_id": "221",
+   "name": "Santos FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/221.png?lm=1412879099",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série A",
+   "division": "Campeonato Brasileiro Série A"
+  },
+  "Sao Paulo": {
+   "club_id": "585",
+   "name": "São Paulo Futebol Clube",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/585.png?lm=1409133922",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série A",
+   "division": "Campeonato Brasileiro Série A"
+  },
+  "Sassuolo": {
+   "club_id": "6574",
+   "name": "US Sassuolo",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/6574.png?lm=1755894334",
+   "country": "Italy",
+   "competition": "Serie A",
+   "division": "Serie A"
+  },
+  "Schalke": {
+   "club_id": "33",
+   "name": "FC Schalke 04",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/33.png?lm=1656580846",
+   "country": "Germany",
+   "competition": "2. Bundesliga",
+   "division": "2. Bundesliga"
+  },
+  "Schalke 04": {
+   "club_id": "33",
+   "name": "FC Schalke 04",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/33.png?lm=1656580846",
+   "country": "Germany",
+   "competition": "2. Bundesliga",
+   "division": "2. Bundesliga"
+  },
+  "Sevilla": {
+   "club_id": "368",
+   "name": "Sevilla FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/368.png?lm=1730896593",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Shaktar": {
+   "club_id": "660",
+   "name": "Shakhtar Donetsk",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/660.png?lm=1396275305",
+   "country": "Ukraine",
+   "competition": "Premier Liga",
+   "division": "Premier Liga"
+  },
+  "Sheffield United": {
+   "club_id": "350",
+   "name": "Sheffield United",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/350.png?lm=1409254138",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Sheffield Utd": {
+   "club_id": "350",
+   "name": "Sheffield United",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/350.png?lm=1409254138",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Sheffield Wed": {
+   "club_id": "1035",
+   "name": "Sheffield Wednesday",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1035.png?lm=1643214896",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Sittard": {
+   "club_id": "385",
+   "name": "Fortuna Sittard",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/385.png?lm=1610789891",
+   "country": "Netherlands",
+   "competition": "Eredivisie",
+   "division": "Eredivisie"
+  },
+  "Sl Benfica": {
+   "club_id": "294",
+   "name": "SL Benfica",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/294.png?lm=1535908439",
+   "country": "Portugal",
+   "competition": "Liga Portugal",
+   "division": "Liga Portugal"
+  },
+  "Sl. Bratislava": {
+   "club_id": "540",
+   "name": "Slovan Bratislava",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/540.png?lm=1415023119",
+   "country": "Slovakia",
+   "competition": "Niké Liga",
+   "division": "Niké Liga"
+  },
+  "Slavia Praha": {
+   "club_id": "62",
+   "name": "SK Slavia Prague",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/62.png?lm=1659955223",
+   "country": "Czech Republic",
+   "competition": "Chance Liga",
+   "division": "Chance Liga"
+  },
+  "Sociedad": {
+   "club_id": "681",
+   "name": "Real Sociedad",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/681.png?lm=1614795530",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Southampton": {
+   "club_id": "180",
+   "name": "Southampton FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/180.png?lm=1444560086",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Sparta": {
+   "club_id": "468",
+   "name": "Sparta Rotterdam",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/468.png?lm=1485262132",
+   "country": "Netherlands",
+   "competition": "Eredivisie",
+   "division": "Eredivisie"
+  },
+  "Spezia": {
+   "club_id": "3522",
+   "name": "Spezia Calcio",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/3522.png?lm=1751366796",
+   "country": "Italy",
+   "competition": "Serie B",
+   "division": "Serie B"
+  },
+  "Sporting Cp": {
+   "club_id": "336",
+   "name": "Sporting CP",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/336.png?lm=1621513752",
+   "country": "Portugal",
+   "competition": "Liga Portugal",
+   "division": "Liga Portugal"
+  },
+  "St Etienne": {
+   "club_id": "618",
+   "name": "AS Saint-Étienne",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/618.png?lm=1658260152",
+   "country": "France",
+   "competition": "Ligue 2",
+   "division": "Ligue 2"
+  },
+  "St Pauli": {
+   "club_id": "35",
+   "name": "FC St. Pauli",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/35.png?lm=1521036360",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Stoke": {
+   "club_id": "512",
+   "name": "Stoke City",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/512.png?lm=1472243727",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Strasbourg": {
+   "club_id": "667",
+   "name": "RC Strasbourg Alsace",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/667.png?lm=1664991833",
+   "country": "France",
+   "competition": "Ligue 1",
+   "division": "Ligue 1"
+  },
+  "Stuttgart": {
+   "club_id": "79",
+   "name": "VfB Stuttgart",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/79.png?lm=1680587427",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Sunderland": {
+   "club_id": "289",
+   "name": "Sunderland AFC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/289.png?lm=1485645633",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Swansea": {
+   "club_id": "2288",
+   "name": "Swansea City",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/2288.png?lm=1752825825",
+   "country": "Wales",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Telstar": {
+   "club_id": "1434",
+   "name": "SC Telstar",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1434.png?lm=1407649844",
+   "country": "Netherlands",
+   "competition": "Eredivisie",
+   "division": "Eredivisie"
+  },
+  "Tondela": {
+   "club_id": "7179",
+   "name": "CD Tondela",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/7179.png?lm=1506427804",
+   "country": "Portugal",
+   "competition": "Liga Portugal",
+   "division": "Liga Portugal"
+  },
+  "Torino": {
+   "club_id": "416",
+   "name": "Torino FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/416.png?lm=1438548174",
+   "country": "Italy",
+   "competition": "Serie A",
+   "division": "Serie A"
+  },
+  "Tottenham": {
+   "club_id": "148",
+   "name": "Tottenham Hotspur",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/148.png?lm=1732011953",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Toulouse": {
+   "club_id": "415",
+   "name": "FC Toulouse",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/415.png?lm=1740065124",
+   "country": "France",
+   "competition": "Ligue 1",
+   "division": "Ligue 1"
+  },
+  "Troyes": {
+   "club_id": "1095",
+   "name": "ESTAC Troyes",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1095.png?lm=1599945497",
+   "country": "France",
+   "competition": "Ligue 2",
+   "division": "Ligue 2"
+  },
+  "Twente": {
+   "club_id": "317",
+   "name": "Twente Enschede FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/317.png?lm=1610789581",
+   "country": "Netherlands",
+   "competition": "Eredivisie",
+   "division": "Eredivisie"
+  },
+  "Udinese": {
+   "club_id": "410",
+   "name": "Udinese Calcio",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/410.png?lm=1688982584",
+   "country": "Italy",
+   "competition": "Serie A",
+   "division": "Serie A"
+  },
+  "Union Berlin": {
+   "club_id": "89",
+   "name": "1.FC Union Berlin",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/89.png?lm=1402956210",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Union Sg": {
+   "club_id": "77059",
+   "name": "Union Omaha",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/77059.png?lm=1570182683",
+   "country": "United States",
+   "competition": "USL League One",
+   "division": "USL League One"
+  },
+  "Utrecht": {
+   "club_id": "200",
+   "name": "FC Utrecht",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/200.png?lm=1628450351",
+   "country": "Netherlands",
+   "competition": "Eredivisie",
+   "division": "Eredivisie"
+  },
+  "Valencia": {
+   "club_id": "1049",
+   "name": "Valencia CF",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1049.png?lm=1406966320",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Valladolid": {
+   "club_id": "366",
+   "name": "Real Valladolid CF",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/366.png?lm=1720163563",
+   "country": "Spain",
+   "competition": "LaLiga2",
+   "division": "LaLiga2"
+  },
+  "Vallecano": {
+   "club_id": "367",
+   "name": "Rayo Vallecano",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/367.png?lm=1653488445",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Vasco Da Gama": {
+   "club_id": "978",
+   "name": "Clube de Regatas Vasco da Gama",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/978.png?lm=1651168164",
+   "country": "Brazil",
+   "competition": "Campeonato Brasileiro Série A",
+   "division": "Campeonato Brasileiro Série A"
+  },
+  "Venezia": {
+   "club_id": "607",
+   "name": "Venezia FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/607.png?lm=1657392944",
+   "country": "Italy",
+   "competition": "Serie B",
+   "division": "Serie B"
+  },
+  "Verona": {
+   "club_id": "862",
+   "name": "Chievo Verona",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/862.png?lm=1730983190",
+   "country": "Italy",
+   "competition": "Serie D - Girone B",
+   "division": "Serie D - Girone B"
+  },
+  "Viking": {
+   "club_id": "239",
+   "name": "Viking FK",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/239.png?lm=1615368654",
+   "country": "Norway",
+   "competition": "Eliteserien",
+   "division": "Eliteserien"
+  },
+  "Villarreal": {
+   "club_id": "1050",
+   "name": "Villarreal CF",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1050.png?lm=1408655310",
+   "country": "Spain",
+   "competition": "LaLiga",
+   "division": "LaLiga"
+  },
+  "Vitoria": {
+   "club_id": "2420",
+   "name": "Vitória Guimarães SC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/2420.png?lm=1432894021",
+   "country": "Portugal",
+   "competition": "Liga Portugal",
+   "division": "Liga Portugal"
+  },
+  "Volendam": {
+   "club_id": "724",
+   "name": "FC Volendam",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/724.png?lm=1407649576",
+   "country": "Netherlands",
+   "competition": "Eredivisie",
+   "division": "Eredivisie"
+  },
+  "Watford": {
+   "club_id": "1010",
+   "name": "Watford FC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1010.png?lm=1468103673",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Werder Bremen": {
+   "club_id": "86",
+   "name": "SV Werder Bremen",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/86.png?lm=1403082298",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "West Brom": {
+   "club_id": "984",
+   "name": "West Bromwich Albion",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/984.png?lm=1457991758",
+   "country": "England",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "West Ham": {
+   "club_id": "379",
+   "name": "West Ham United",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/379.png?lm=1464675260",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Willem Ii": {
+   "club_id": "403",
+   "name": "Willem II Tilburg",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/403.png?lm=1686931031",
+   "country": "Netherlands",
+   "competition": "Keuken Kampioen Divisie",
+   "division": "Keuken Kampioen Divisie"
+  },
+  "Wolfsburg": {
+   "club_id": "82",
+   "name": "VfL Wolfsburg",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/82.png?lm=1503060755",
+   "country": "Germany",
+   "competition": "Bundesliga",
+   "division": "Bundesliga"
+  },
+  "Wolverhampton": {
+   "club_id": "543",
+   "name": "Wolverhampton Wanderers",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/543.png?lm=1467496784",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Wolves": {
+   "club_id": "543",
+   "name": "Wolverhampton Wanderers",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/543.png?lm=1467496784",
+   "country": "England",
+   "competition": "Premier League",
+   "division": "Premier League"
+  },
+  "Wrexham": {
+   "club_id": "1112",
+   "name": "Wrexham AFC",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1112.png?lm=1704797430",
+   "country": "Wales",
+   "competition": "Championship",
+   "division": "Championship"
+  },
+  "Zwolle": {
+   "club_id": "1269",
+   "name": "PEC Zwolle",
+   "logo": "https://tmssl.akamaized.net//images/wappen/head/1269.png?lm=1610790473",
+   "country": "Netherlands",
+   "competition": "Eredivisie",
+   "division": "Eredivisie"
+  }
+ },
+ "unmatched": [
+  {
+   "name": "Betis",
+   "cands": []
+  },
+  {
+   "name": "Qarabag Agdam",
+   "cands": []
+  },
+  {
+   "name": "Bod/Glimt",
+   "cands": []
+  },
+  {
+   "name": "Paphos",
+   "cands": []
+  },
+  {
+   "name": "Fk Kairat",
+   "cands": []
+  },
+  {
+   "name": "Sabah Fk",
+   "cands": []
+  },
+  {
+   "name": "",
+   "cands": []
+  }
+ ]
+}

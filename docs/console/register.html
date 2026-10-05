@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light" />
+<title>Football Labs · 注册</title>
+<!--
+  Football Labs · Sign up — 与 login.html 同一家族的右侧毛玻璃卡
+  ────────────────────────────────────────────────────────────────
+  · 纯静态自包含页面: 只依赖同目录 auth.css, 不发任何外部请求。
+  · 接口: 直连后端 /api/auth/register (与 login.html 同一套契约)。
+  · 成功后写入 localStorage['fauth'] = {token, user}, 再按 ?next= 跳转。
+  · 样式全部在 auth.css 里, 本页不含 <style>。
+-->
+<link rel="stylesheet" href="auth.css" />
+</head>
+<body>
+
+<!-- ═══════════════════ 背景: 黄昏球场视频 + 深色遮罩 (CSS 渐变兜底) ═══════════════════ -->
+<div class="bgwrap" aria-hidden="true">
+  <video class="bg" autoplay muted loop playsinline preload="auto" disablepictureinpicture>
+    <source src="assets/dusk.mp4" type="video/mp4" />
+  </video>
+</div>
+<div class="veil" aria-hidden="true"></div>
+
+<main>
+  <aside class="gate" id="gate" aria-label="注册">
+    <div class="gate-inner">
+      <p class="eyebrow">MATCHDAY ACCESS</p>
+      <h2 class="gate-title">Sign up<span class="accent">.</span></h2>
+      <p class="gate-sub">创建账号后即可进入足球数据分析系统</p>
+
+      <form class="step" id="form" novalidate>
+        <label class="field" for="rUser">
+          <span class="field-label">ACCOUNT · 账号</span>
+          <input id="rUser" name="username" type="text" autocomplete="username"
+                 spellcheck="false" placeholder="3~20 位，字母开头" />
+        </label>
+        <label class="field" for="rName">
+          <span class="field-label">DISPLAY NAME · 显示名 <span class="opt">(可选)</span></span>
+          <input id="rName" name="display_name" type="text" autocomplete="nickname"
+                 placeholder="留空则用账号显示" />
+        </label>
+        <label class="field" for="rPhone">
+          <span class="field-label">PHONE · 手机号 <span class="opt">(可选)</span></span>
+          <input id="rPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel"
+                 placeholder="仅用于找回密码" />
+        </label>
+        <label class="field" for="rPwd">
+          <span class="field-label">PASSWORD · 密码</span>
+          <input id="rPwd" name="password" type="password" autocomplete="new-password"
+                 placeholder="至少 6 位" />
+        </label>
+        <label class="field" for="rPwd2">
+          <span class="field-label">CONFIRM · 确认密码</span>
+          <input id="rPwd2" name="password2" type="password" autocomplete="new-password"
+                 placeholder="再输一次" />
+        </label>
+
+        <button class="btn" id="rSubmit" type="submit">Create · 注册</button>
+      </form>
+
+      <p class="msg" id="rMsg" role="status" aria-live="polite"></p>
+
+      <p class="gate-alt">
+        已有账号？<a class="link" id="rBack" href="login.html">返回登录 · Back</a>
+      </p>
+
+      <p class="gate-foot">Football Labs · Access Control</p>
+    </div>
+  </aside>
+</main>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   注册: 前端先自校验(规则与后端一致), 通过后 POST /api/auth/register
+   ───────────────────────────────────────────────────────────────────────────
+   · 后端契约: {username, password, display_name, phone} -> {ok, token, user, expires_at}
+   · 失败 4xx: {detail: 中文原因} —— 一律原文显示, 不自造文案。
+   · 成功: localStorage['fauth'] = JSON.stringify({token, user}), 800ms 后跳转。
+   ═══════════════════════════════════════════════════════════════════════════ */
+(function signup() {
+  // 后端基址: 本体由 8000 提供时走相对路径(同源); 8591 静态服务 / file:// 时回落到 8000。
+  // 部署到域名(含 https 反向代理)时必须同源, 否则浏览器会拦混合内容。
+  var API = '';
+  try {
+    if (location.protocol === 'file:') API = 'http://127.0.0.1:8000';
+    else if (location.protocol !== 'https:' && location.port && location.port !== '8000')
+      API = 'http://' + (location.hostname || '127.0.0.1') + ':8000';
+  } catch (e) { API = ''; }
+
+  var KEY = 'fauth';
+  var NEXT_FALLBACK = 'index.html';
+  var RE_USER = /^[A-Za-z][A-Za-z0-9_.-]{2,19}$/;   // 3~20 位, 字母开头
+
+  var $ = function (id) { return document.getElementById(id); };
+  var gate = $('gate');
+  var form = $('form');
+  var elUser = $('rUser');
+  var elName = $('rName');
+  var elPhone = $('rPhone');
+  var elPwd = $('rPwd');
+  var elPwd2 = $('rPwd2');
+  var btn = $('rSubmit');
+  var msg = $('rMsg');
+  var back = $('rBack');
+
+  var entered = false;
+
+  function say(text, kind) {
+    msg.textContent = text || '';
+    msg.className = 'msg' + (kind ? ' is-' + kind : '');
+  }
+
+  // ---- 跳转目标: ?next= 同源直跳, 跨源带上 auth_token, 缺省 index.html ----
+  function nextUrl(tok) {
+    var q = null;
+    try { q = new URLSearchParams(location.search).get('next'); } catch (e) { q = null; }
+    if (!q) return NEXT_FALLBACK;
+    var u;
+    try { u = new URL(q, location.href); } catch (e) { return NEXT_FALLBACK; }
+    if (u.origin === location.origin) return u.href;
+    if (tok) u.searchParams.set('auth_token', tok);
+    return u.href;
+  }
+
+  // 返回登录: 把 ?next= 一并带上 (沿用 login.html 的语义)
+  (function () {
+    var q = null;
+    try { q = new URLSearchParams(location.search).get('next'); } catch (e) { q = null; }
+    if (q) back.href = 'login.html?next=' + encodeURIComponent(q);
+  })();
+
+  function store(t, u) {
+    try { localStorage.setItem(KEY, JSON.stringify({ token: t, user: u })); } catch (e) {}
+  }
+
+  // ---- 前端自校验: 不通过就地提示, 不发请求 ----
+  function validate() {
+    var u = elUser.value.trim();
+    var p = elPwd.value;
+    var p2 = elPwd2.value;
+    if (!u) return '请输入账号';
+    if (u.length < 3 || u.length > 20) return '账号需 3~20 位';
+    if (!/^[A-Za-z]/.test(u)) return '账号必须以字母开头';
+    if (!RE_USER.test(u)) return '账号只能包含字母、数字、下划线、点、横线';
+    if (!p) return '请输入密码';
+    if (p.length < 6) return '密码至少 6 位';
+    if (p !== p.trim()) return '密码首尾不能有空格';
+    if (p !== p2) return '两次输入的密码不一致';
+    return '';
+  }
+
+  // ---- 进入: 存令牌 -> 顶部走一条砖红进度 -> 跳转 ----
+  function enter(j) {
+    if (entered) return;
+    entered = true;
+    gate.classList.add('is-entering');
+    btn.disabled = true;
+    btn.textContent = 'Entering · 进入中';
+    var who = (j.user && (j.user.display_name || j.user.username)) || elUser.value.trim();
+    say('注册成功，正在进入… ' + who, 'ok');
+    var dest = nextUrl(j.token);
+    setTimeout(function () { location.href = dest; }, 800);
+  }
+
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    if (entered) return;
+
+    var bad = validate();
+    if (bad) { say(bad, 'err'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Creating · 提交中';
+    say('正在创建账号…');
+
+    fetch(API + '/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: elUser.value.trim(),
+        password: elPwd.value,
+        display_name: elName.value.trim(),
+        phone: elPhone.value.trim()
+      })
+    })
+      .then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          return { ok: r.ok, status: r.status, body: j || {} };
+        });
+      })
+      .then(function (res) {
+        if (res.ok && res.body && res.body.token) {
+          store(res.body.token, res.body.user);
+          enter(res.body);
+          return;
+        }
+        // 后端 detail 原文显示
+        var why = (res.body && res.body.detail) ? res.body.detail
+                : ('注册失败 (HTTP ' + res.status + ')');
+        say(String(why), 'err');
+        btn.disabled = false;
+        btn.textContent = 'Create · 注册';
+      })
+      .catch(function () {
+        say('无法连接后端 (' + (API || location.origin) + ')，请确认服务已启动', 'err');
+        btn.disabled = false;
+        btn.textContent = 'Create · 注册';
+      });
+  });
+
+  elUser.focus();
+})();
+</script>
+</body>
+</html>

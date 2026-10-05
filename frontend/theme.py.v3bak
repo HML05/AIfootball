@@ -1,0 +1,2093 @@
+"""
+足球分析系统 - 统一设计系统 (theme.py)  v3.0
+
+设计语言: Matchday (与系统登录页 docs/console/login.html 同一套皮)
+  基准文件: docs/console/login.html —— 令牌、组件写法、动效曲线均取自该登录页,
+  并保留参照控制台 tools/console_template.html 的结构节奏(页面头/分区/KPI/表格)。
+  · 底层  —— 场景光底: 右上暖光(夕阳) + 左下冷光(草皮反光) + 22px 点阵网格
+  · 双主题 —— 日场 Day(纸面白底 #eef1f5, 默认) / 夜场 Night(深炭底 #0b1016)
+  · 主色  —— 单一强调色 天蓝 #2f86e0(日场) / #4a9df8(夜场), 仅用于数据与状态
+  · 语义  —— 仅在有真实语义时使用: 成功 #2e8b57 / 提示琥珀 / 异常砖红 / 信息冷蓝
+  · 数字  —— 一律等宽 + tabular-nums(见 CSS 第 25 节), 让纵向对比时小数点对齐
+  · 结构  —— 侧栏导航 + 页面头 + KPI 带 + 分区面板 + 数据表格
+
+设计品味依据(taste-skill v2 + redesign-existing-projects):
+  · 单一强调色锁: 同一页面只用一种强调色, 装饰性多色属 AI 生成指纹
+  · 玻璃面: 白玻璃卡片 + 1px 发丝缝 + 冷灰柔影(登录页 .gate / --glass)
+  · 字体: 正文系统无衬线; 展示标题走衬线(拉丁 Cormorant → Georgia), 中文回落无衬线
+  · 圆角体系: 面板 22px / 内件 14px / 控件 10px, 全局统一
+  · 阴影: 着色阴影(带背景色相), 不用纯黑投影
+  · 交互: hover + active 按压反馈 + 可见焦点环; 入场 rise 动效尊重 reduced-motion
+
+三部分:
+  1. TOKENS  —— 设计令牌(配色 / 圆角 / 层级)
+  2. CSS     —— 全局样式(前端 app.py 与后台 admin.py 共用同一份)
+  3. 组件     —— page_header / section / metric_row / hero / empty_state / badge ...
+
+约束(见 docs/UI协作交接说明.md):
+  · 前端(app.py)与后台(admin.py)必须引用同一份 CSS, 不允许各自内联 <style>
+  · 既有令牌键名与组件函数签名保持向后兼容: 只做新增/增强, 不重命名
+  · 换肤只改视觉: CSS 第 26 节是"登录页设计语言对齐层", 不改布局尺度与结构
+"""
+import re
+import sys
+
+import streamlit as st
+
+# ============ 配置常量 ============
+API_BASE = "http://127.0.0.1:8000/api"
+FRONTEND_URL = "http://127.0.0.1:8501"
+ADMIN_URL = "http://127.0.0.1:8502"
+
+# ============ 字体栈 ============
+# 全部为本地字体(离线可用, 不依赖 CDN / 联网), 与登录页 docs/console/login.html
+# 的 --sans / --serif / --mono 三栈一一对应:
+#   · FONT_SANS    —— 界面正文与控件 (系统无衬线)
+#   · FONT_SERIF   —— 展示层标题 (Cormorant Garamond → Georgia → Songti SC)
+#                     登录页的 "Sign in." / "Kick off your game." 即此栈
+#   · FONT_MONO    —— 微标签 / 数值 / 代码 (等宽 tabular)
+# 中文字形由栈尾的 PingFang SC / Microsoft YaHei / Songti SC 接管回退。
+FONT_SANS = ('-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", '
+             '"Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif')
+FONT_SERIF = ('"Cormorant Garamond", "PP Editorial New", Georgia, "Times New Roman", '
+              '"Songti SC", "SimSun", serif')
+# 展示标题栈: 拉丁字形走衬线(登录页 "Sign in." 的 editorial 感), 中文字形回落无衬线
+# (宋体在 Windows 上无真实粗体, 合成粗体笔画发糊; 混排栈让中英各取所长)。
+FONT_TITLE = ('"Cormorant Garamond", Georgia, "Times New Roman", '
+              '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif')
+# 展示层保留一个无衬线别名, 供"不适合衬线的场合"显式引用
+FONT_DISPLAY = FONT_SANS
+FONT_MONO = ('ui-monospace, "JetBrains Mono", "SFMono-Regular", "Cascadia Mono", '
+             'Consolas, "Courier New", monospace')
+
+# ============ 设计令牌(双主题) ============
+# 深色 = 夜场(深蓝玻璃终端); 浅色 = 日场(晴空蓝玻璃, 默认)。
+# 两套令牌**键名完全一致**, 因此 theme / viz / blocks / 页面代码无需分叉。
+_DARK = {
+    # ---- 暖场(参照图的黄昏版: 暖橙天空 + 琥珀玻璃卡 + 金色强调) ----
+    # 令牌名与浅色主题完全一致, 因此 theme / viz / blocks / 页面代码无需分叉。
+    # 背景层级(由深到浅: 画布 -> 侧栏 -> 面板 -> 悬浮)
+    "bg0": "#b25a20", "bg1": "rgba(150,74,28,0.34)", "bg2": "rgba(168,88,34,0.44)",
+    "bg3": "#8a3f16",
+    # 边框: 暖白透明叠加的发丝线(玻璃面的接缝)
+    "line": "rgba(255,228,196,0.18)",
+    "line_strong": "rgba(255,232,202,0.30)",
+    "line_accent": "rgba(255,180,90,0.38)",
+    # 文本: 暖白四层, 在暖橙底上保持 >= 4.5:1
+    "t1": "#fff4e4", "t2": "#f2d6b4", "t3": "#d3ab80",
+    # 主色: 暖橙金(参照图的琥珀强调)
+    "accent": "#ffb257", "accent2": "#f0862f", "accent_ink": "#2a1405",
+    "accent_soft": "rgba(255,178,87,0.16)",
+    "accent_tint": "#4a2a10",
+    "gold": "#ffd27a", "purple": "#d8b3a0", "blue": "#8fd3e8",
+    "red": "#ff8a6b", "ok": "#9ed36a",
+    # 强调橙(暖场里橙就是主色, 再提亮一档做强调)
+    "orange": "#ffc478", "orange_soft": "rgba(255,196,120,0.18)",
+    "orange_line": "rgba(255,196,120,0.40)",
+    "gold_soft": "rgba(255,210,122,0.14)", "purple_soft": "rgba(216,179,160,0.14)",
+    "blue_soft": "rgba(143,211,232,0.14)", "red_soft": "rgba(255,138,107,0.16)",
+    # 状态点: 实心圆 + 一圈淡光晕
+    "ok_soft": "rgba(158,211,106,0.16)", "ok_halo": "rgba(158,211,106,0.18)",
+    # 次要色(青蓝)与暖/冷两处光晕
+    "cool": "#8fd3e8", "cool_glow": "rgba(255,205,150,1)",
+    "warm_deep": "#a8641f", "warm_glow": "rgba(255,205,140,1)",
+    # 尺寸: 10 / 14 / 22 + 999(胶囊), 与登录页 --r-xs / --r-sm / --r 对应
+    "r1": "10px", "r2": "14px", "r3": "22px", "pill": "999px",
+    # 布局尺度(保持不变)
+    "sidebar_w": "252px", "pad": "26px", "topbar_h": "66px",
+    # 暖场柔影(暖褐, 不是纯黑)
+    "shadow": ("0 34px 80px -30px rgba(58,22,4,0.72), "
+               "0 12px 28px -16px rgba(58,22,4,0.44)"),
+    "shadow_sm": "0 10px 26px -14px rgba(58,22,4,0.50)",
+    # 主按钮: 暖金渐变 + 顶部内高光 + 悬停琥珀投影
+    "accent_grad": "linear-gradient(180deg,#ffc987 0%,#ef8a34 100%)",
+    "accent_shadow": "0 18px 34px -14px rgba(200,104,24,0.55)",
+    "inset_hl": "inset 0 1px 0 rgba(255,240,215,0.34)",
+    # 玻璃面(与登录页 --glass / --glass-strong / --glass-line 同写法)
+    "glass": "rgba(74,34,14,0.62)", "glass_strong": "rgba(86,42,18,0.78)",
+    "glass_line": "rgba(255,232,202,0.16)",
+    # 液态玻璃(Apple Liquid Glass): 更透明 + 镜面高光描边 + 大圆角 + 内高光 + 带色投影
+    "glass_lite": "rgba(255,180,100,0.16)", "glass_mid": "rgba(255,190,115,0.30)",
+    "glass_edge": "rgba(255,226,176,0.52)",
+    "glass_blur": "blur(8px) saturate(180%)",
+    "glass_hl": "inset 0 1px 1px rgba(255,246,214,0.55)",
+    "glass_shadow": ("inset 0 1px 1px rgba(255,242,204,0.50), "
+                     "0 8px 32px rgba(120,50,10,0.38)"),
+    "r4": "24px",
+    # 画布光晕: 左上暖白日光 + 右上橙色霞光 + 左下琥珀反光(液态玻璃的光源; 固定 3 层)
+    "scene": ("radial-gradient(680px 520px at 30% -8%, rgba(255,226,168,0.95) 0%, "
+              "rgba(255,226,168,0) 66%), "
+              "radial-gradient(1250px 720px at 94% 4%, rgba(255,146,60,0.72) 0%, "
+              "rgba(255,146,60,0) 64%), "
+              "radial-gradient(1100px 640px at 2% 106%, rgba(255,120,64,0.55) 0%, "
+              "rgba(255,120,64,0) 62%)"),
+    # 中央三维场景在暖场下的调色(白模 -> 黄昏里的暖金球场)
+    "hero_filter": "sepia(0.46) saturate(1.65) hue-rotate(-12deg) brightness(1.04) contrast(1.02)",
+    # 图表专用实底(Altair 背景不吃半透明, 单独给一个不透明值)
+    "bg_chart": "#4a2410",
+    # 浏览器表面色(滚动条滑块 / 插入符)
+    "thumb": "#7a4522", "thumb_hover": "#96562c", "caret": "#ffb257",
+    # 页面底层质感: 点阵网格 + 光晕强度
+    "grain_opacity": "0.05", "glow_opacity": "0.07",
+    # 点阵网格的像素色(暖场用暖白点)
+    "dot": "rgba(255,235,205,0.07)",
+    # 图表类别色板: 暖金打头, 依次橙/砂/橄榄/天青拉开色相
+    "p1": "#ffb257", "p2": "#ffd27a", "p3": "#e8894a", "p4": "#c9a06a",
+    "p5": "#ff8a6b", "p6": "#f0c48a", "p7": "#b9d48f", "p8": "#8fd3e8",
+    "p9": "#d8a35f", "p10": "#e8cbb0",
+    # 统一缓动(登录页入场: cubic-bezier(.2,.75,.2,1))
+    "ease": "cubic-bezier(.2,.75,.2,1)",
+    # 展示层字体(衬线标题, 登录页 "Sign in." 同栈)
+    "font_title": FONT_TITLE,
+}
+
+_LIGHT = {
+    # ---- 日场(参照稿本体: 晴空蓝天光底 + 白玻璃卡 + 天蓝强调) ----
+    # 层次靠 1px 发丝线 + 冷蓝柔影, 不用重阴影。
+    # 液态玻璃: 表面更透明(0.15/0.28), 让背景光斑透过玻璃产生色彩变化
+    "bg0": "#e8f1fb", "bg1": "rgba(255,255,255,0.15)", "bg2": "rgba(255,255,255,0.28)",
+    "bg3": "#f1f7fd",
+    "line": "rgba(30,64,110,0.14)",
+    "line_strong": "rgba(30,64,110,0.24)",
+    "line_accent": "rgba(47,134,224,0.34)",
+    # t3 #5d6d80 在 #ffffff 上 5.5:1 / bg0 上 5.0:1, 满足 WCAG AA
+    "t1": "#14202e", "t2": "#3c4c60", "t3": "#5d6d80",
+    # 主色 = 参照稿的天蓝 #4090e0(取 #2f86e0 做按钮/描边, #1f6fc4 做深态)
+    "accent": "#2f86e0", "accent2": "#1f6fc4", "accent_ink": "#ffffff",
+    "accent_soft": "rgba(47,134,224,0.12)",
+    "accent_tint": "#cfe4f8",
+    "gold": "#c8871a", "purple": "#5b6f8c", "blue": "#2aa3c9",
+    "red": "#d0453c", "ok": "#2e9e6b",
+    # 强调橙(设计说明指定 #F28C3B): 只用于峰值/首选/第一名这类单点强调
+    "orange": "#f28c3b", "orange_soft": "rgba(242,140,59,0.12)",
+    "orange_line": "rgba(242,140,59,0.34)",
+    "gold_soft": "rgba(200,135,26,0.12)", "purple_soft": "rgba(91,111,140,0.12)",
+    "blue_soft": "rgba(42,163,201,0.12)", "red_soft": "rgba(208,69,60,0.12)",
+    # 状态绿点 + 淡光晕(参照稿的在线/正常标记)
+    "ok_soft": "rgba(46,158,107,0.12)", "ok_halo": "rgba(46,158,107,0.18)",
+    "cool": "#2aa3c9", "cool_glow": "rgba(122,196,232,1)",
+    "warm_deep": "#a8641f", "warm_glow": "rgba(255,190,130,1)",
+    "r1": "10px", "r2": "14px", "r3": "22px", "pill": "999px",
+    "sidebar_w": "252px", "pad": "26px", "topbar_h": "66px",
+    # 冷蓝柔影(参照稿的面板投影是蓝灰, 不是纯黑)
+    "shadow": ("0 30px 70px -28px rgba(21,54,99,0.28), "
+               "0 12px 26px -16px rgba(21,54,99,0.16)"),
+    "shadow_sm": "0 10px 24px -14px rgba(21,54,99,0.22)",
+    "accent_grad": "linear-gradient(180deg,#4a9df0 0%,#1f6fc4 100%)",
+    "accent_shadow": "0 16px 30px -14px rgba(31,111,196,0.55)",
+    "inset_hl": "inset 0 1px 0 rgba(255,255,255,0.42)",
+    # 玻璃面: 与登录页 --glass / --glass-strong 同写法(半透明白 + 背景模糊)
+    "glass": "rgba(255,255,255,0.60)", "glass_strong": "rgba(255,255,255,0.84)",
+    "glass_line": "rgba(255,255,255,0.80)",
+    # 液态玻璃(Apple Liquid Glass, 设计说明指定写法):
+    #   background rgba(255,255,255,.15) + blur(8px) saturate(180%)
+    #   + 1px rgba(255,255,255,.6) 镜面高光描边 + 24px 圆角
+    #   + inset 0 1px 1px rgba(255,255,255,.8) 内高光 + 0 8px 32px rgba(59,130,246,.12) 带色投影
+    "glass_lite": "rgba(255,255,255,0.15)", "glass_mid": "rgba(255,255,255,0.28)",
+    "glass_edge": "rgba(255,255,255,0.62)",
+    "glass_blur": "blur(8px) saturate(180%)",
+    "glass_hl": "inset 0 1px 1px rgba(255,255,255,0.80)",
+    "glass_shadow": ("inset 0 1px 1px rgba(255,255,255,0.80), "
+                     "0 8px 32px rgba(59,130,246,0.12)"),
+    "r4": "24px",
+    # 画布光晕: 左上大片纯白爆光 + 右上晴空蓝 + 左下浅青(液态玻璃要"看得见光")
+    # 注意: 这里固定 3 层, .stApp 的 background-size 列表按 4 层写(第 4 层是点阵)
+    "scene": ("radial-gradient(680px 520px at 32% -8%, rgba(255,255,255,0.98) 0%, "
+              "rgba(255,255,255,0) 68%), "
+              "radial-gradient(1250px 720px at 94% 6%, rgba(104,172,246,0.66) 0%, "
+              "rgba(104,172,246,0) 62%), "
+              "radial-gradient(1100px 640px at 2% 106%, rgba(150,212,244,0.52) 0%, "
+              "rgba(150,212,244,0) 62%)"),
+    "hero_filter": "none",
+    "bg_chart": "#ffffff",
+    "thumb": "#c3d6ea", "thumb_hover": "#a6bed6", "caret": "#2f86e0",
+    "grain_opacity": "0.04", "glow_opacity": "0.05",
+    "dot": "rgba(30,64,110,0.06)",
+    "p1": "#2f86e0", "p2": "#2aa3c9", "p3": "#c8871a", "p4": "#5b6f8c",
+    "p5": "#d0453c", "p6": "#63a8e8", "p7": "#86c9d8", "p8": "#3a6f9e",
+    "p9": "#8a7f6a", "p10": "#93a6bb",
+    "ease": "cubic-bezier(.2,.75,.2,1)",
+    "font_title": FONT_TITLE,
+}
+
+THEMES = {"dark": _DARK, "light": _LIGHT}
+# T 是**可变**映射: apply_theme() 每次运行会把它刷成当前主题的值,
+# 这样页面/图表/版块里所有 T["..."] 取值自动跟随主题, 无需分叉代码。
+T = dict(_DARK)
+
+# 兼容旧代码的配色字典
+COLORS = {
+    "bg_primary": T["bg1"], "bg_secondary": T["bg2"],
+    # Data Command 的面板是**平的**(纯色 + 1px 发丝描边), 不用渐变底。
+    "bg_card": T["bg2"],
+    "accent": T["accent"], "accent_light": T["accent_soft"],
+    "gold": T["gold"], "gold_light": T["gold_soft"],
+    "purple": T["purple"], "purple_light": T["purple_soft"],
+    "red": T["red"], "red_light": T["red_soft"],
+    "text_primary": T["t1"], "text_secondary": T["t2"], "text_muted": T["t3"],
+    "border": T["line_accent"], "border_light": T["line"],
+}
+
+# ============ 全局样式 ============
+def _build_css(t: dict) -> str:
+    """按给定令牌生成整站 CSS(每次运行按当前主题重建)"""
+    T = t
+    return f"""
+<style>
+/* ================= 1. 基础与字体 ================= */
+html, body, [class*="css"] {{
+    font-family: {FONT_SANS};
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern" 1;
+}}
+/* ---- 浏览器表面 (craft-floor Verify #6) ----
+   选区 / 插入符 / 滚动条 / 下划线 / 焦点环这些"非组件"细节必须由调色板统一上色,
+   它们是被"建造"与被"拼装"之间最廉价的分水岭, 也是最容易被漏掉的一层。 */
+::selection {{ background: {T['accent_soft']}; color: {T['t1']}; }}
+html, body {{ caret-color: {T['caret']}; accent-color: {T['accent']}; }}
+.stApp {{
+    background: {T['bg0']};
+    /* 场景光底(登录页语言): 右上暖光(夕阳) + 左下冷光(草皮反光) + 22px 点阵;
+       全部 fixed 铺满视口, 网格把"纯色大平面"变成"有刻度的场地"。 */
+    background-image:
+        {T['scene']},
+        radial-gradient({T['dot']} 1px, transparent 1.4px);
+    background-size: auto, 22px 22px;
+    background-attachment: fixed, fixed;
+    background-repeat: no-repeat, repeat;
+    color: {T['t1']};
+}}
+/* 内容栅格对齐参照的 --pad: 26px, 且不设宽度上限(参照是全宽铺开) */
+.block-container {{ padding: 26px 26px 40px; max-width: 100%; }}
+[data-testid="stAppViewContainer"] > .main {{ background: transparent; }}
+
+/* ================= 2. 标题层级 ================= */
+h1 {{ font-size: 1.7rem !important; font-weight: 700 !important;
+      letter-spacing: -0.01em; color: {T['t1']} !important;
+      margin-bottom: 0.25rem !important; line-height: 1.3 !important;
+      text-wrap: balance; }}
+h2 {{ font-size: 1.24rem !important; font-weight: 650 !important; letter-spacing: -0.01em;
+      color: {T['t1']} !important; margin-top: 1.4rem !important;
+      text-wrap: balance; }}
+h3 {{ font-size: 1.0rem !important; font-weight: 600 !important; color: {T['t1']} !important; }}
+h4 {{ font-size: 0.92rem !important; font-weight: 600 !important; color: {T['t2']} !important; }}
+p, li, span, label {{ color: {T['t2']}; }}
+strong {{ color: {T['t1']}; }}
+a {{ color: {T['accent']}; text-underline-offset: 3px;
+     text-decoration-thickness: 1px; }}
+code {{ color: {T['accent']}; background: {T['accent_soft']};
+        border-radius: 5px; padding: 0.08rem 0.34rem; font-size: 0.85em;
+        font-family: {FONT_MONO}; }}
+
+/* ================= 3. 页面头部 ================= */
+.page-head {{
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+    padding: 0.1rem 0 0.9rem 0; border-bottom: 1px solid {T['line']};
+    margin-bottom: 1.15rem; position: relative;
+}}
+.page-head::after {{
+    content: ""; position: absolute; left: 0; bottom: -1px; width: 74px; height: 2px;
+    background: {T['accent']}; border-radius: 2px;
+}}
+.page-head .ph-title {{ font-size: 1.62rem; font-weight: 700; letter-spacing: -0.005em;
+    color: {T['t1']}; display: flex; align-items: center; gap: 0.6rem; line-height: 1.28; }}
+.page-head .ph-sub {{ color: {T['t2']}; font-size: 0.89rem; margin-top: 0.38rem;
+    max-width: 78ch; line-height: 1.6; }}
+.page-head .ph-crumb {{ color: {T['t3']}; font-size: 0.74rem; letter-spacing: 0.08em;
+    text-transform: uppercase; margin-bottom: 0.35rem; }}
+.page-head .ph-meta {{ color: {T['t3']}; font-size: 0.78rem; text-align: right;
+    white-space: nowrap; line-height: 1.7; }}
+
+/* ================= 4. 区块标题 ================= */
+.sec {{ display: flex; align-items: center; gap: 0.55rem;
+        font-size: 1.0rem; font-weight: 650; color: {T['t1']};
+        margin: 1.5rem 0 0.7rem 0; }}
+.sec::before {{ content: ""; width: 3px; height: 1.02em; border-radius: 2px;
+                background: {T['accent']}; display: inline-block; flex: none; }}
+.sec-sub {{ color: {T['t3']}; font-size: 0.8rem; font-weight: 400; margin-left: 0.35rem; }}
+
+/* ================= 5. Hero 欢迎横幅 ================= */
+.hero {{
+    position: relative; overflow: hidden; margin-bottom: 1.15rem;
+    border: 1px solid {T['line_accent']}; border-radius: {T['r3']}; padding: 1.5rem 1.7rem;
+    background: {T['bg2']};
+    display: flex; align-items: center; justify-content: space-between; gap: 1.6rem;
+    flex-wrap: wrap;
+}}
+/* Hero 内的径向光斑已移除: 零偏移彩色光晕属装饰(taste-skill §7),
+   层次改由 135° 渐变底色与 1px 描边表达。 */
+.hero .hero-body {{ position: relative; z-index: 1; min-width: 0; }}
+.hero h2 {{ margin: 0 0 0.45rem 0 !important; font-size: 1.28rem !important;
+    font-weight: 700 !important; letter-spacing: -0.01em; }}
+.hero p {{ color: {T['t2']} !important; font-size: 0.86rem; max-width: 70ch;
+    line-height: 1.72; margin: 0; }}
+.hero .hero-stats {{ display: flex; gap: 2.3rem; position: relative; z-index: 1;
+    flex-wrap: wrap; }}
+.hero .hero-stat .v {{ font-family: {FONT_DISPLAY}; font-size: 1.6rem; font-weight: 700;
+    color: {T['accent']}; letter-spacing: 0; font-variant-numeric: tabular-nums;
+    line-height: 1.15; }}
+.hero .hero-stat .l {{ font-size: 0.74rem; color: {T['t3']}; margin-top: 0.22rem;
+    letter-spacing: 0.02em; }}
+
+/* ================= 6. 指标卡 / KPI ================= */
+/* 指标带: 显式列数网格(--mc-n 由 metric_row 注入), 卡片等高;
+   取代固定列宽的 st.columns —— 4 列在窄视口会被压到 ~110px/列,
+   此时 Streamlit 自带的 overflow-wrap:break-word 会把 "12,564" 折成
+   "12,56|4"、把 "XGBoost" 折成 "XGBo|ost"。宽列 + 关闭断词后消失。 */
+.metric-row {{
+    display: grid; gap: 0.7rem; margin: 0.15rem 0 0.25rem 0;
+    grid-template-columns: repeat(var(--mc-n, 4), minmax(0, 1fr));
+    align-items: stretch;
+}}
+.metric-card {{
+    position: relative; background: {T['bg2']};
+    /* 强调色只在 1px 同色描边体现(由 --mc-line 注入), 不再使用 >1px 彩色 border-left */
+    border: 1px solid var(--mc-line, {T['line']});
+    border-radius: {T['r2']}; padding: 1rem 1.15rem 1.05rem 1.15rem;
+    min-height: 106px; height: 100%; min-width: 0;
+    display: flex; flex-direction: column; justify-content: center;
+    /* 阴影染到背景色相(深绿近黑)而非纯黑, 并带偏移+柔模糊, 读作真实层次而非辉光 */
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.025), 0 1px 2px rgba(2,12,7,0.5);
+    transition: border-color .18s ease, transform .18s ease, background .18s ease;
+}}
+.metric-card:hover {{ border-color: {T['line_accent']}; transform: translateY(-2px);
+                      background: {T['bg3']}; }}
+.metric-card .mc-top {{ display: flex; align-items: center; gap: 0.45rem;
+    color: {T['t3']}; font-size: 0.75rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    line-height: 1.35; overflow-wrap: normal; }}
+/* 数值是"必须完整可读"的信息: 关闭 Streamlit 的 break-word, 只在空格处折行。
+   避免 12,564 / XGBoost / 1,234 这类短值被从中间劈开 */
+.metric-card .mc-value {{ color: {T['t1']}; font-size: 1.68rem; font-weight: 700;
+    line-height: 1.15; margin-top: 0.35rem; font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em; overflow-wrap: normal; }}
+.metric-card .mc-hint {{ color: {T['t2']}; font-size: 0.76rem; margin-top: 0.3rem;
+    line-height: 1.4; overflow-wrap: normal; }}
+/* 兼容旧标记: metric-value / metric-label */
+.metric-card .metric-value {{ color: {T['t1']}; font-size: 1.68rem; font-weight: 700;
+    line-height: 1.15; margin-top: 0.35rem; font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em; overflow-wrap: normal; }}
+.metric-card .metric-label {{ color: {T['t3']}; font-size: 0.75rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em; overflow-wrap: normal; }}
+
+/* ================= 7. 功能卡 / 能力带 ================= */
+.feature-card {{ background: {T['bg2']}; border: 1px solid var(--fc-line, {T['line']});
+    border-radius: {T['r2']}; padding: 1.15rem 1.25rem; height: 100%;
+    transition: border-color .18s ease, transform .18s ease; }}
+.feature-card:hover {{ border-color: {T['line_accent']}; transform: translateY(-2px); }}
+.feature-card .fc-icon {{ font-size: 1.5rem; line-height: 1; color: {T['accent']}; }}
+.feature-card .fc-title {{ margin: 0.5rem 0 0.7rem 0; font-size: 1rem;
+    font-weight: 650; color: {T['t1']}; }}
+.feature-card .fc-list {{ padding-left: 1.1rem; margin: 0; }}
+
+/* 能力带: 1 张"主打"卡横跨整行 + 2 张"支撑"卡并排;
+   取代被禁的三等宽功能卡行(taste-skill §7 NO 3-Column Card Layouts);
+   主次由跨度与条目密度区分, 而非三等分的平均主义。 */
+.bento {{ display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem;
+    align-items: stretch; }}
+.bento-main {{ grid-column: 1 / -1; }}
+.bento-main, .bento-item {{ background: {T['bg2']}; border: 1px solid {T['line']};
+    border-radius: {T['r2']}; padding: 1.2rem 1.3rem;
+    transition: border-color .18s ease, transform .18s ease; }}
+.bento-main:hover, .bento-item:hover {{ border-color: {T['line_accent']};
+    transform: translateY(-2px); }}
+.bento .bt-icon {{ font-size: 1.45rem; line-height: 1; color: {T['accent']}; }}
+.bento-item .bt-icon {{ font-size: 1.25rem; }}
+.bento .bt-title {{ margin: 0.5rem 0 0.7rem 0; font-size: 1.02rem;
+    font-weight: 650; color: {T['t1']}; }}
+.bento-item .bt-title {{ font-size: 0.95rem; margin: 0.4rem 0 0.6rem 0; }}
+.bento .bt-list {{ padding-left: 1.1rem; margin: 0; }}
+.bento-main .bt-list {{ columns: 2; column-gap: 1.9rem; }}
+.bento .bt-list li {{ color: {T['t2']}; font-size: 0.86rem; margin: 0.32rem 0;
+    line-height: 1.6; break-inside: avoid; }}
+.bento-item .bt-list li {{ font-size: 0.83rem; margin: 0.26rem 0; }}
+
+/* 信息卡: 标题 + 若干行说明, 用于技术架构 / 参数说明) */
+.info-card {{ background: {T['bg2']}; border: 1px solid var(--ic-line, {T['line']});
+    border-radius: {T['r2']}; padding: 1rem 1.1rem; height: 100%;
+    transition: border-color .18s ease, transform .18s ease; }}
+.info-card:hover {{ border-color: {T['line_accent']}; transform: translateY(-2px); }}
+.info-card .ic-title {{ color: {T['t1']}; font-size: 0.92rem; font-weight: 650;
+    display: flex; align-items: center; gap: 0.45rem; margin-bottom: 0.45rem; }}
+.info-card .ic-line {{ color: {T['t2']}; font-size: 0.83rem; line-height: 1.78; }}
+.info-card .ic-line.dim {{ color: {T['t3']}; font-size: 0.78rem; }}
+
+/* ================= 8. 状态盒 ================= */
+.info-box, .success-box, .warn-box, .error-box {{
+    border-radius: {T['r1']}; padding: 0.68rem 0.95rem; margin: 0.5rem 0;
+    font-size: 0.86rem; border: 1px solid {T['line']}; line-height: 1.6;
+}}
+/* 语义色只作用于 1px 描边与底色微染。>1px 的彩色左侧边条会被读成模板化的"告警条",
+   (craft-floor Refuse), 这里改为整圈 1px 同色描边, 层级由背景染色表达。 */
+.info-box   {{ background: {T['blue_soft']};   border-color: color-mix(in srgb, {T['blue']} 30%, transparent); }}
+.success-box{{ background: {T['accent_soft']}; border-color: {T['line_accent']}; }}
+.warn-box   {{ background: {T['gold_soft']};   border-color: color-mix(in srgb, {T['gold']} 30%, transparent); }}
+.error-box  {{ background: {T['red_soft']};    border-color: color-mix(in srgb, {T['red']} 30%, transparent); }}
+
+/* ================= 9. 状态行(系统状态清单) ================= */
+.status-list {{ display: flex; flex-direction: column; gap: 2px; }}
+.status-row {{ display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.2rem;
+    border-bottom: 1px solid {T['line']}; font-size: 0.86rem; }}
+.status-row:last-child {{ border-bottom: none; }}
+.status-row .sr-label {{ color: {T['t2']}; min-width: 150px; }}
+.status-row .sr-value {{ color: {T['t1']}; font-weight: 600; margin-left: auto;
+    text-align: right; font-variant-numeric: tabular-nums; }}
+/* 状态点: 纯色实心, 不加辉光。零偏移彩色光晕属装饰性噪音(taste-skill §7 NO Neon/Outer Glows),
+   状态含义由色相 + 文案承载, 不靠发光。 */
+.status-dot {{ width: 7px; height: 7px; border-radius: 50%; flex: none;
+    background: {T['accent']}; }}
+.status-dot.off {{ background: {T['t3']}; }}
+.status-dot.warn {{ background: {T['gold']}; }}
+.status-dot.err {{ background: {T['red']}; }}
+.status-dot.live {{ animation: pulse 2.2s ease-in-out infinite; }}
+@keyframes pulse {{ 0%,100% {{ opacity: 1; }} 50% {{ opacity: .35; }} }}
+
+/* 有序步骤序号 */
+.step-no {{ width: 26px; height: 26px; border-radius: 50%; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; font-weight: 700; background: {T['accent']};
+    color: {T['accent_ink']}; }}
+.step-list .status-row {{ align-items: flex-start; }}
+.step-list .sr-label {{ font-weight: 600; color: {T['t1']}; }}
+.step-list .sr-value {{ font-weight: 400; color: {T['t2']}; }}
+
+/* 兼容 admin.py 既有的状态类 */
+.status-good {{ color: {T['accent']} !important; font-weight: 600; }}
+.status-bad  {{ color: {T['red']} !important; font-weight: 600; }}
+.status-warn {{ color: {T['gold']} !important; font-weight: 600; }}
+
+/* ================= 10. 空状态(待填充) ================= */
+.empty-state {{
+    border: 1px dashed {T['line_accent']}; border-radius: {T['r3']};
+    background: linear-gradient(180deg, {T['accent_soft']} 0%, rgba(0,0,0,0) 100%);
+    padding: 1.55rem 1.4rem; text-align: center; margin: 0.6rem 0;
+}}
+.empty-state .es-icon {{ font-size: 1.85rem; line-height: 1; }}
+.empty-state .es-title {{ color: {T['t1']}; font-size: 0.98rem; font-weight: 650;
+    margin-top: 0.5rem; }}
+.empty-state .es-desc {{ color: {T['t2']}; font-size: 0.85rem; margin-top: 0.38rem;
+    line-height: 1.68; }}
+.empty-state .es-desc code, .code-chip {{
+    background: {T['accent_soft']}; color: {T['accent']};
+    border: 1px solid {T['line_accent']}; border-radius: 6px;
+    padding: 0.1rem 0.42rem; font-size: 0.79rem;
+    font-family: {FONT_MONO};
+}}
+
+/* ================= 11. 徽标 / 标签 ================= */
+.badge {{ display: inline-block; padding: 0.13rem 0.52rem; border-radius: 999px;
+    font-size: 0.73rem; font-weight: 600; border: 1px solid transparent;
+    line-height: 1.5; }}
+.badge-ok   {{ background: {T['accent_soft']}; color: {T['accent']}; border-color: {T['line_accent']}; }}
+.badge-wait {{ background: {T['gold_soft']}; color: {T['gold']}; border-color: color-mix(in srgb, {T['gold']} 28%, transparent); }}
+.badge-info {{ background: {T['blue_soft']}; color: {T['blue']}; border-color: color-mix(in srgb, {T['blue']} 28%, transparent); }}
+.badge-err  {{ background: {T['red_soft']}; color: {T['red']}; border-color: rgba(240,104,92,0.28); }}
+.badge-mute {{ background: {T['bg3']}; color: {T['t3']}; border-color: {T['line']}; }}
+
+/* 静态筛选标签(展示用) */
+.chip-row {{ display: flex; flex-wrap: wrap; gap: 7px; align-items: center;
+    margin: 0.2rem 0 0.4rem 0; }}
+.chip {{ display: inline-block; border: 1px solid {T['line']}; border-radius: 999px;
+    padding: 0.22rem 0.72rem; color: {T['t3']}; font-size: 0.78rem; }}
+.chip.on {{ border-color: {T['accent']}; color: {T['accent']};
+    background: {T['accent_soft']}; font-weight: 600; }}
+
+/* ================= 12. 表格容器 ================= */
+[data-testid="stDataFrame"], [data-testid="stTable"] {{
+    border: 1px solid {T['line']}; border-radius: {T['r2']}; overflow: hidden;
+    background: {T['bg2']};
+}}
+[data-testid="stDataFrame"] [role="columnheader"] {{ background: {T['bg3']} !important; }}
+[data-testid="stTable"] table {{ background: {T['bg2']}; }}
+[data-testid="stTable"] th {{ background: {T['bg3']} !important; color: {T['accent']} !important;
+    font-weight: 600 !important; border-bottom: 1px solid {T['line_strong']} !important; }}
+[data-testid="stTable"] td {{ color: {T['t2']}; border-bottom: 1px solid {T['line']} !important; }}
+[data-testid="stTable"] tr:hover td {{ background: {T['accent_soft']} !important; }}
+
+/* ================= 13. 标签页 ================= */
+.stTabs [data-baseweb="tab-list"] {{
+    background: {T['bg1']}; border: 1px solid {T['line']};
+    border-radius: {T['r2']}; padding: 4px; gap: 3px; flex-wrap: wrap;
+}}
+.stTabs [data-baseweb="tab"] {{ color: {T['t2']}; border-radius: {T['r1']};
+    padding: 6px 13px; font-size: 0.85rem; font-weight: 550; background: transparent; }}
+.stTabs [data-baseweb="tab"]:hover {{ background: {T['bg3']}; color: {T['t1']}; }}
+.stTabs [aria-selected="true"] {{
+    background: {T['accent_soft']} !important; color: {T['accent']} !important;
+}}
+.stTabs [data-baseweb="tab-highlight"], .stTabs [data-baseweb="tab-border"] {{ display: none; }}
+
+/* ================= 14. 侧边栏 ================= */
+[data-testid="stSidebar"], section[data-testid="stSidebar"] {{
+    background: {T['bg1']};
+    border-right: 1px solid {T['line']};
+}}
+/* 宽度对齐参照的 --sidebar-w: 252px(窄屏交给 Streamlit 自己的收起逻辑) */
+@media (min-width: 900px) {{
+    section[data-testid="stSidebar"], [data-testid="stSidebar"] {{
+        width: {T['sidebar_w']} !important; min-width: {T['sidebar_w']} !important;
+        max-width: {T['sidebar_w']} !important;
+    }}
+    section[data-testid="stSidebar"] > div, [data-testid="stSidebar"] > div {{
+        width: {T['sidebar_w']} !important;
+    }}
+}}
+[data-testid="stSidebar"] .block-container {{ padding-top: 1.1rem; }}
+[data-testid="stSidebar"] [role="radiogroup"] {{ gap: 2px; }}
+[data-testid="stSidebar"] [role="radiogroup"] label {{
+    padding: 0.44rem 0.62rem; border-radius: {T['r1']};
+    transition: background .15s ease, color .15s ease; width: 100%;
+}}
+[data-testid="stSidebar"] [role="radiogroup"] label:hover {{ background: {T['bg3']}; }}
+[data-testid="stSidebar"] [role="radiogroup"] label p {{ font-size: 0.89rem; color: {T['t1']}; }}
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {{
+    background: {T['accent_soft']};
+}}
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) p {{
+    color: {T['accent']} !important; font-weight: 650;
+}}
+[data-testid="stSidebar"] h3 {{ font-size: 0.74rem !important; text-transform: uppercase;
+    letter-spacing: 0.1em; color: {T['t3']} !important; margin: 1rem 0 0.45rem 0 !important; }}
+[data-testid="stSidebar"] hr {{ margin: 0.9rem 0; }}
+
+/* 侧栏内的状态行更紧凑(避免标签换行) */
+[data-testid="stSidebar"] .status-row .sr-label {{ min-width: 0; }}
+[data-testid="stSidebar"] .status-row {{ padding: 0.42rem 0.1rem; font-size: 0.82rem; }}
+[data-testid="stSidebar"] .status-row .sr-value {{ font-size: 0.82rem; }}
+.side-cap {{ color: {T['t3']}; font-size: 0.72rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.1em; margin: 0.1rem 0 0.35rem 0; }}
+
+/* 侧栏品牌块 */
+.brand {{ padding: 0.15rem 0 0.85rem 0; display: flex; align-items: center; gap: 0.6rem;
+    border-bottom: 1px solid {T['line']}; margin-bottom: 0.5rem; }}
+.brand .b-mark {{ width: 34px; height: 34px; border-radius: 9px; flex: none;
+    display: flex; align-items: center; justify-content: center; font-size: 1.05rem;
+    background: {T['accent']};
+    color: {T['accent_ink']}; box-shadow: 0 3px 10px rgba(2,12,7,0.55); }}
+.brand .b-title {{ font-size: 0.98rem; font-weight: 700; color: {T['t1']};
+    letter-spacing: 0.01em; line-height: 1.3; }}
+.brand .b-sub {{ font-size: 0.66rem; font-weight: 600; text-transform: uppercase;
+    color: {T['t3']}; letter-spacing: 0.16em; margin-top: 0.16rem; }}
+
+/* ================= 15. 输入控件 ================= */
+.stTextInput input, .stNumberInput input, .stDateInput input,
+[data-baseweb="select"] > div, [data-baseweb="input"] > div {{
+    background: {T['bg2']} !important; border-color: {T['line']} !important;
+    border-radius: {T['r1']} !important; color: {T['t1']} !important;
+}}
+.stTextInput input:focus, .stNumberInput input:focus,
+[data-baseweb="select"] > div:focus-within {{
+    border-color: {T['accent']} !important;
+    box-shadow: 0 0 0 2px {T['accent_soft']} !important;
+}}
+[data-baseweb="popover"] li, [data-baseweb="menu"] li {{
+    background: {T['bg2']}; color: {T['t1']};
+}}
+.stSlider [data-baseweb="slider"] div[role="slider"] {{ background: {T['accent']} !important; }}
+/* 主区横向 radio 呈现为筛选胶囊 */
+section.main [data-testid="stRadio"] [role="radiogroup"],
+[data-testid="stAppViewContainer"] [data-testid="stRadio"] [role="radiogroup"] {{
+    display: flex; flex-wrap: wrap; gap: 6px;
+}}
+section.main [data-testid="stRadio"] [role="radiogroup"] label {{
+    border: 1px solid {T['line']}; border-radius: 999px; padding: 0.16rem 0.68rem;
+    background: transparent;
+}}
+section.main [data-testid="stRadio"] [role="radiogroup"] label:hover {{
+    border-color: {T['accent']}; color: {T['t1']};
+}}
+section.main [data-testid="stRadio"] [role="radiogroup"] label:has(input:checked) {{
+    background: {T['accent_soft']}; border-color: {T['accent']};
+}}
+section.main [data-testid="stRadio"] [role="radiogroup"] label:has(input:checked) p {{
+    color: {T['accent']} !important; font-weight: 600;
+}}
+section.main [data-testid="stRadio"] [role="radiogroup"] label p {{ font-size: 0.8rem; }}
+
+/* ================= 16. 按钮 ================= */
+.stButton > button, .stDownloadButton > button {{
+    background: {T['bg2']}; color: {T['t1']}; border: 1px solid {T['line_accent']};
+    border-radius: {T['r1']}; font-weight: 600; font-size: 0.85rem;
+    padding: 0.4rem 1rem;
+    transition: background .2s ease, color .2s ease, border-color .2s ease,
+                transform .2s ease;
+}}
+.stButton > button:hover, .stDownloadButton > button:hover {{
+    background: {T['accent_soft']}; color: {T['accent']};
+    border-color: {T['accent']}; transform: translateY(-1px);
+}}
+.stButton > button[kind="primary"], .stDownloadButton > button[kind="primary"] {{
+    background: {T['accent']};
+    color: {T['accent_ink']}; border: none;
+}}
+.stButton > button[kind="primary"]:hover {{
+    filter: brightness(1.08); color: {T['accent_ink']};
+}}
+/* 按压反馈(taste-skill §4.5 tactile): 物理"按下去"的手感, 而非只有 hover */
+.stButton > button:active, .stDownloadButton > button:active,
+.stLinkButton a:active {{
+    transform: translateY(1px) scale(0.985);
+    transition-duration: 60ms;
+}}
+/* 键盘可达性: 可见焦点环(不可省略的无障碍要求) */
+.stButton > button:focus-visible, .stLinkButton a:focus-visible,
+.stTextInput input:focus-visible, [data-baseweb="select"] > div:focus-within {{
+    outline: 2px solid {T['accent']};
+    outline-offset: 2px;
+}}
+.stLinkButton a {{ background: {T['bg2']}; border: 1px solid {T['line_accent']};
+    color: {T['accent']} !important; border-radius: {T['r1']}; font-weight: 600; }}
+.stLinkButton a:hover {{ background: {T['accent_soft']}; border-color: {T['accent']}; }}
+
+/* ================= 17. 原生 st.metric ================= */
+[data-testid="stMetric"] {{ background: {T['bg2']}; border: 1px solid {T['line']};
+    border-radius: {T['r2']}; padding: 0.8rem 1rem; }}
+[data-testid="stMetricLabel"] p {{ color: {T['t3']} !important; font-size: 0.76rem;
+    text-transform: uppercase; letter-spacing: 0.05em; }}
+[data-testid="stMetricValue"] {{ color: {T['t1']} !important; font-size: 1.32rem;
+    font-variant-numeric: tabular-nums; }}
+[data-testid="stMetricDelta"] {{ font-size: 0.76rem !important; }}
+
+/* ================= 18. 提示 / 展开器 / 代码 ================= */
+.stAlert, [data-testid="stAlert"] {{ border-radius: {T['r1']} !important; }}
+.stAlert p {{ color: {T['t1']} !important; }}
+[data-testid="stExpander"], .streamlit-expanderHeader {{
+    background: {T['bg2']} !important; border: 1px solid {T['line']} !important;
+    border-radius: {T['r1']} !important;
+}}
+[data-testid="stExpander"] summary {{ color: {T['t1']} !important; font-weight: 550; }}
+.stCodeBlock, [data-testid="stCodeBlock"] {{ border-radius: {T['r1']} !important;
+    border: 1px solid {T['line']} !important; }}
+[data-testid="stVerticalBlockBorderWrapper"] {{
+    background: {T['bg2']}; border: 1px solid {T['line']} !important;
+    border-radius: {T['r2']} !important;
+}}
+[data-testid="stProgress"] > div > div > div > div {{ background: {T['accent']}; }}
+.stSpinner > div > div {{ border-top-color: {T['accent']} !important; }}
+
+/* ================= 19. 聊天消息 ================= */
+[data-testid="stChatMessage"], .stChatMessage {{
+    border-radius: {T['r2']} !important; padding: 0.95rem !important;
+    margin-bottom: 0.7rem !important; border: 1px solid {T['line']} !important;
+    background: {T['bg2']} !important;
+}}
+[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) {{
+    background: {T['accent_soft']} !important;
+    border-color: {T['line_accent']} !important;
+}}
+[data-testid="stChatMessage"] p, [data-testid="stChatMessage"] li {{
+    color: {T['t1']} !important;
+}}
+
+/* ================= 20. 其他 ================= */
+hr {{ border: none; border-top: 1px solid {T['line']}; margin: 1rem 0; }}
+.app-footer {{ text-align: center; color: {T['t3']}; font-size: 0.74rem;
+    padding: 1rem; border-top: 1px solid {T['line']}; margin-top: 2.2rem;
+    letter-spacing: 0.02em; }}
+.nav-link-btn {{ display: block; background: {T['bg2']}; border: 1px solid {T['line_accent']};
+    color: {T['accent']} !important; padding: 9px 14px; border-radius: {T['r1']};
+    text-decoration: none !important; font-size: 0.85rem; font-weight: 600;
+    text-align: center;
+    transition: background .2s ease, border-color .2s ease, color .2s ease; }}
+.nav-link-btn:hover {{ background: {T['accent_soft']}; border-color: {T['accent']}; }}
+::-webkit-scrollbar {{ width: 9px; height: 9px; }}
+::-webkit-scrollbar-track {{ background: {T['bg0']}; }}
+::-webkit-scrollbar-thumb {{ background: {T['thumb']}; border-radius: 5px;
+    border: 2px solid transparent; background-clip: padding-box; }}
+::-webkit-scrollbar-thumb:hover {{ background: {T['thumb_hover']}; background-clip: padding-box; }}
+/* Streamlit 自带外壳(菜单 / 页脚 / 工具栏 / Deploy 按钮)全部隐藏:
+   这些默认控件是"未完成感"的主要来源(taste-skill §4.5 完整状态 / redesign 审计) */
+#MainMenu, footer, header [data-testid="stToolbar"],
+[data-testid="stToolbar"], [data-testid="stDecoration"],
+[data-testid="stStatusWidget"], .stAppDeployButton,
+[data-testid="stAppDeployButton"] {{ display: none !important; visibility: hidden !important; }}
+
+/* 固定顶栏(stHeader)默认是 60px 高、不透明、z-index 999990 —— 滚动时会**盖住页面标题**
+   (实测页标题顶部 42px 处被盖 18px, 表现为"标题上半截被切掉")。
+   这里把它压成 0 高且透明, 只把侧栏折叠按钮单独固定在左上角, 保证仍可点击。 */
+[data-testid="stHeader"] {{
+    background: transparent !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    z-index: 1 !important;
+    pointer-events: none;
+}}
+[data-testid="stHeader"] * {{ pointer-events: auto; }}
+[data-testid="stSidebarCollapsedControl"],
+[data-testid="stSidebarCollapseButton"],
+[data-testid="stExpandSidebarButton"] {{
+    position: fixed !important;
+    top: 0.55rem; left: 0.55rem;
+    z-index: 999999 !important;
+    background: {T['bg2']} !important;
+    border: 1px solid {T['line_strong']} !important;
+    border-radius: {T['r1']} !important;
+}}
+
+/* ================= 21. 响应式 (断点 1440 / 1024 / 768 / 480) ================= */
+/* 480 档覆盖 375 基准宽度(手机竖屏), 768 平板竖屏, 1024 平板横屏/小笔记本,
+   1440 桌面超宽。移动优先的收窄策略: 逐级降低栅格宽度与字号, 不清除任何功能。 */
+@media (max-width: 1440px) {{
+    .block-container {{ max-width: 1360px; }}
+}}
+@media (max-width: 1024px) {{
+    .block-container {{ padding-left: 1rem; padding-right: 1rem; }}
+    .page-head {{ flex-direction: column; }}
+    .page-head .ph-meta {{ text-align: left; }}
+    .hero {{ padding: 1.2rem 1.25rem; flex-direction: column; align-items: flex-start;
+             gap: 1rem; }}
+    .hero .hero-stats {{ gap: 1.5rem; flex-wrap: wrap; }}
+    /* 4 卡行在窄视口落为 2×2: 单卡 ≥200px, 数值与标签都不再被挤断 */
+    .metric-row[data-compact="1"] {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
+}}
+@media (max-width: 768px) {{
+    h1 {{ font-size: 1.45rem !important; }}
+    .page-head .ph-title {{ font-size: 1.35rem; }}
+    .hero .hero-stats {{ gap: 1.1rem; }}
+    .hero .hero-stat .v {{ font-size: 1.25rem; }}
+    .metric-card {{ min-height: 92px; padding: 0.85rem 0.95rem; }}
+    .metric-card .mc-value {{ font-size: 1.42rem; }}
+    /* 移动端强制回退为单列(taste-skill §6 MOBILE OVERRIDE) */
+    .bento {{ grid-template-columns: 1fr; }}
+    .bento-main {{ grid-column: auto; }}
+    .bento-main .bt-list {{ columns: 1; }}
+}}
+@media (max-width: 480px) {{
+    .block-container {{ padding-left: 0.7rem; padding-right: 0.7rem; padding-top: 1rem; }}
+    h1 {{ font-size: 1.28rem !important; }}
+    .page-head .ph-title {{ font-size: 1.18rem; }}
+    .brand .b-title {{ font-size: 0.9rem; }}
+    .sec {{ font-size: 0.95rem; }}
+    .metric-card .mc-value {{ font-size: 1.3rem; }}
+    .metric-row {{ grid-template-columns: 1fr; }}
+    .hero .hero-stats {{ gap: 0.85rem; }}
+}}
+
+/* ---- 21.1 内容宽度驱动的回退(容器查询) ----
+   为什么不用视口断点? 侧栏可展开/收起, 主内容宽度在同一视口下能在 ~530px 到 ~1180px
+   之间跳变 —— 按视口宽度判断"是否太窄"会误判(视口 834px 且侧栏展开时, 内容只有 524px,
+   连 1024px 以上的断点全部不生效)。因此把主内容区声明为容器查询上下文, 按真实内容宽度回退。
+   触发对象由内容结构决定(:has 命中"列里含卡片/指标卡"的行), 故侧栏的状态栅格
+   ([data-testid=stSidebar] 内的 st.columns(4)) 与纯按钮行完全不受影响。 */
+[data-testid="stMainBlockContainer"] {{ container-type: inline-size; container-name: main; }}
+
+@container main (max-width: 880px) {{
+    /* 四卡片(3 等分): 内容 524px 时每列仅 ~155px, 字段频繁折断、卡片失衡;
+       回退为每行 2 张 —— 单卡 ~242px 可读, 又不至于把页面拉成一长条;
+       注意 flex-grow 必须为 0、并锁死 max-width: 若允许伸展, 奇数列(如 AI 分析
+       6 张卡分入 3 列)时被挤到次行的那一列会拉满整行(实测 238/238/492),
+       与上一行 238 的节奏断裂; 锁死后奇数尾列保持半宽, 读作规整的两列网格。 */
+    [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .info-card):not(:has(> [data-testid="stColumn"] .metric-row)) > [data-testid="stColumn"],
+    [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .feature-card) > [data-testid="stColumn"] {{
+        flex: 0 1 calc(50% - 0.5rem);
+        min-width: calc(50% - 0.5rem);
+        max-width: calc(50% - 0.5rem);
+    }}
+    /* 三栏(A | VS | B 对比): [2,1,2] 的中间那份在 524px 内容宽下只剩 ~88px,
+       "VS" 卡被挤成细条、两侧信息卡也仅 ~186px。此比例无法靠降列数挽救,
+       只能整体纵向堆叠, 三块各占满宽度。 */
+    [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .metric-row) > [data-testid="stColumn"] {{
+        flex: 1 1 100%;
+        min-width: 100%;
+    }}
+    /* 堆叠后 "VS" 卡不再是一排里的成员, 收成一条横向分隔带: 左侧"对比分析" 右侧"VS" */
+    [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .metric-row) .metric-card {{
+        min-height: 0; padding: 0.6rem 1.05rem;
+        flex-direction: row; align-items: center; justify-content: space-between; gap: 1rem;
+    }}
+    [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .metric-row) .metric-card .mc-value {{
+        margin-top: 0; font-size: 1.28rem;
+    }}
+}}
+
+/* ================= 22. 图标字形(离线矢量图标, 替代 emoji) ================= */
+/* 图标来自 Streamlit 内置的 Material Symbols Rounded 字体(离线可用, 无需联网):
+     · 短代码  :material/icon_name:
+     · 自定义 HTML  <span class="msr">icon_name</span>         */
+.msr, .material-symbols-rounded, [data-testid="stIconMaterial"] {{
+    font-family: "Material Symbols Rounded" !important;
+    font-weight: 400; font-style: normal;
+    font-size: 1.05em; line-height: 1;
+    letter-spacing: normal; text-transform: none; white-space: nowrap;
+    direction: ltr; display: inline-block;
+    -webkit-font-feature-settings: "liga"; -webkit-font-smoothing: antialiased;
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+    vertical-align: -0.135em;
+}}
+/* 文字行内的图标与基线对齐 */
+.sec .msr, .mc-top .msr, .ic-title .msr, .b-mark .msr,
+.es-icon .msr, .ph-title .msr, .bt-icon .msr, .fc-icon .msr {{
+    vertical-align: -0.16em; }}
+
+/* ================= 23. 交互反馈(指针 / 过渡) ================= */
+/* UI UX Pro Max 规范:
+     · 一切可点击元素使用 pointer 光标, 文本输入区保留 text 光标;
+     · 过渡时长统一落在 150–300ms, 且只声明需要过渡的属性(不用 transition:all);
+     · 悬停/选中/聚焦三态齐全, 状态变化不做纯色突变。 */
+.stButton > button, .stDownloadButton > button, .stLinkButton a,
+.stTabs [data-baseweb="tab"],
+[role="radiogroup"] label, [data-testid="stCheckbox"] label,
+[data-testid="stExpander"] summary,
+[data-baseweb="select"] > div, [data-baseweb="input"] > div,
+[data-testid="stFileUploader"] button,
+[data-testid="stFileUploaderDropzone"],
+.stSlider [role="slider"], [data-testid="stPagination"] button,
+[data-testid="stChatInput"] button, .nav-link-btn {{
+    cursor: pointer;
+}}
+.stTextInput input, .stNumberInput input, .stTextArea textarea,
+[data-baseweb="base-input"] input {{ cursor: text; }}
+.stTabs [data-baseweb="tab"] {{
+    transition: background .2s ease, color .2s ease;
+}}
+[data-testid="stExpander"] summary {{
+    transition: background .2s ease, color .2s ease;
+}}
+
+/* ================= 24. 无障碍 ================= */
+/* 对比度核算(WCAG 2.1, 前景 x 四层背景 bg0/bg1/bg2/bg3):
+       t1 #e8f5ec  16.88 / 15.72 / 14.55 / 12.99   正文   AA
+       t2 #9db8a8   8.89 /  8.28 /  7.66 /  6.84   正文   AA
+       t3 #729e80   6.24 /  5.81 /  5.38 /  4.80   弱化   AA(已由 #6b9478 提亮)
+       accent      11.35 / 10.57 /  9.78 /  8.73   强调   AA
+       gold        10.56 /  9.83 /  9.10 /  8.12   警告   AA
+       purple       6.96 /  6.49 /  6.00 /  5.36   语义   AA
+       blue         6.88 /  6.41 /  5.93 /  5.29   语义   AA
+       red          5.94 /  5.53 /  5.12 /  4.57   异常   AA
+   全部文本色在全部背景上 >= 4.5:1。accent_ink(#04170c) 仅用于渐变按钮内部,
+   不属于"文字铺在背景上"的场景。
+      · 焦点环: 键盘可达元素保留 2px 可见描边(不依赖浏览器默认灰框);
+      · 动效: 遵循系统"减少动态效果"偏好, 关闭位移与过渡。 */
+:focus-visible {{ outline: 2px solid {T['accent']}; outline-offset: 2px;
+    border-radius: 4px; }}
+[data-testid="stSidebar"] [role="radiogroup"] label:focus-within,
+.stButton > button:focus-visible, [data-testid="stExpander"] summary:focus-visible {{
+    outline: 2px solid {T['accent']}; outline-offset: 2px;
+}}
+/* ================= 20. 入场动效(数据页"灵动"层) =================
+   taste-skill §4.5: 交错入场(内容不要一次性全弹出), 幅度要小(12px/0.5s),
+   只做"上移+淡入", 不用位移大的动画 —— 数据产品里动效只服务于层级与反馈。
+   但 Streamlit 每次交互都会重跑脚本, 因此动效会重放, 故刻意做短(0.5s)且只在
+   首屏容器生效, 避免频繁操作时产生干扰。 */
+@keyframes tmRise {{
+    from {{ opacity: 0; transform: translateY(12px); }}
+    to   {{ opacity: 1; transform: translateY(0); }}
+}}
+.metric-card, .feature-card, .info-card, [data-testid="stMetric"],
+[data-testid="stDataFrame"], .stTabs, [data-testid="stExpander"] {{
+    animation: tmRise .5s cubic-bezier(.22,.61,.36,1) both;
+}}
+.metric-card:nth-child(2), .feature-card:nth-child(2), [data-testid="stMetric"]:nth-child(2) {{
+    animation-delay: .06s; }}
+.metric-card:nth-child(3), .feature-card:nth-child(3), [data-testid="stMetric"]:nth-child(3) {{
+    animation-delay: .12s; }}
+.metric-card:nth-child(4), .feature-card:nth-child(4), [data-testid="stMetric"]:nth-child(4) {{
+    animation-delay: .18s; }}
+/* ================= 21. 窄屏 / 响应式适配 =================
+   Streamlit 会把 st.columns 自动堆叠, 这里补齐"非栅格部分"的窄屏表现:
+   内边距、字号、KPI 带与表格的最小宽度。断点取 1280 / 1024 / 760 三档。 */
+@media (max-width: 1280px) {{
+    .block-container {{ padding-left: 1.1rem !important; padding-right: 1.1rem !important; }}
+    h1 {{ font-size: 1.5rem !important; }}
+}}
+@media (max-width: 1024px) {{
+    .block-container {{ padding-top: 1.1rem; }}
+    h1 {{ font-size: 1.36rem !important; }}
+    h2 {{ font-size: 1.14rem !important; }}
+    /* KPI 卡内边距收紧, 避免窄屏出现"三行文字挤一张卡" */
+    .metric-card, .info-card, .feature-card {{ padding: 0.85rem 0.95rem !important; }}
+    /* 表格在窄屏允许横向滚动, 而不是把列压成一团 */
+    [data-testid="stDataFrame"] {{ overflow-x: auto; }}
+}}
+@media (max-width: 760px) {{
+    .block-container {{ padding-left: 0.7rem !important; padding-right: 0.7rem !important; }}
+    h1 {{ font-size: 1.2rem !important; }}
+    h2 {{ font-size: 1.05rem !important; }}
+    /* 侧栏在手机上默认收起(Streamlit 自带按钮), 这里只压缩内部间距 */
+    [data-testid="stSidebar"] .block-container {{ padding-top: 0.6rem; }}
+    .app-footer {{ font-size: 0.68rem; }}
+}}
+
+@media (prefers-reduced-motion: reduce) {{
+    *, *::before, *::after {{ animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }}
+    .metric-card:hover, .feature-card:hover {{ transform: none; }}
+}}
+
+/* ================= 25. Data Command 组件对齐层 =================
+   基准来自参照文件 tools/console_template.html 的 .stat / .tbl / .panel / .btn:
+   数字一律等宽 tabular(纵向可比), 微标签 10px 等宽大写 letter-spacing .14em,
+   面板顶部一条发丝线, 表头等宽大写 + 行 hover 升一档底色。
+   本层放在最后, 用于覆盖前面各节里残留的旧写法。 */
+/* -- 微标签: 10px 等宽大写, 给数字打前站 -- */
+.mc-top, .metric-label, .micro-label, .fc-eyebrow, .hero .eyebrow,
+[data-testid="stMetricLabel"] p, [data-testid="stWidgetLabel"] p {{
+    font-family: {FONT_MONO};
+    font-size: 0.625rem; font-weight: 550; letter-spacing: 0.14em;
+    text-transform: uppercase; color: {T['t3']};
+}}
+/* -- 数值: 等宽 tabular, 一列数字上下对齐 -- */
+.mc-value, .metric-value, [data-testid="stMetricValue"],
+[data-testid="stMetricValue"] > div, .kpi-value, .stat-value, .table-value {{
+    font-family: {FONT_MONO};
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+    font-weight: 600; letter-spacing: 0;
+}}
+/* -- 面板: 顶部一条发丝线(参照 .panel::before) -- */
+.metric-card, .feature-card, .info-card {{ position: relative; }}
+.metric-card::before, .feature-card::before, .info-card::before {{
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px;
+    background: linear-gradient(90deg, {T['accent']} 0%, transparent 64%);
+    opacity: .5; pointer-events: none;
+    border-radius: {T['r2']} {T['r2']} 0 0;
+}}
+/* -- 表格: 表头与面板同底(靠描边区分) + 等宽大写 + 行 hover 升一档 -- */
+[data-testid="stTable"] th {{
+    background: {T['bg2']} !important; color: {T['t3']} !important;
+    font-family: {FONT_MONO}; font-size: 0.656rem; font-weight: 550;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 9px 12px !important;
+}}
+[data-testid="stTable"] td {{ padding: 10px 12px !important; }}
+[data-testid="stTable"] tr:hover td {{ background: {T['bg3']} !important; }}
+/* -- 按钮: 主按钮实色 accent + accent_ink(参照 .btn-primary), 圆角 9px -- */
+.stButton > button, .stDownloadButton > button, .stLinkButton a {{
+    border-radius: {T['r1']}; font-weight: 600; letter-spacing: 0.005em;
+    transition: background .16s {T['ease']}, color .16s {T['ease']},
+                border-color .16s {T['ease']}, transform .16s {T['ease']};
+}}
+.stButton > button[kind="primary"], .stDownloadButton > button[kind="primary"] {{
+    background: {T['accent']} !important; color: {T['accent_ink']} !important;
+    border: 1px solid {T['accent']} !important; font-weight: 650;
+}}
+.stButton > button[kind="primary"]:hover, .stDownloadButton > button[kind="primary"]:hover {{
+    background: {T['accent2']} !important; color: {T['accent_ink']} !important;
+    border-color: {T['accent2']} !important; transform: none;
+}}
+/* -- 原生控件皮肤: 本版 Streamlit 的下拉/单选已改成 react-aria(不再是
+      data-baseweb), 前面第 14/15 节按 baseweb 写的规则全部失效; 而控件底色来自
+      .streamlit/config.toml(固定深色), 于是浅色主题下会露出 #090d0b 黑块。
+      这里按新 DOM 重新上令牌, 两套主题都跟随。 -- */
+[data-testid="stSelectbox"] div:has(> input[role="combobox"]) {{
+    background: {T['bg2']} !important; border: 1px solid {T['line']} !important;
+    border-radius: {T['r1']} !important;
+}}
+[data-testid="stSelectbox"] div:has(> input[role="combobox"]):focus-within {{
+    border-color: {T['accent']} !important;
+    box-shadow: 0 0 0 3px {T['accent_soft']} !important;
+}}
+[data-testid="stSelectbox"] input {{
+    color: {T['t1']} !important; background: transparent !important;
+}}
+[data-testid="stSelectbox"] button {{ background: transparent !important; }}
+[data-testid="stSelectbox"] button svg {{ fill: {T['t2']} !important; color: {T['t2']} !important; }}
+[role="listbox"] {{
+    background: {T['bg2']} !important; border: 1px solid {T['line']} !important;
+    border-radius: {T['r1']} !important;
+}}
+[role="listbox"] [role="option"] {{ color: {T['t1']} !important; }}
+[role="listbox"] [role="option"]:hover,
+[role="listbox"] [role="option"][data-selected="true"] {{
+    background: {T['accent_soft']} !important;
+}}
+/* -- 单选圆点: 未选中只留描边(否则浅色下是深色实心块), 选中用强调色 + 墨色内点 -- */
+[data-testid="stRadioOption"] > div > div > div:first-child {{
+    background: transparent !important;
+    border: 1.5px solid {T['line_strong']} !important;
+}}
+[data-testid="stRadioOption"][data-selected="true"] > div > div > div:first-child {{
+    background: {T['accent']} !important; border-color: {T['accent']} !important;
+}}
+[data-testid="stRadioOption"][data-selected="true"] > div > div > div:first-child > div {{
+    background: {T['accent_ink']} !important;
+}}
+/* ================= 26. 登录页设计语言对齐层 =================
+   基准 = 系统登录页 docs/console/login.html 的令牌与组件写法, 目标是与它"同一套皮":
+     · 场景光底:  右上暖光(夕阳) + 左下冷光(草皮反光), 叠一层极淡点阵
+     · 玻璃面:    白玻璃卡片 + 1px 发丝缝 + 冷蓝灰柔影(登录页 .gate / --glass)
+     · 大圆角:    22 面板 / 14 内件 / 10 控件(登录页 --r / --r-sm / --r-xs)
+     · 暖橙强调:  #E2552B 渐变主按钮 + 顶部内高光 + 悬停暖投影(登录页 .btn)
+     · 排版:      衬线展示标题(拉丁) + 等宽大写微标签(letter-spacing .24em)
+   本层放在最后: 只覆盖"视觉", 不改任何布局尺度、结构与交互, 因此前面各节的
+   响应式/无障碍/组件修复全部继续生效。 */
+::selection {{ background: {T['line_accent']}; color: {T['t1']}; }}
+.stApp {{
+    background: {T['bg0']} !important;
+    background-image:
+        {T['scene']},
+        radial-gradient({T['dot']} 1px, transparent 1.4px) !important;
+    background-size: auto, auto, auto, 22px 22px !important;
+    background-repeat: no-repeat, no-repeat, no-repeat, repeat !important;
+    background-attachment: fixed, fixed, fixed, fixed !important;
+}}
+
+/* -- 玻璃面板: 统一"面板类"块的表面语言 -- */
+[data-testid="stSidebar"], section[data-testid="stSidebar"] {{
+    background: {T['glass']} !important;
+    backdrop-filter: blur(20px) saturate(1.15);
+    -webkit-backdrop-filter: blur(20px) saturate(1.15);
+    border-right: 1px solid {T['line']} !important;
+}}
+.hero, [data-testid="stMetric"], [data-testid="stExpander"],
+[data-testid="stVerticalBlockBorderWrapper"], [data-testid="stChatMessage"] {{
+    background: {T['glass_strong']} !important;
+    backdrop-filter: blur(18px) saturate(1.12);
+    -webkit-backdrop-filter: blur(18px) saturate(1.12);
+    border: 1px solid {T['line']} !important;
+    border-radius: {T['r3']} !important;
+    box-shadow: {T['shadow_sm']} !important;
+}}
+.feature-card, .info-card {{
+    background: {T['glass_strong']} !important;
+    backdrop-filter: blur(18px) saturate(1.12);
+    -webkit-backdrop-filter: blur(18px) saturate(1.12);
+    border: 1px solid {T['line']} !important;
+    border-radius: {T['r3']} !important;
+    box-shadow: {T['shadow_sm']} !important;
+}}
+/* 指标卡保留每卡自己的 1px 同色描边(--mc-line), 只把表面换成玻璃 + 大圆角 + 柔影 */
+.metric-card {{
+    background: {T['glass_strong']} !important;
+    backdrop-filter: blur(18px) saturate(1.12);
+    -webkit-backdrop-filter: blur(18px) saturate(1.12);
+    border: 1px solid var(--mc-line, {T['line']}) !important;
+    border-radius: {T['r3']} !important;
+    box-shadow: {T['shadow_sm']} !important;
+}}
+.metric-card:hover {{ background: {T['glass_strong']} !important;
+    box-shadow: {T['shadow']} !important; border-color: {T['accent']} !important; }}
+[data-testid="stDataFrame"], [data-testid="stTable"] {{
+    background: {T['glass_strong']} !important;
+    backdrop-filter: blur(18px) saturate(1.1);
+    -webkit-backdrop-filter: blur(18px) saturate(1.1);
+    border: 1px solid {T['line']} !important;
+    border-radius: {T['r2']} !important;
+    box-shadow: {T['shadow_sm']} !important;
+}}
+/* 面板顶部的发丝高光: 由绿渐变改为暖色渐变(登录页 .panel::before) */
+.metric-card::before, .feature-card::before, .info-card::before {{
+    background: linear-gradient(90deg, {T['accent']} 0%, transparent 64%) !important;
+    opacity: .55 !important;
+}}
+
+/* -- 排版: 衬线展示标题 + 等宽大写微标签 -- */
+h1, h2, .page-head .ph-title, .hero h2, .sec, .brand .b-title, .empty-state .es-title {{
+    font-family: {T['font_title']} !important;
+    font-weight: 600 !important; letter-spacing: -0.005em !important;
+}}
+h1 {{ font-size: 1.86rem !important; }}
+.page-head .ph-title {{ font-size: 1.92rem !important; line-height: 1.2 !important; }}
+h2 {{ font-size: 1.34rem !important; }}
+.hero h2 {{ font-size: 1.52rem !important; }}
+.sec {{ font-size: 1.2rem !important; }}
+.mc-top, .metric-label, .micro-label, .fc-eyebrow, .hero .eyebrow,
+[data-testid="stMetricLabel"] p, [data-testid="stWidgetLabel"] p,
+.side-cap, .page-head .ph-crumb, .brand .b-sub, [data-testid="stSidebar"] h3 {{
+    font-family: {FONT_MONO} !important;
+    font-size: 0.625rem !important; font-weight: 600 !important;
+    letter-spacing: 0.24em !important; text-transform: uppercase !important;
+    color: {T['t3']} !important;
+}}
+/* 数值: 等宽 tabular(登录页的数字同样走等宽栈) */
+.mc-value, .metric-value, [data-testid="stMetricValue"], .kpi-value, .stat-value,
+.hero .hero-stat .v, .table-value {{
+    font-family: {FONT_MONO} !important;
+    font-variant-numeric: tabular-nums !important;
+}}
+
+/* -- 按钮: 暖色渐变主按钮 + 玻璃次按钮(登录页 .btn / .ghost) -- */
+.stButton > button, .stDownloadButton > button, .stLinkButton a {{
+    background: {T['glass_strong']} !important; color: {T['t1']} !important;
+    border: 1px solid {T['line']} !important; border-radius: {T['r1']} !important;
+    font-weight: 600 !important; letter-spacing: 0.01em;
+    box-shadow: {T['inset_hl']};
+    transition: background .18s {T['ease']}, color .18s {T['ease']},
+                border-color .18s {T['ease']}, box-shadow .18s {T['ease']},
+                transform .12s {T['ease']} !important;
+}}
+.stButton > button:hover, .stDownloadButton > button:hover, .stLinkButton a:hover {{
+    background: {T['glass_strong']} !important; color: {T['accent']} !important;
+    border-color: {T['accent']} !important; box-shadow: {T['inset_hl']}, {T['shadow_sm']} !important;
+}}
+.stButton > button[kind="primary"], .stDownloadButton > button[kind="primary"] {{
+    background: {T['accent_grad']} !important; color: {T['accent_ink']} !important;
+    border: 1px solid {T['accent2']} !important; font-weight: 650 !important;
+    box-shadow: {T['inset_hl']} !important;
+}}
+.stButton > button[kind="primary"]:hover, .stDownloadButton > button[kind="primary"]:hover {{
+    background: {T['accent_grad']} !important; color: {T['accent_ink']} !important;
+    border-color: {T['accent2']} !important; filter: brightness(1.05);
+    box-shadow: {T['inset_hl']}, {T['accent_shadow']} !important; transform: none !important;
+}}
+.stButton > button[kind="primary"]:active, .stDownloadButton > button[kind="primary"]:active {{
+    transform: translateY(1px) !important;
+}}
+
+/* -- 输入控件: 玻璃底 + 暖色聚焦环(登录页 .field:focus) -- */
+.stTextInput input, .stNumberInput input, .stDateInput input, .stTextArea textarea,
+[data-baseweb="select"] > div, [data-baseweb="input"] > div,
+[data-testid="stSelectbox"] div:has(> input[role="combobox"]) {{
+    background: {T['glass_strong']} !important;
+    border: 1px solid {T['line']} !important;
+    border-radius: {T['r1']} !important; color: {T['t1']} !important;
+}}
+.stTextInput input:focus, .stNumberInput input:focus, .stDateInput input:focus,
+.stTextArea textarea:focus, [data-baseweb="select"] > div:focus-within,
+[data-baseweb="input"] > div:focus-within,
+[data-testid="stSelectbox"] div:has(> input[role="combobox"]):focus-within {{
+    border-color: {T['accent']} !important;
+    box-shadow: 0 0 0 4px {T['accent_soft']} !important;
+}}
+[data-testid="stSelectbox"] input {{ background: transparent !important; }}
+[role="listbox"] {{
+    background: {T['glass_strong']} !important; border: 1px solid {T['line']} !important;
+    border-radius: {T['r2']} !important; box-shadow: {T['shadow']} !important;
+    backdrop-filter: blur(18px) saturate(1.1);
+}}
+
+/* -- 标签页: 分段药丸(登录页 .seg) -- */
+.stTabs [data-baseweb="tab-list"] {{
+    background: {T['glass']} !important; border: 1px solid {T['line']} !important;
+    border-radius: {T['pill']} !important; padding: 4px !important; gap: 4px !important;
+    width: max-content; max-width: 100%;
+    backdrop-filter: blur(14px) saturate(1.1);
+    -webkit-backdrop-filter: blur(14px) saturate(1.1);
+}}
+.stTabs [data-baseweb="tab"] {{
+    border-radius: {T['pill']} !important; padding: 6px 16px !important;
+    color: {T['t2']} !important; font-weight: 600 !important;
+}}
+.stTabs [aria-selected="true"] {{
+    background: {T['glass_strong']} !important; color: {T['accent']} !important;
+    box-shadow: {T['shadow_sm']} !important;
+}}
+
+/* -- 状态点: 实心 + 一圈淡光晕(登录页的 "LIVE" 圆点) -- */
+.status-dot {{ box-shadow: 0 0 0 3px {T['ok_halo']}; }}
+.status-dot.off {{ box-shadow: 0 0 0 3px {T['line']}; }}
+.status-dot.warn {{ box-shadow: 0 0 0 3px {T['gold_soft']}; }}
+.status-dot.err {{ box-shadow: 0 0 0 3px {T['red_soft']}; }}
+.badge {{ border-radius: {T['pill']}; font-family: {FONT_MONO};
+    font-size: 0.67rem; letter-spacing: 0.06em; }}
+.badge-ok {{ background: {T['ok_soft']} !important; border-color: {T['ok']} !important;
+    color: {T['ok']} !important; }}
+.badge-wait {{ background: {T['gold_soft']} !important; border-color: {T['gold']} !important;
+    color: {T['gold']} !important; }}
+.badge-info {{ background: {T['blue_soft']} !important; border-color: {T['blue']} !important;
+    color: {T['blue']} !important; }}
+.badge-err {{ background: {T['red_soft']} !important; border-color: {T['red']} !important;
+    color: {T['red']} !important; }}
+
+/* -- 语义盒: 1px 同色描边 + 极淡同色底(登录页 .note 的写法) -- */
+.info-box, .success-box, .warn-box, .error-box {{ border-radius: {T['r2']} !important; }}
+.info-box {{ background: {T['blue_soft']} !important; border-color: {T['blue']} !important; }}
+.success-box {{ background: {T['ok_soft']} !important; border-color: {T['ok']} !important; }}
+.warn-box {{ background: {T['gold_soft']} !important; border-color: {T['gold']} !important; }}
+.error-box {{ background: {T['red_soft']} !important; border-color: {T['red']} !important; }}
+.empty-state {{
+    border: 1px dashed {T['line_accent']} !important; border-radius: {T['r3']} !important;
+    background: linear-gradient(180deg, {T['accent_soft']} 0%, transparent 100%) !important;
+}}
+.empty-state .es-desc code, .code-chip {{
+    background: {T['accent_soft']} !important; border-color: {T['line_accent']} !important;
+}}
+
+/* -- 表格: 表头等宽大写 + 行 hover 暖色微染 -- */
+[data-testid="stTable"] th, [data-testid="stDataFrame"] [role="columnheader"] {{
+    background: {T['glass']} !important; color: {T['t3']} !important;
+    font-family: {FONT_MONO} !important; font-size: 0.64rem !important;
+    font-weight: 600 !important; letter-spacing: 0.16em !important;
+    text-transform: uppercase !important;
+    border-bottom: 1px solid {T['line']} !important;
+}}
+[data-testid="stTable"] tr:hover td,
+[data-testid="stDataFrame"] [role="row"]:hover [role="gridcell"] {{
+    background: {T['accent_soft']} !important;
+}}
+
+/* -- 侧栏选中项 / 品牌块 -- */
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {{
+    background: {T['glass_strong']} !important;
+    box-shadow: {T['inset_hl']}, {T['shadow_sm']} !important;
+}}
+[data-testid="stSidebar"] [role="radiogroup"] label:hover {{ background: {T['bg3']} !important; }}
+.brand {{ border-bottom: 1px solid {T['line']}; }}
+.brand .b-mark {{
+    background: {T['accent_grad']} !important; border-radius: {T['r1']} !important;
+    box-shadow: {T['shadow_sm']} !important;
+}}
+.chip {{ border-radius: {T['pill']}; }}
+.chip.on {{ border-color: {T['accent']} !important; color: {T['accent']} !important;
+    background: {T['accent_soft']} !important; }}
+
+/* -- 入场动效: 与登录页同一条曲线(rise .7s), 只做上移淡入 -- */
+@keyframes tmRise {{
+    from {{ opacity: 0; transform: translateY(14px); }}
+    to   {{ opacity: 1; transform: translateY(0); }}
+}}
+.metric-card, .feature-card, .info-card, [data-testid="stMetric"],
+[data-testid="stDataFrame"], .stTabs, [data-testid="stExpander"], .hero {{
+    animation: tmRise .7s {T['ease']} both;
+}}
+.metric-card:nth-child(2), .feature-card:nth-child(2) {{ animation-delay: .07s; }}
+.metric-card:nth-child(3), .feature-card:nth-child(3) {{ animation-delay: .14s; }}
+.metric-card:nth-child(4), .feature-card:nth-child(4) {{ animation-delay: .21s; }}
+@media (prefers-reduced-motion: reduce) {{
+    .metric-card, .feature-card, .info-card, .hero {{ animation: none !important; }}
+}}
+
+/* ================= 27. 参照稿(晴空蓝玻璃仪表盘)组件层 =================
+   用户给的参照稿 = 后台 UI 设计(晴空蓝玻璃仪表盘)。它比第 26 节多出这些特征,
+   这里只补"视觉", 不引入任何新结构:
+     · KPI 卡: 大号等宽数字 + 右上角淡蓝光斑 + 等宽微标签(参照稿的指标卡)
+     · 进度条: 天蓝渐变 + 胶囊端头(参照稿的任务进度)
+     · 选中态: 天蓝淡底 + 左侧天蓝指示条(参照稿的导航选中)
+     · 组件面: 提示条/展开器头部同样走玻璃 + 发丝线
+   全部走令牌, 因此切主题(日场/夜场)自动跟随。 */
+.metric-card {{ position: relative; overflow: hidden; }}
+.metric-card .mc-value, .metric-card .metric-value {{
+    font-size: 1.86rem !important; font-weight: 700 !important; letter-spacing: -0.012em !important;
+}}
+.metric-card::after {{
+    content: ""; position: absolute; right: -34px; top: -48px; width: 132px; height: 132px;
+    background: radial-gradient(circle, {T['accent_soft']} 0%, transparent 70%);
+    pointer-events: none;
+}}
+.metric-card .mc-hint {{
+    font-family: {FONT_MONO} !important; font-size: 0.7rem !important; letter-spacing: 0.02em;
+}}
+/* KPI 卡左上角的图标砖(参照稿的指标卡都有一枚彩色圆角图标砖) */
+.metric-card .mc-top .msr {{
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; margin-right: 7px; border-radius: 8px;
+    background: {T['accent_soft']} !important; color: {T['accent']} !important;
+    font-size: 15px !important; line-height: 1;
+}}
+/* 进度条: 天蓝渐变(参照稿的任务进度条) */
+[data-testid="stProgress"] > div > div {{
+    background: {T['accent_soft']} !important; border-radius: {T['pill']} !important;
+}}
+[data-testid="stProgress"] > div > div > div {{
+    background: {T['accent_grad']} !important; border-radius: {T['pill']} !important;
+}}
+/* 侧栏分组标题(参照稿的"基础/操作/数据/管理"分组) */
+[data-testid="stSidebar"] h3 {{
+    margin-top: 0.9rem !important; padding-bottom: 0.35rem !important;
+    border-bottom: 1px solid {T['line']} !important;
+}}
+/* 侧栏当前页: 天蓝淡底 + 左侧指示条(参照稿的选中态) */
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {{
+    background: {T['accent_soft']} !important;
+    box-shadow: inset 2px 0 0 {T['accent']}, {T['shadow_sm']} !important;
+}}
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) p {{
+    color: {T['accent']} !important; font-weight: 650 !important;
+}}
+/* 展开器头部 / 提示条: 同一套玻璃语言 */
+[data-testid="stExpander"] summary:hover {{ background: {T['accent_soft']} !important; }}
+.stAlert, [data-testid="stToast"] {{
+    backdrop-filter: blur(16px) saturate(1.1);
+    -webkit-backdrop-filter: blur(16px) saturate(1.1);
+}}
+/* 滚动条: 蓝灰滑块(参照稿的滚动条是浅蓝灰, 不是系统默认灰) */
+*::-webkit-scrollbar {{ width: 10px; height: 10px; }}
+*::-webkit-scrollbar-thumb {{ background: {T['thumb']} !important; border-radius: {T['pill']}; }}
+*::-webkit-scrollbar-thumb:hover {{ background: {T['thumb_hover']} !important; }}
+
+/* ================= 28. 参照稿版式层(顶栏 / 快捷操作卡 / 弹层) =================
+   用户要求"高度模仿、复刻图片 UI" —— 参照稿的骨架是: 顶栏(面包屑 + 消息/个人中心/
+   退出系统) → KPI 卡行 → 快捷操作 + 进度卡 → 大视区 + 右列通知。第 27 节只做了
+   "卡片质感", 这里补**版式与控件**: 顶栏用 Streamlit 原生列 + popover 实现(要能
+   触发注销与切页, 不能放进 iframe —— iframe 里的链接会整页重载, 登录态会丢)。 */
+.st-key-topbar {{
+    border-bottom: 1px solid {T['line']} !important;
+    padding-bottom: .5rem !important; margin-bottom: 1.1rem !important;
+}}
+.tb-title {{
+    font-family: {FONT_TITLE} !important;
+    font-size: 1.42rem !important; font-weight: 700 !important;
+    color: {T['t1']} !important; line-height: 1.2; letter-spacing: -0.01em;
+}}
+.tb-crumb {{
+    font-family: {FONT_MONO} !important; font-size: .64rem !important;
+    letter-spacing: .18em; text-transform: uppercase;
+    color: {T['t3']} !important; margin-top: .28rem;
+}}
+/* 顶栏品牌块(设计说明②: 左侧蓝色足球图标 + 系统名; 品牌不再挂在侧栏顶部) */
+.tb-left {{ display: flex !important; align-items: center !important; gap: .85rem !important; }}
+.tb-brand {{ display: flex !important; align-items: center !important; gap: .58rem !important; }}
+.tb-logo {{
+    width: 38px; height: 38px; flex: 0 0 38px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    background: {T['accent_grad']} !important; color: {T['accent_ink']} !important;
+    box-shadow: 0 12px 24px -14px {T['accent_shadow']};
+    font-size: 1.15rem !important; line-height: 1;
+}}
+.tb-logo .msr {{ font-size: 1.22rem !important; color: {T['accent_ink']} !important; }}
+.tb-brand-name {{
+    font-size: .92rem !important; font-weight: 700 !important;
+    color: {T['t1']} !important; line-height: 1.12;
+}}
+.tb-brand-sub {{
+    font-family: {FONT_MONO} !important; font-size: .56rem !important;
+    letter-spacing: .16em; text-transform: uppercase;
+    color: {T['t3']} !important; margin-top: .18rem;
+}}
+.tb-sep {{ width: 1px; height: 30px; background: {T['line']}; flex: 0 0 auto; }}
+.st-key-topbar [data-testid="stPopover"] > button,
+.st-key-topbar [data-testid="stBaseButton-secondary"] {{
+    background: {T['glass_strong']} !important;
+    border: 1px solid {T['line']} !important; border-radius: {T['pill']} !important;
+    color: {T['t2']} !important; font-size: .78rem !important; font-weight: 600 !important;
+    min-height: 34px !important; padding: 0 .7rem !important;
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+}}
+.st-key-topbar [data-testid="stPopover"] > button:hover,
+.st-key-topbar [data-testid="stBaseButton-secondary"]:hover {{
+    border-color: {T['accent']} !important; color: {T['accent']} !important;
+    background: {T['accent_soft']} !important;
+}}
+.tb-pop-cap {{
+    font-family: {FONT_MONO} !important; font-size: .62rem !important;
+    letter-spacing: .18em; text-transform: uppercase; color: {T['t3']};
+    margin-bottom: .5rem;
+}}
+.tb-pop-row {{
+    display: flex; gap: .55rem; align-items: flex-start;
+    padding: .5rem .1rem; border-bottom: 1px solid {T['line']}; font-size: .8rem;
+}}
+.tb-pop-row:last-child {{ border-bottom: none; }}
+.tb-pop-row b {{ color: {T['t1']}; font-size: .8rem; }}
+.tb-pop-val {{ display: block; color: {T['t2']}; font-size: .74rem; margin-top: .15rem; }}
+.tb-pop-time {{
+    display: block; font-family: {FONT_MONO}; font-size: .62rem;
+    letter-spacing: .1em; color: {T['t3']}; margin-top: .2rem;
+}}
+.dot {{ width: 7px; height: 7px; border-radius: 50%; margin-top: .35rem; flex: 0 0 auto; }}
+.dot.info {{ background: {T['accent']}; }}
+.dot.warn {{ background: {T['gold']}; }}
+.dot.ok {{ background: {T['ok']}; }}
+.dot.danger {{ background: {T['red']}; }}
+.tb-me {{ display: flex; align-items: center; gap: .6rem; }}
+.tb-me-av {{
+    width: 34px; height: 34px; border-radius: 11px; display: flex;
+    align-items: center; justify-content: center; font-weight: 800; font-size: .95rem;
+    background: {T['accent_grad']} !important; color: {T['accent_ink']} !important;
+}}
+.tb-me-role {{
+    display: block; font-family: {FONT_MONO}; font-size: .62rem;
+    letter-spacing: .14em; color: {T['t3']}; margin-top: .15rem;
+}}
+/* 快捷操作卡(设计说明⑦: 右列的四个浅蓝图标按钮) */
+.st-key-qa_card, .st-key-qa_card_admin_card {{
+    background: {T['glass_strong']} !important;
+    border: 1px solid {T['line']} !important; border-radius: {T['r3']} !important;
+    padding: .9rem 1rem 1rem !important; box-shadow: {T['shadow_sm']} !important;
+    backdrop-filter: blur(18px) saturate(1.08);
+    -webkit-backdrop-filter: blur(18px) saturate(1.08);
+}}
+.qa-head {{
+    display: flex !important; align-items: baseline !important; gap: .5rem !important;
+    margin-bottom: .7rem;
+}}
+.qa-title {{
+    font-size: .82rem !important; font-weight: 700 !important; color: {T['t1']} !important;
+}}
+.qa-sub {{
+    font-family: {FONT_MONO} !important; font-size: .6rem !important;
+    letter-spacing: .1em; color: {T['t3']} !important;
+}}
+.qa-cap {{
+    font-family: {FONT_MONO} !important; font-size: .62rem !important;
+    letter-spacing: .2em; text-transform: uppercase; color: {T['t3']};
+    margin-bottom: .7rem;
+}}
+.st-key-qa_card button, .st-key-qa_card_admin_card button {{
+    min-height: 62px !important; border-radius: {T['r2']} !important;
+    background: {T['accent_soft']} !important;
+    border: 1px solid {T['glass_line']} !important;
+    transition: transform .2s {T['ease']}, box-shadow .2s {T['ease']}, border-color .2s {T['ease']};
+}}
+.st-key-qa_card button p, .st-key-qa_card_admin_card button p {{
+    display: flex !important; flex-direction: column !important;
+    align-items: center !important; gap: .3rem !important;
+    font-size: .72rem !important; font-weight: 600 !important; color: {T['t1']} !important;
+}}
+.st-key-qa_card button span[data-testid="stIconMaterial"],
+.st-key-qa_card_admin_card button span[data-testid="stIconMaterial"] {{
+    font-size: 1.28rem !important; color: {T['accent']} !important;
+    width: 1.7rem !important; min-width: 1.7rem !important;
+    display: inline-flex !important; align-items: center; justify-content: center;
+}}
+.st-key-qa_card button:hover, .st-key-qa_card_admin_card button:hover {{
+    transform: translateY(-2px);
+    border-color: {T['accent']} !important;
+    box-shadow: 0 16px 32px -18px {T['accent_shadow']} !important;
+}}
+/* 参照稿的「分组导航」: 侧栏 radio 列表里插入组标题(纯视觉, 不改交互) */
+.stApp:has(.nav-groups-user) section[data-testid="stSidebar"] div[role="radiogroup"] > label,
+.stApp:has(.nav-groups-admin) section[data-testid="stSidebar"] div[role="radiogroup"] > label,
+.stApp:has(.nav-groups-both) section[data-testid="stSidebar"] div[role="radiogroup"] > label {{
+    position: relative;
+}}
+.stApp:has(.nav-groups-user) section[data-testid="stSidebar"] div[role="radiogroup"] > label::before,
+.stApp:has(.nav-groups-admin) section[data-testid="stSidebar"] div[role="radiogroup"] > label::before,
+.stApp:has(.nav-groups-both) section[data-testid="stSidebar"] div[role="radiogroup"] > label::before {{
+    content: ""; position: absolute; top: -19px; left: 3px;
+    font: 600 9.5px/1 ui-monospace, monospace; letter-spacing: .2em;
+    text-transform: uppercase; color: {T['t3']};
+}}
+.stApp:has(.nav-groups-user) section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(1)::before {{ content: "概览"; }}
+.stApp:has(.nav-groups-user) section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(2)::before {{ content: "数据"; }}
+.stApp:has(.nav-groups-user) section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(5)::before {{ content: "分析"; }}
+.stApp:has(.nav-groups-admin) section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(1)::before {{ content: "概览"; }}
+.stApp:has(.nav-groups-admin) section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(2)::before {{ content: "数据"; }}
+.stApp:has(.nav-groups-admin) section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(3)::before {{ content: "运维"; }}
+/* 统一入口(管理员登录后 14 页: 概览 + 数据 + 分析 + 管理) */
+.stApp:has(.nav-groups-both) section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(1)::before {{ content: "概览"; }}
+.stApp:has(.nav-groups-both) section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(2)::before {{ content: "数据"; }}
+.stApp:has(.nav-groups-both) section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(5)::before {{ content: "分析"; }}
+.stApp:has(.nav-groups-both) section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(9)::before {{ content: "管理"; }}
+.stApp:has(.nav-groups-user) section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(2),
+.stApp:has(.nav-groups-user) section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(5),
+.stApp:has(.nav-groups-admin) section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(2),
+.stApp:has(.nav-groups-admin) section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(3),
+.stApp:has(.nav-groups-both) section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(2),
+.stApp:has(.nav-groups-both) section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(5),
+.stApp:has(.nav-groups-both) section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(9) {{
+    margin-top: 2.15rem !important;
+}}
+
+/* ================= 29. 侧栏收起救援按钮 ================= */
+/* 实测(Streamlit 1.62 + 系统 Chrome): 侧栏收起后 Streamlit 自带的展开控件
+   [data-testid="stExpandSidebarButton"] 被祖先容器 display:none 掉 —— 计算宽度
+   41.6px 但 getBoundingClientRect() 是 0×0, 页面上没有任何可点的「展开」按钮
+   (用户报: 侧边栏收起后无法返回)。救援按钮由 dash.sidebar_rescue() 挂到 body,
+   这里只给它上主题皮肤; 收起态才显形(display 由脚本控制)。 */
+#sb-rescue {{
+    position: fixed !important;
+    top: 0.7rem; left: 0.7rem;
+    z-index: 1000000;
+    display: none;
+    align-items: center; justify-content: center;
+    width: 2.35rem; height: 2.35rem;
+    padding: 0;
+    border-radius: 12px;
+    border: 1px solid {T['line_strong']};
+    background: {T['bg2']};
+    color: {T['t2']};
+    cursor: pointer;
+    box-shadow: 0 10px 26px -16px rgba(23, 58, 104, .55);
+    transition: color .15s, border-color .15s, transform .15s;
+}}
+#sb-rescue:hover {{ color: {T['accent']}; border-color: {T['line_accent']}; transform: translateY(-1px); }}
+#sb-rescue:active {{ transform: translateY(0); }}
+/* 收起态下 Streamlit 自带的折叠箭头不可见却仍吃指针、正压在侧栏用户卡左上角:
+   禁止它接收点击, 避免误触收起。 */
+[data-testid="stSidebarCollapseButton"] {{ pointer-events: none !important; }}
+
+/* ================= 30. 液态玻璃覆写层(Apple Liquid Glass) =================
+   用户设计说明(把"磨砂玻璃"换成"液态玻璃"), 逐条落到令牌:
+     · 更透明          background rgba(255,255,255,.15)      -> {T['glass_lite']}
+     · 提亮饱和        backdrop-filter blur(8px) saturate(180%)
+     · 镜面高光描边    1px solid rgba(255,255,255,.6)         -> {T['glass_edge']}
+     · 更大圆角        24px                                   -> {T['r4']}
+     · 内高光 + 带色投影 inset 0 1px 1px rgba(255,255,255,.8),
+                       0 8px 32px rgba(59,130,246,.12)         -> {T['glass_shadow']}
+   本层在第 26/27/28 节之后, 因此同权重时它胜出; 只覆盖"表面", 不改任何布局、
+   结构与交互(尺寸/位置/文案全不动), 切主题后自动跟随两套令牌。 */
+[data-testid="stSidebar"], section[data-testid="stSidebar"] {{
+    background: linear-gradient(180deg, {T['glass_mid']} 0%, {T['glass_lite']} 100%) !important;
+    backdrop-filter: {T['glass_blur']} !important;
+    -webkit-backdrop-filter: {T['glass_blur']} !important;
+    border-right: 1px solid {T['glass_edge']} !important;
+    box-shadow: {T['glass_hl']}, 1px 0 0 {T['glass_edge']} !important;
+}}
+.hero, [data-testid="stMetric"], [data-testid="stExpander"],
+[data-testid="stVerticalBlockBorderWrapper"], [data-testid="stChatMessage"],
+.feature-card, .info-card, .metric-card, .bento-main, .bento-item, .nav-link-btn,
+[data-testid="stDataFrame"], [data-testid="stTable"] {{
+    background: linear-gradient(155deg, {T['glass_mid']} 0%, {T['glass_lite']} 100%) !important;
+    backdrop-filter: {T['glass_blur']} !important;
+    -webkit-backdrop-filter: {T['glass_blur']} !important;
+    border: 1px solid {T['glass_edge']} !important;
+    border-radius: {T['r4']} !important;
+    box-shadow: {T['glass_shadow']}, 0 0 0 1px {T['line']} !important;
+}}
+/* -- 悬浮玻璃板: 整个驾驶舱 = 一块浮在晴空上的液态玻璃(参照图的关键观感) --
+   顶栏(品牌 + 三枚胶囊)留在板**外**的天空带上, 玻璃板从顶栏下沿开始 —— 用伪元素
+   画板面, 于是板子的描边/投影不会把天空带一起圈进去。 */
+[data-testid="stMainBlockContainer"], [data-testid="stMain"] > .block-container {{
+    position: relative !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    margin: 14px 18px 20px !important;
+}}
+[data-testid="stMainBlockContainer"]::before,
+[data-testid="stMain"] > .block-container::before {{
+    content: ''; position: absolute; z-index: -1; pointer-events: none;
+    left: 0; right: 0; top: 130px; bottom: 0;
+    background: linear-gradient(168deg, {T['glass_mid']} 0%, {T['glass_lite']} 100%);
+    backdrop-filter: {T['glass_blur']};
+    -webkit-backdrop-filter: {T['glass_blur']};
+    border: 1px solid {T['glass_edge']};
+    border-radius: 30px;
+    box-shadow: {T['glass_hl']}, 0 0 0 1px {T['line']},
+                0 26px 70px -30px rgba(31,111,196,.42);
+}}
+[data-testid="stSidebar"], section[data-testid="stSidebar"] {{
+    margin: 16px 0 20px 16px !important;
+    border-radius: 26px !important;
+    border: 1px solid {T['glass_edge']} !important;
+    box-shadow: {T['glass_hl']}, 0 0 0 1px {T['line']} !important;
+}}
+/* 顶栏玻璃胶囊(消息 / 个人中心 / 退出系统) + 右列快捷操作按钮 */
+.st-key-topbar [data-testid="stPopover"] > button,
+.st-key-topbar [data-testid="stBaseButton-secondary"],
+.st-key-qa_card button, .st-key-qa_card_admin_card button {{
+    background: linear-gradient(180deg, {T['glass_mid']} 0%, {T['glass_lite']} 100%) !important;
+    backdrop-filter: {T['glass_blur']} !important;
+    -webkit-backdrop-filter: {T['glass_blur']} !important;
+    border: 1px solid {T['glass_edge']} !important;
+    border-radius: {T['pill']} !important;
+    box-shadow: {T['glass_hl']}, 0 8px 26px -16px rgba(59,130,246,.34) !important;
+}}
+.st-key-qa_card button, .st-key-qa_card_admin_card button {{
+    border-radius: {T['r2']} !important;
+}}
+.st-key-topbar [data-testid="stPopover"] > button:hover,
+.st-key-topbar [data-testid="stBaseButton-secondary"]:hover,
+.st-key-qa_card button:hover, .st-key-qa_card_admin_card button:hover {{
+    border-color: {T['accent']} !important;
+}}
+/* 侧栏导航项: 常态透明玻璃 + 选中态镜面高光(参照稿的蓝色液态玻璃高亮) */
+[data-testid="stSidebar"] [role="radiogroup"] label {{
+    border: 1px solid transparent !important;
+    border-radius: {T['r2']} !important;
+}}
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {{
+    background: {T['glass_mid']} !important;
+    backdrop-filter: {T['glass_blur']};
+    -webkit-backdrop-filter: {T['glass_blur']};
+    border: 1px solid {T['glass_edge']} !important;
+    box-shadow: inset 2px 0 0 {T['accent']}, {T['glass_hl']} !important;
+}}
+/* 下拉弹层 / 提示条: 同一种液态玻璃 */
+[data-baseweb="popover"] [data-baseweb="menu"], [data-testid="stPopoverBody"],
+.stAlert, [data-testid="stToast"] {{
+    background: linear-gradient(180deg, {T['glass_mid']} 0%, {T['glass_lite']} 100%) !important;
+    backdrop-filter: {T['glass_blur']} !important;
+    -webkit-backdrop-filter: {T['glass_blur']} !important;
+    border: 1px solid {T['glass_edge']} !important;
+    border-radius: {T['r2']} !important;
+    box-shadow: {T['glass_shadow']}, 0 0 0 1px {T['line']} !important;
+}}
+/* 侧栏收起救援按钮: 常驻可见, 所以给它一块不透明些的玻璃, 免得看穿到底下内容 */
+#sb-rescue {{
+    background: linear-gradient(180deg, {T['glass_mid']} 0%, {T['glass_lite']} 100%) !important;
+    backdrop-filter: {T['glass_blur']} !important;
+    -webkit-backdrop-filter: {T['glass_blur']} !important;
+    border: 1px solid {T['glass_edge']} !important;
+    border-radius: 14px !important;
+    box-shadow: {T['glass_shadow']}, 0 0 0 1px {T['line']} !important;
+}}
+
+/* ============================================================
+   31. 无壳模式(用户 m07431「这不是系统又嵌了系统吗，我只要一个新做的」)
+   参照稿自带顶栏与侧栏, 它就是整个界面; 系统那层外壳必须退场:
+     · Streamlit 自带的侧栏 / 顶栏 / 工具条一律隐藏, 页面撑满整屏;
+     · 需要老导航时点左下浮动按钮打开抽屉(给它加 body.nav-open)。
+   ============================================================ */
+[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecoration"],
+[data-testid="stStatusWidget"], [data-testid="stSidebarCollapsedControl"] {{
+    display: none !important;
+}}
+[data-testid="stSidebar"] {{
+    display: none !important;
+}}
+#sb-rescue {{ display: none !important; }}
+[data-testid="stAppViewContainer"] > .main,
+.stApp [data-testid="stMainBlockContainer"],
+.stApp [data-testid="stMain"] > .block-container {{
+    /* 注意: 第 30 节的板面规则里带了 `[data-testid="stMain"] > .block-container`(0-2-0),
+       必须用同级别或更高的选择器才能压过它 —— 否则这里的 margin:0 不生效。 */
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+}}
+[data-testid="stMainBlockContainer"]::before {{ display: none !important; }}
+.block-container {{ padding: 0 !important; }}
+/* 整页参照稿: 铺满整个视口, 外层页面不再出现第二条滚动条
+   (量过: 板面 margin 14/20 + flex gap 16 会让 iframe 落到 y=46、页面高 1032 → 有滚动条) */
+[data-testid="stMainBlockContainer"] [data-testid="stVerticalBlock"] {{ gap: 0 !important; }}
+.st-key-navfab {{ display: none !important; }}          /* 只留脚本, 不占位 */
+.st-key-refpage, .st-key-refpage [data-testid="stElementContainer"] {{
+    height: 100vh !important;
+    margin: 0 !important;
+}}
+.st-key-refpage [data-testid="stIFrame"] {{
+    display: block !important;
+    width: 100vw !important;
+    height: 100vh !important;
+}}
+/* 只有「整页参照稿」的页面才铺满且锁滚动; 其余旧版式页面保留内边距与正常滚动
+   (否则 12 个旧页面会被 overflow:hidden 截断, 且内容贴着屏幕边) */
+.stApp:has(.st-key-refpage) .stAppViewContainer,
+.stApp:has(.st-key-refpage) [data-testid="stMain"] {{
+    height: 100vh !important;
+    overflow: hidden !important;
+}}
+.stApp:has(.st-key-refpage) [data-testid="stMainBlockContainer"] {{
+    padding: 0 !important;
+    margin: 0 !important;
+}}
+.stApp:not(:has(.st-key-refpage)) [data-testid="stMainBlockContainer"] {{
+    padding: 22px 26px 40px !important;
+}}
+
+/* 抽屉模式: 点浮动按钮后, 老侧栏以浮层形式盖上来 */
+body.nav-open [data-testid="stSidebar"] {{
+    display: block !important;
+    position: fixed !important;
+    left: 0; top: 0; bottom: 0;
+    width: min(320px, 86vw) !important;
+    min-width: 0 !important; max-width: none !important;
+    z-index: 99990 !important;
+    box-shadow: 0 18px 60px rgba(10, 30, 60, .28) !important;
+    border-right: 1px solid {T['glass_edge']} !important;
+    background: linear-gradient(180deg, {T['bg1']} 0%, {T['bg0']} 100%) !important;
+    backdrop-filter: {T['glass_blur']} !important;
+    transform: none !important; visibility: visible !important;
+    overflow-y: auto !important;
+}}
+body.nav-open::after {{
+    content: ""; position: fixed; inset: 0; z-index: 99980;
+    background: rgba(8, 24, 48, .28); backdrop-filter: blur(2px);
+}}
+#nav-fab {{
+    position: fixed; left: 14px; bottom: 14px; z-index: 99999;
+    width: 40px; height: 40px; border-radius: 13px; border: 1px solid {T['glass_edge']};
+    display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+    background: linear-gradient(180deg, {T['glass_mid']} 0%, {T['glass_lite']} 100%);
+    backdrop-filter: {T['glass_blur']}; -webkit-backdrop-filter: {T['glass_blur']};
+    box-shadow: {T['glass_shadow']}, 0 0 0 1px {T['line']};
+    color: {T['t2']}; font-size: 18px; line-height: 1;
+}}
+#nav-fab:hover {{ color: {T['accent']}; }}
+</style>
+"""
+
+
+def current_theme() -> str:
+    """当前主题(light=日场 / dark=夜场), 由侧边栏开关写入 session_state
+
+    默认 light(日场): 与系统登录页 docs/console/login.html 的默认观感一致
+    (白玻璃卡 + 暖橙强调 + 纸面白底), 这样进系统第一眼就是同一套设计语言。
+    """
+    try:
+        v = st.session_state.get("ui_theme", "light")
+    except Exception:
+        v = "light"
+    return v if v in THEMES else "light"
+
+
+def _sync_downstream():
+    """把配色同步给 viz / blocks 等模块。
+
+    这两个模块在模块级缓存了颜色常量(Altair/iframe 需要具体色值),
+    而 Streamlit 会复用已导入模块, 因此每次切换主题后必须显式回写,
+    否则图表与动效版块会停留在上一套配色。
+    """
+    mapping = {
+        "viz": {"BG": "bg_chart", "BG3": "bg3", "ACCENT": "accent", "ACCENT2": "accent2",
+                "GRID": "line", "TXT1": "t1", "TXT2": "t2", "TXT3": "t3"},
+        "blocks": {"BG0": "bg0", "BG1": "bg1", "BG2": "bg2", "BG3": "bg3",
+                   "ACCENT": "accent", "ACCENT2": "accent2", "T1": "t1",
+                   "T2": "t2", "T3": "t3", "LINE": "line"},
+    }
+    for mod_name, attrs in mapping.items():
+        mod = sys.modules.get(mod_name)
+        if mod is None:
+            continue
+        for attr, key in attrs.items():
+            if key in T:
+                setattr(mod, attr, T[key])
+        if mod_name == "viz":
+            # 图表色板 = 登录页的设计语言（暖橙为主 · 冷蓝次之 · 石板灰压场），
+            # 用 p1..p10 显式定义，避免与 UI 令牌(accent2 等)撞色后互相靠近。
+            pal = [T.get("p%d" % n) for n in range(1, 11)]
+            if hasattr(mod, "PALETTE"):
+                mod.PALETTE = pal
+            oc = getattr(mod, "OUTCOME_COLORS", None)
+            if isinstance(oc, dict):
+                for k in ("主胜", "home", "H", "win", "W"):
+                    oc[k] = T.get("accent")
+                for k in ("平局", "draw", "D"):
+                    oc[k] = T.get("gold")
+                for k in ("客胜", "away", "A", "loss", "L"):
+                    oc[k] = T.get("red")
+
+
+def apply_theme():
+    """应用统一主题样式(前端与后台共用); 按当前主题重载 CSS 并同步下游模块"""
+    name = current_theme()
+    T.clear()
+    T.update(THEMES[name])
+    _sync_downstream()
+    st.markdown(_build_css(T), unsafe_allow_html=True)
+
+
+def _on_theme_change():
+    """主题下拉的 on_change 回调: 在脚本重跑**之前**写入 ui_theme。
+
+    为什么不用 `st.rerun()`: 主题下拉在侧栏, 而 `st.rerun()` 会当场中断本次
+    脚本运行 —— 侧栏之后的控件(管理功能 radio / 页面选择等)这一轮根本没被
+    渲染, 它们的状态随即被 Streamlit 清理, 表现为「一切主题就跳回数据概览」。
+    改成回调后: 回调先改状态, Streamlit 自然重跑, 整份脚本完整跑一遍,
+    页面停留在原地。
+    """
+    v = str(st.session_state.get("ui_theme_choice", ""))
+    st.session_state["ui_theme"] = "light" if v.startswith("日场") else "dark"
+
+
+def theme_selector(label: str = "🎨 主题 / Theme"):
+    """侧边栏主题切换(日场晴空蓝 / 暖场黄昏金), 与登录页的场景切换同名"""
+    cur = current_theme()
+    opts = ["日场 Day（晴空蓝）", "暖场 Golden（黄昏金）"]
+    idx = 0 if cur == "light" else 1
+    try:
+        st.selectbox(label, opts, index=idx, key="ui_theme_choice",
+                     on_change=_on_theme_change)
+    except Exception:                                     # pragma: no cover
+        return
+
+
+# ============ 组件 ============
+_MATERIAL_RE = re.compile(r":material/([A-Za-z0-9_]+):")
+
+
+def _icon(html):
+    """把 Material 短代码 :material/icon_name: 归一化为 <span class="msr">icon_name</span>。
+
+    为什么需要这一层? Streamlit 的短代码替换只作用于 markdown 的 **text 节点**;
+    而 unsafe_allow_html=True 的 HTML 块(如 <div> 开头)内部, 短代码不会走 remark
+    文本替换, 会原样显示为 ":material/icon_name:" 字面文字。而本设计系统的所有图标
+    都经由下方的 HTML 助手函数注入, 因此必须在此统一转成 <span class="msr"> 形式
+    (字形样式见 _build_css() 第 22 节)。
+
+    例外: st.set_page_config(page_icon=":material/x:") 是 Streamlit 官方直接支持,
+    不经过这里, 保持短代码即可。
+    """
+    return _MATERIAL_RE.sub(
+        lambda m: f'<span class="msr" aria-hidden="true">{m.group(1)}</span>',
+        str(html))
+
+
+def _flat(html):
+    """把多行 HTML 压平为单行, 并把短代码归一化为 HTML 图标。
+
+    Streamlit 会对 markdown 文本做去缩进处理; 若 HTML 字符串中含缩进空格,
+    其后的深缩进行会被解析为『缩进代码块』, 于是标签以源码形式显示在页面上。
+    统一压平(合并空白)可彻底规避该问题。
+    """
+    return _icon(" ".join(str(html).split()))
+
+
+def _tint(color, alpha=0.42):
+    """把 #rrggbb 令牌转为同色相低透明度的 rgba()。
+
+    用于把强调色"微染"到 1px 描边里 —— 保持单一色相语言, 同时避免
+    >1px 的彩色边框(craft-floor Refuse)与高饱和色块。非 #rrggbb 输入原样返回。
+    """
+    c = str(color or "").strip()
+    if len(c) == 7 and c.startswith("#"):
+        try:
+            r, g, b = int(c[1:3], 16), int(c[3:5], 16), int(c[5:7], 16)
+            return f"rgba({r},{g},{b},{alpha})"
+        except ValueError:
+            pass
+    return c or T["accent"]
+
+
+def page_header(title, subtitle=None, icon="", meta=None, breadcrumb=None):
+    """页面头部: 面包屑 + 标题 + 副标题 + 右侧元信息"""
+    crumb = f'<div class="ph-crumb">{breadcrumb}</div>' if breadcrumb else ""
+    sub = f'<div class="ph-sub">{subtitle}</div>' if subtitle else ""
+    met = f'<div class="ph-meta">{meta}</div>' if meta else ""
+    st.markdown(_flat(f"""
+    <div class="page-head">
+      <div>
+        {crumb}
+        <div class="ph-title">{f'{icon} ' if icon else ''}{title}</div>
+        {sub}
+      </div>
+      {met}
+    </div>"""), unsafe_allow_html=True)
+
+
+def section(title, subtitle=None, icon=""):
+    """区块标题(左侧强调条)"""
+    sub = f'<span class="sec-sub">{subtitle}</span>' if subtitle else ""
+    st.markdown(_icon(f'<div class="sec">{f"{icon} " if icon else ""}{title}{sub}</div>'),
+                unsafe_allow_html=True)
+
+
+def section_cap(text, icon=":material/sensors:"):
+    """次级小标签(胶囊样式), 用于卡片内部或子分组"""
+    st.markdown(_icon(f'<div class="side-cap">{icon} {text}</div>'), unsafe_allow_html=True)
+
+
+def hero(title, desc="", stats=None, icon=""):
+    """首屏欢迎横幅: stats = [(value, label), ...]"""
+    stats_html = ""
+    if stats:
+        cells = "".join(
+            f'<div class="hero-stat"><div class="v">{v}</div>'
+            f'<div class="l">{l}</div></div>' for v, l in stats)
+        stats_html = f'<div class="hero-stats">{cells}</div>'
+    st.markdown(_flat(f"""
+    <div class="hero">
+      <div class="hero-body">
+        <h2>{f'{icon} ' if icon else ''}{title}</h2>
+        <p>{desc}</p>
+      </div>
+      {stats_html}
+    </div>"""), unsafe_allow_html=True)
+
+
+def metric_row(items):
+    """一行指标卡: items = [(value, label, hint, icon, color), ...] 或 dict 列表
+
+    dict 支持的键: value / label / hint / icon / color / delta
+
+    渲染成单个 .metric-row 网格(不再用 st.columns 的定宽列):
+      · 卡片由 grid 自动等高, 不再出现 4 张卡高度参差;
+      · 列数由 --mc-n 显式给出, 窄视口按 data-compact 降为 2 列,
+        单卡宽度始终 ≥200px, "12,564" / "XGBoost" 这类短值不会被折断。
+    """
+    if not items:
+        return
+    cards = []
+    for it in items:
+        if isinstance(it, dict):
+            value, label = it.get("value"), it.get("label")
+            hint, icon = it.get("hint"), it.get("icon", "")
+            color = it.get("color", T["accent"])
+            delta = it.get("delta")
+        else:
+            value, label = it[0], it[1]
+            hint = it[2] if len(it) > 2 else None
+            icon = it[3] if len(it) > 3 else ""
+            color = it[4] if len(it) > 4 else T["accent"]
+            delta = None
+        hint_html = f'<div class="mc-hint">{hint}</div>' if hint else ""
+        delta_html = (f'<div class="mc-hint" style="color:{color};font-weight:600;">'
+                      f'{delta}</div>') if delta else ""
+        cards.append(_flat(f"""
+        <div class="metric-card" style="--mc-line:{_tint(color, 0.42)};">
+          <div class="mc-top">{f'{icon} ' if icon else ''}{label}</div>
+          <div class="mc-value">{value}</div>
+          {delta_html}{hint_html}
+        </div>"""))
+    st.markdown(_flat(f"""
+    <div class="metric-row" style="--mc-n:{len(items)};"
+         data-compact="{'1' if len(items) >= 4 else '0'}">
+      {"".join(cards)}
+    </div>"""), unsafe_allow_html=True)
+
+
+def empty_state(icon, title, desc, command=None):
+    """空状态(待填充占位)"""
+    cmd = (f'<div class="es-desc" style="margin-top:0.7rem;">'
+           f'<span class="code-chip">{command}</span></div>') if command else ""
+    st.markdown(_flat(f"""
+    <div class="empty-state">
+      <div class="es-icon">{icon}</div>
+      <div class="es-title">{title}</div>
+      <div class="es-desc">{desc}</div>
+      {cmd}
+    </div>"""), unsafe_allow_html=True)
+
+
+def badge(text, kind="ok"):
+    """徽标: ok / wait / info / err / mute (兼容 good/bad/warn 别名)"""
+    kind = {"good": "ok", "bad": "err", "warn": "wait", "success": "ok",
+            "error": "err"}.get(kind, kind)
+    st.markdown(_icon(f'<span class="badge badge-{kind}">{text}</span>'), unsafe_allow_html=True)
+
+
+def chip_row(items, active=None):
+    """静态筛选标签行(展示当前筛选条件)"""
+    if not items:
+        return
+    if active is None:
+        active = []
+    if isinstance(active, str):
+        active = [active]
+    html = "".join(
+        f'<span class="chip{" on" if it in active else ""}">{it}</span>' for it in items)
+    st.markdown(f'<div class="chip-row">{html}</div>', unsafe_allow_html=True)
+
+
+def status_row(label, value=None, state="ok"):
+    """系统状态行: state = ok / off / warn / err / live"""
+    dot = f'<span class="status-dot {"" if state == "ok" else state}"></span>'
+    val = f'<span class="sr-value">{value}</span>' if value is not None else ""
+    st.markdown(f'<div class="status-row">{dot}<span class="sr-label">{label}</span>{val}</div>',
+                unsafe_allow_html=True)
+
+
+def status_list(rows):
+    """状态清单: rows = [(label, value, state), ...]"""
+    if not rows:
+        return
+    html = []
+    for r in rows:
+        label = r[0]
+        value = r[1] if len(r) > 1 else None
+        state = r[2] if len(r) > 2 else "ok"
+        dot = f'<span class="status-dot {"" if state == "ok" else state}"></span>'
+        val = f'<span class="sr-value">{value}</span>' if value is not None else ""
+        html.append(f'<div class="status-row">{dot}<span class="sr-label">{label}</span>{val}</div>')
+    st.markdown(f'<div class="status-list">{"".join(html)}</div>', unsafe_allow_html=True)
+
+
+def code_chip(text):
+    st.markdown(f'<span class="code-chip">{text}</span>', unsafe_allow_html=True)
+
+
+def step_list(steps):
+    """有序步骤清单: steps = [(序号, 标题, 说明), ...] (允许内联 HTML)"""
+    if not steps:
+        return
+    html = []
+    for no, title, desc in steps:
+        html.append(
+            f'<div class="status-row"><span class="step-no">{no}</span>'
+            f'<span class="sr-label">{title}</span>'
+            f'<span class="sr-value">{desc}</span></div>')
+    st.markdown(f'<div class="status-list step-list">{"".join(html)}</div>',
+                unsafe_allow_html=True)
+
+
+def info_card(title, lines, icon="", color=None):
+    """信息卡: title 标题, lines 为字符串列表(可用 ('文本', True) 表示弱化)"""
+    color = color or T["accent"]
+    html = []
+    for ln in (lines or []):
+        if isinstance(ln, (tuple, list)):
+            text, dim = ln[0], bool(ln[1] if len(ln) > 1 else False)
+        else:
+            text, dim = ln, False
+        html.append(f'<div class="ic-line{" dim" if dim else ""}">{text}</div>')
+    st.markdown(_flat(f"""
+    <div class="info-card" style="--ic-line:{_tint(color, 0.38)};">
+      <div class="ic-title">{f'{icon} ' if icon else ''}{title}</div>
+      {"".join(html)}
+    </div>"""), unsafe_allow_html=True)
+
+
+def divider():
+    st.markdown(f'<hr style="border:none;border-top:1px solid {T["line"]};margin:1rem 0;">',
+                unsafe_allow_html=True)
+
+
+def brand_header(title="足球分析系统", subtitle="Football Analytics", mark=":material/sports_soccer:"):
+    """侧栏顶部品牌块"""
+    st.markdown(_flat(f"""
+    <div class="brand">
+      <div class="b-mark">{mark}</div>
+      <div>
+        <div class="b-title">{title}</div>
+        <div class="b-sub">{subtitle}</div>
+      </div>
+    </div>"""), unsafe_allow_html=True)
+
+
+def app_footer(text="足球数据分析与AI预测系统 · 毕业设计项目"):
+    st.markdown(f'<div class="app-footer">{text}</div>', unsafe_allow_html=True)
+
+
+# ---- 兼容旧接口 ----
+def card_metric(label, value, delta=None, icon="", color=None):
+    color = color or T["accent"]
+    st.markdown(_flat(f"""
+    <div class="metric-card" style="--mc-line:{_tint(color, 0.42)};">
+      <div class="mc-top">{f'{icon} ' if icon else ''}{label}</div>
+      <div class="mc-value">{value}</div>
+      {f'<div class="mc-hint">{delta}</div>' if delta else ''}
+    </div>"""), unsafe_allow_html=True)
+
+
+def feature_card(icon, title, items, color=None):
+    """功能卡(兼容接口)。视觉: 1px 同色描边 + 染色的图标, 不再用 >1px 彩色顶边。"""
+    color = color or T["accent"]
+    items_html = "".join(f"<li>{i}</li>" for i in items)
+    st.markdown(_flat(f"""
+    <div class="feature-card" style="--fc-line:{_tint(color, 0.38)};">
+      <div class="fc-icon">{icon}</div>
+      <div class="fc-title">{title}</div>
+      <ul class="fc-list">{items_html}</ul>
+    </div>"""), unsafe_allow_html=True)
+
+
+def capability_band(primary, secondary):
+    """能力带: 主打项横跨整行 + 支撑项并排(替代三等宽功能卡)。
+
+    primary   = (icon, title, [要点, ...])
+    secondary = [(icon, title, [要点, ...]), ...]
+    层级由跨度与条目密度区分, 而不是把三张卡摊成等宽三等分。
+    """
+    if not primary:
+        return
+    p_icon, p_title, p_items = primary
+    main_html = "".join(f"<li>{i}</li>" for i in (p_items or []))
+    side_html = ""
+    for s in (secondary or []):
+        s_icon, s_title = s[0], s[1]
+        s_items = s[2] if len(s) > 2 else []
+        items_html = "".join(f"<li>{i}</li>" for i in s_items)
+        side_html += (f'<div class="bento-item"><div class="bt-icon">{s_icon}</div>'
+                      f'<div class="bt-title">{s_title}</div>'
+                      f'<ul class="bt-list">{items_html}</ul></div>')
+    st.markdown(_flat(f"""
+    <div class="bento">
+      <div class="bento-main">
+        <div class="bt-icon">{p_icon}</div>
+        <div class="bt-title">{p_title}</div>
+        <ul class="bt-list">{main_html}</ul>
+      </div>
+      {side_html}
+    </div>"""), unsafe_allow_html=True)
+
+
+def status_box(status_type, message):
+    icon_map = {"info": ":material/info:", "success": ":material/check_circle:", "warn": ":material/warning:", "error": ":material/cancel:"}
+    st.markdown(_icon(f'<div class="{status_type}-box">{icon_map.get(status_type, "")} {message}</div>'),
+                unsafe_allow_html=True)
+
+
+def nav_link(url, label, icon=""):
+    st.markdown(_icon(f'<a href="{url}" target="_blank" class="nav-link-btn">{icon} {label}</a>'),
+                unsafe_allow_html=True)
+
+
+def sidebar_footer(app_name="足球分析系统"):
+    from i18n import t   # 延迟导入, 避免模块级循环依赖
+    divider()
+    st.markdown(f'<div style="text-align:center;color:{T["t3"]};font-size:0.72rem;">'
+                f'{t(app_name)} v1.0.0<br>{t("毕业设计")}</div>', unsafe_allow_html=True)
+
+
+def section_title(title, subtitle=None):
+    """兼容旧接口"""
+    section(title, subtitle)

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import time
 import urllib.parse
 from pathlib import Path
 
@@ -38,6 +39,22 @@ def check(label: str, ok: bool, detail: str = "") -> bool:
     return bool(ok)
 
 
+def _llm_state(base: str) -> tuple[bool, str]:
+    """问后端：LLM 配好了吗？返回 (llm_ready, model)。配了 key 时答案由大模型生成，耗时更长，
+    页面也会从「检索摘要」徽标 + 红条换成「大模型作答」徽标、红条消失 —— 断言跟着变。"""
+    import json
+    import urllib.request
+
+    try:
+        req = urllib.request.Request(f"{base}/api/ui/ask/status", headers=_uiauth.headers())
+        with urllib.request.urlopen(req, timeout=20) as r:
+            st = json.loads(r.read().decode())
+        return bool(st.get("llm_ready")), str(st.get("llm_model") or "")
+    except Exception as e:  # 服务没起 / 未登录 -> 交给后面的页面断言去报错
+        print(f"  [!] 取 /api/ui/ask/status 失败: {type(e).__name__}: {e}")
+        return False, ""
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", default=BASE_DEFAULT)
@@ -49,6 +66,11 @@ def main() -> int:
 
     SHOT_DIR.mkdir(parents=True, exist_ok=True)
     print("FootballAI /ask 页面自检（浏览器）")
+
+    # 先问后端「配没配 LLM key」——两种情况的断言不同，脚本必须两种都能跑
+    ready, model = _llm_state(base)
+    print(f"  后端状态: llm_ready={ready} model={model or '—'}  → "
+          f"{'按「大模型作答」验收' if ready else '按「检索摘要」验收'}")
 
     with sync_playwright() as p:
         browser = p.chromium.launch(channel="chrome", headless=not args.headed)
@@ -97,16 +119,29 @@ def main() -> int:
         box.fill(PROBE_QUESTION)
         # 顶栏也有一个 "Ask" 导航按钮，所以用页面里的快捷键提交（Ask.tsx: Ctrl/⌘+Enter）
         box.press("Control+Enter")
-        page.wait_for_timeout(5000)
+        # 配了 key 时是真实模型作答（1.8~6 s 不等），所以要轮询等答案，而不是死等固定毫秒
+        deadline = time.time() + (60000 if ready else 15000)
         body3 = page.inner_text("body")
+        while time.time() < deadline:
+            page.wait_for_timeout(800)
+            body3 = page.inner_text("body")
+            if "Type a question and press Ask" not in body3 and ("[1]" in body3 or "结论" in body3):
+                break
         check("问题提交后出现答案（不再是空态）", "Type a question and press Ask" not in body3,
               "答案已渲染")
         check("答案里带库里真实数字（比分/概率）",
               any(t in body3 for t in ("Real Madrid", "Barcelona", "%")), "含队名或百分比")
-        check("模式徽标显示 Retrieval summary（未配 LLM key）",
-              "Retrieval summary" in body3, "Retrieval summary")
-        check("未配 key 的诚实提示在页面上", "LLM_API_KEY" in body3, "LLM_API_KEY is not configured")
-        check("引用来源编号 [1] 之类出现", "[" in body3 and "]" in body3)
+        if ready:
+            check(f"模式徽标显示「大模型作答」（已配 key，model={model}）",
+                  "LLM answer" in body3 or "大模型作答" in body3, model or "")
+            check("未配 key 的红色提示已消失（不再出现 LLM_API_KEY 字样）",
+                  "LLM_API_KEY" not in body3, "无 LLM_API_KEY 提示")
+            check("引用来源编号 [n] 出现在答案侧", "[1]" in body3, "含 [1] 引用")
+        else:
+            check("模式徽标显示 Retrieval summary（未配 LLM key）",
+                  "Retrieval summary" in body3, "Retrieval summary")
+            check("未配 key 的诚实提示在页面上", "LLM_API_KEY" in body3, "LLM_API_KEY is not configured")
+            check("引用来源编号 [1] 之类出现", "[" in body3 and "]" in body3)
         check("展示了执行步骤/依据（可折叠区块）", "steps" in body3.lower() or "Step" in body3
               or "match_prediction" in body3 or "head_to_head" in body3, "")
         page.screenshot(path=str(SHOT_DIR / "ask_answer.png"), full_page=True)

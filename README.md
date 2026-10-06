@@ -103,7 +103,11 @@ cp .env.example .env
 再查库（6 个结构化工具）+ 检索，最后作答并给每条结论标引用 `[n]`（引用可点回站内页面）。
 `POST /api/ui/ask` 实测 **18~19 ms**（无大模型）。`.env` 里 `LLM_API_KEY` **留空也能用** ——
 自动降级为「库内事实 + 检索片段」的检索摘要（`mode=retrieval`）；填上 key 即切到大模型作答（`mode=llm`），
-`SYSTEM_PROMPT` 五条硬规矩保证「材料里没有就说没有」。原理见 [`docs/智能问答说明.md`](docs/智能问答说明.md)，
+`SYSTEM_PROMPT` 五条硬规矩保证「材料里没有就说没有」。**已用 `deepseek-flash` 真机联调**：
+「英超积分榜前 5」返回 261 字带 `[1]` 引用的答案（约 2.2 s），「皇马和巴萨谁赢」如实回答「库内没有尚未开赛比赛的确定胜负记录」。
+注意该模型是**推理型**（会先输出 `reasoning_content`，推理 token 同样占用 `max_tokens` 预算），
+预算不足时 `content` 会被静默切成半句话而 HTTP 仍是 200 —— `src/qa/llm.py` 已识别 `finish_reason=length` 并自动双倍预算重试，
+`scripts/check_llm.py` 可体检配置与可用模型。原理见 [`docs/智能问答说明.md`](docs/智能问答说明.md)，
 自检 `python scripts/verify_qa.py`（37 项）。
 
 **要放到公网服务器上**：见 [`docs/deploy.md`](docs/deploy.md)（VPS + nginx 同源 + systemd 的完整步骤，含「数据库/模型/特征 CSV 怎么传」与排错表）。
@@ -135,7 +139,8 @@ cp .env.example .env
 | `scripts/build_search_index.py` | 重建全文检索索引（`data/database/search.db`，19,800 条 / 4.9 秒） |
 | `scripts/verify_search.py` | 检索层自检 23 项（中文分词口径、问题复现、引用溯源、接口闸门） |
 | `scripts/verify_qa.py` | 智能问答自检 37 项（六个工具、意图与检索串、编排与引用回主库核对、接口闸门） |
-| `scripts/verify_ask_ui.py` | `/ask` 页面自检 17 项（浏览器：检索页命中/高亮/筛选、问答页提交与引用、页面质量） |
+| `scripts/verify_ask_ui.py` | `/ask` 页面自检 17 项（浏览器：检索页命中/高亮/筛选、问答页提交与引用、页面质量；按是否配了 LLM key 自动切换断言） |
+| `scripts/check_llm.py` | 大模型配置体检：脱敏回显 key/base/model、列账号可用模型、发一次真实 ping（`--models` 只列模型不计费） |
 | `scripts/export_resume_docx.py` | 把简历 Markdown 导出成 Word（`docs/简历项目经验-STAR.docx`） |
 | `scripts/audit_webui.py` · `scripts/responsive_webui.py` | 信息架构体检 · 多分辨率适配检查 |
 
@@ -158,7 +163,7 @@ cp .env.example .env
 
 - **已清理**：设计迭代产物、旧数据库备份、已解压的数据集压缩包、渲染帧序列、第三方工具目录等共 596.8 MB，
   已移到项目外的 `D:\AIfootball_已清理_20261005\`（保留可恢复，确认无用后手动删除即可）
-- **仓库里只有代码 + 项目**：约 **617 个文件 / 36.9 MB**（含 `webui/dist` 构建产物与 21 张界面截图）。
+- **仓库里只有代码 + 项目**：约 **618 个文件 / 37.2 MB**（含 `webui/dist` 构建产物与 21 张界面截图）。
   `data/`（含 `data/external` 的 562 MB 与 3 个 >100 MB 的 CSV）、`models/*.joblib|pt`、`.env`、`node_modules`、派生索引 `data/database/search.db` 都已排除 ——
   部署时前三样要单独传（清单见 `docs/deploy.md` 第 5 节），检索索引在服务器上重建
 - 核对命令：`python scripts/audit_repo_payload.py`（按 `.gitignore` 推演会入库的文件，并检查有没有超过 GitHub 100 MB 限制的单文件）

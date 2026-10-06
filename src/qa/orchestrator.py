@@ -143,9 +143,19 @@ def ask(question: str, top_k: int = 5, use_llm: bool = True, kind: str | None = 
             {"role": "user", "content": f"问题: {q}\n\n{context}"},
         ])
         llm_info = {"ok": out.get("ok"), "model": out.get("model"), "error": out.get("error"),
-                    "usage": out.get("usage"), "elapsed_ms": out.get("elapsed_ms")}
+                    "usage": out.get("usage"), "elapsed_ms": out.get("elapsed_ms"),
+                    "finish_reason": out.get("finish_reason"),
+                    "truncated": bool(out.get("truncated")),
+                    "reasoning_tokens": out.get("reasoning_tokens"),
+                    "retried": bool(out.get("retried"))}
         if out.get("ok"):
             mode, answer = "llm", out["text"]
+            if out.get("truncated"):
+                rt = out.get("reasoning_tokens")
+                missing.append(
+                    "回答触及长度上限被截断（该模型会先推理，推理 token 也占用预算"
+                    + (f"，本次推理 {rt} token" if rt else "") + "），已自动用双倍预算重试仍被截断"
+                )
         else:
             missing.append(f"大模型调用失败（{out.get('error')}），已降级为检索摘要")
             answer = digest_answer(q, tool_results, hits, sources)

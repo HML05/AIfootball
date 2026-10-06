@@ -54,6 +54,28 @@ SHOTS: list[tuple[str, str]] = [
 ]
 
 
+ASK_TAB = "/ask?tab=ask"
+ASK_QUESTION = "皇马和巴萨谁赢"
+
+
+def _prepare(pg, route: str) -> None:
+    """个别页面需要在截图前先操作一下才好看。
+
+    目前只有问答页：空态截图没有信息量，所以先提交一个真实问题、
+    等答案渲染完再拍（配了 LLM key 时就是模型作答的样子）。
+    """
+    if route != ASK_TAB:
+        return
+    box = pg.locator("textarea").first
+    box.fill(ASK_QUESTION)
+    box.press("Control+Enter")  # Ask.tsx 支持 Ctrl/⌘+Enter 提交
+    for _ in range(75):  # 最多等 60 s：模型作答 2~4 s，截断重试时会翻倍
+        pg.wait_for_timeout(800)
+        body = pg.inner_text("body")
+        if "Type a question and press Ask" not in body and "[1]" in body:
+            break
+
+
 def main() -> int:
     want = [a for a in sys.argv[1:] if a.startswith("/")]
     jobs = [s for s in SHOTS if not want or s[0] in want]
@@ -80,6 +102,7 @@ def main() -> int:
             url = f"{BASE}{route}{'&' if '?' in route else '?'}lang=zh&theme=light"
             pg.goto(url, wait_until="load", timeout=60000)
             pg.wait_for_timeout(4500)
+            _prepare(pg, route)
             info = pg.evaluate(
                 """() => ({
                   broken: [...document.images].filter(i => i.complete && i.naturalWidth === 0 && (i.getAttribute('src') || '').trim() !== '').length,

@@ -40,6 +40,7 @@ DIST_ALIAS = {
     "google": "protobuf",
     "jwt": "pyjwt",
     "OpenSSL": "pyopenssl",
+    "docx": "python-docx",
 }
 
 # 已知的可选/开发期依赖(缺失不算问题), 例如 torch 只被训练脚本用

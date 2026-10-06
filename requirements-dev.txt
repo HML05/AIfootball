@@ -1,15 +1,22 @@
-﻿# 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
-# 寮€鍙?/ 鑷 / 璁粌渚濊禆锛?*涓嶈涔熻兘璺戜富搴旂敤**锛?#
-# 鐢ㄩ€旓細
-#   playwright            鈫?鐣岄潰鑷鑴氭湰锛坰cripts/verify_webui.py銆乨ocs_shots.py 绛夛級
-#   torch                 鈫?娣卞害瀛︿範妯″瀷璁粌锛坰cripts/train_dl.py銆乻rc/prediction/dl_model.py锛?#   scipy                 鈫?scripts/dl_robustness.py 鐨勭粺璁℃楠?#   vl-convert-python     鈫?鎶?Altair 鍥惧鍑?PNG锛坰cripts/ 閲岀殑鍥捐〃鑷煡锛?#
-# 瀹夎锛歱ip install -r requirements-dev.txt
-# 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+# ──────────────────────────────────────────────────────────────────────────
+# 开发 / 自检 / 训练依赖：**不装也能跑主应用**
+#
+# 用途：
+#   playwright            界面自检脚本（scripts/verify_webui.py、docs_shots.py 等）
+#   torch                 深度学习模型训练（scripts/train_dl.py、src/prediction/dl_model.py）
+#   scipy                 scripts/dl_robustness.py 的统计检验
+#   vl-convert-python     把 Altair 图导出 PNG（图表自检）
+#   pathspec              scripts/audit_repo_payload.py 用（等价 git 的 .gitignore 匹配）
+#   python-docx           scripts/export_resume_docx.py 用（Markdown 导出 Word）
+#
+# 安装：pip install -r requirements-dev.txt
+# ──────────────────────────────────────────────────────────────────────────
 
 playwright==1.62.0
 torch==2.13.0
 scipy==1.18.1
 vl-convert-python==1.9.0.post1
-pathspec==1.1.1        # scripts/audit_repo_payload.py 鐢紙绛変环 git 鐨?.gitignore 鍖归厤锛?
-# Playwright 杩橀渶瑕佹祻瑙堝櫒鍐呮牳锛堣嚜妫€鑴氭湰鐢ㄧ郴缁?Chrome 鏃舵棤闇€涓嬭浇锛夛細
+pathspec==1.1.1
+python-docx==1.2.0
+# Playwright 还需要浏览器内核（自检脚本用系统 Chrome 时无需下载）：
 #   python -m playwright install chromium

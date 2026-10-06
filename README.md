@@ -101,7 +101,7 @@ cp .env.example .env
 
 **智能问答（RAG 阶段 1）**：问「皇马和巴萨谁赢」「英超积分榜」「凯帕身价多少」，后端先识别意图与实体，
 再查库（6 个结构化工具）+ 检索，最后作答并给每条结论标引用 `[n]`（引用可点回站内页面）。
-`POST /api/ui/ask` 实测 **18~19 ms**（无大模型）。`.env` 里 `LLM_API_KEY` **留空也能用** ——
+`POST /api/ui/ask` 实测 **84~139 ms**（无大模型，热运行；冷启动首次约 0.66 s，其中工具 68~95 ms、检索 12~22 ms）。`.env` 里 `LLM_API_KEY` **留空也能用** ——
 自动降级为「库内事实 + 检索片段」的检索摘要（`mode=retrieval`）；填上 key 即切到大模型作答（`mode=llm`），
 `SYSTEM_PROMPT` 五条硬规矩保证「材料里没有就说没有」。**已用 `deepseek-flash` 真机联调**：
 「英超积分榜前 5」返回 261 字带 `[1]` 引用的答案（约 2.2 s），「皇马和巴萨谁赢」如实回答「库内没有尚未开赛比赛的确定胜负记录」。
@@ -141,13 +141,14 @@ cp .env.example .env
 | `scripts/verify_qa.py` | 智能问答自检 37 项（六个工具、意图与检索串、编排与引用回主库核对、接口闸门） |
 | `scripts/verify_ask_ui.py` | `/ask` 页面自检 17 项（浏览器：检索页命中/高亮/筛选、问答页提交与引用、页面质量；按是否配了 LLM key 自动切换断言） |
 | `scripts/check_llm.py` | 大模型配置体检：脱敏回显 key/base/model、列账号可用模型、发一次真实 ping（`--models` 只列模型不计费） |
-| `scripts/export_resume_docx.py` | 把简历 Markdown 导出成 Word（`docs/简历项目经验-STAR.docx`） |
+| `scripts/export_md_docx.py` | 把任意 Markdown 文档导出成 Word（如 `python scripts/export_md_docx.py docs/项目报告总览.md`） |
 | `scripts/audit_webui.py` · `scripts/responsive_webui.py` | 信息架构体检 · 多分辨率适配检查 |
 
 ## 文档索引
 
 | 文档 | 内容 |
 |---|---|
+| `docs/项目报告总览.md` | **项目报告总览**：一页速览 / 分层架构 / 数据·模型·服务·界面四层说明 / RAG 检索与问答 / 工程质量与 183 项断言 / 部署交付 / 已知限制与规划 / 最小复现路径（另附导出的 Word 版 `项目报告总览.docx`） |
 | `docs/详细技术方案.md` | 完整技术设计（模块划分、代码示例、开发路线） |
 | `docs/系统架构设计.md` / `docs/系统实现说明.md` | 架构与实现说明 |
 | `docs/数据来源与采集说明.md` / `docs/API-Football使用说明.md` | 数据来源、采集流程与第三方接口 |
@@ -163,11 +164,12 @@ cp .env.example .env
 
 - **已清理**：设计迭代产物、旧数据库备份、已解压的数据集压缩包、渲染帧序列、第三方工具目录等共 596.8 MB，
   已移到项目外的 `D:\AIfootball_已清理_20261005\`（保留可恢复，确认无用后手动删除即可）
-- **仓库里只有代码 + 项目**：约 **618 个文件 / 37.2 MB**（含 `webui/dist` 构建产物与 21 张界面截图）。
+- **仓库里只有代码 + 项目**：约 **616 个文件 / 37 MB**（含 `webui/dist` 构建产物与 21 张界面截图）。
   `data/`（含 `data/external` 的 562 MB 与 3 个 >100 MB 的 CSV）、`models/*.joblib|pt`、`.env`、`node_modules`、派生索引 `data/database/search.db` 都已排除 ——
   部署时前三样要单独传（清单见 `docs/deploy.md` 第 5 节），检索索引在服务器上重建
 - 核对命令：`python scripts/audit_repo_payload.py`（按 `.gitignore` 推演会入库的文件，并检查有没有超过 GitHub 100 MB 限制的单文件）
-- **Git 状态**：已 `git init -b main`，本地已有四次提交（`78932fb` 首次提交 593 文件 / 94,891 行 → `b339f2c` 检索层阶段 0 → `b10386a` 简历补完 → 最近一次提交：问答层阶段 1 + `/ask` 页面，哈希见 `git log`），远端尚未配置 ——
+- **代码规模**：约 **9.9 万行**（Python 3.65 万行 · TypeScript 1.73 万行），另有 `docs/` 18 份设计文档与 `docs/webui/` 21 张交付截图
+- **Git 状态**：已 `git init -b main`，本地已有五次提交（首次提交：593 文件 / 94,891 行 → 检索层阶段 0 → 工具与依赖体检 → 问答层阶段 1 + `/ask` 页面 → 接通真实大模型并修复推理模型截断；完整链见 `git log --oneline`），远端尚未配置 ——
   建好 GitHub 空仓库后 `git remote add origin <地址>` + `git push -u origin main`（步骤见 `docs/deploy.md` 第 2 节）
 
 ## License

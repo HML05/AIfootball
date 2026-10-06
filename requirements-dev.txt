@@ -7,7 +7,7 @@
 #   scipy                 scripts/dl_robustness.py 的统计检验
 #   vl-convert-python     把 Altair 图导出 PNG（图表自检）
 #   pathspec              scripts/audit_repo_payload.py 用（等价 git 的 .gitignore 匹配）
-#   python-docx           scripts/export_resume_docx.py 用（Markdown 导出 Word）
+#   python-docx           scripts/export_md_docx.py 用（Markdown 导出 Word）
 #
 # 安装：pip install -r requirements-dev.txt
 # ──────────────────────────────────────────────────────────────────────────

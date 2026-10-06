@@ -2,15 +2,15 @@
 # -*- coding: utf-8 -*-
 """把 Markdown 文档导出为 Word（.docx）。
 
-用途：简历类文档需要交 Word/PDF 时，直接把 docs/*.md 转成可编辑的 docx，
-避免手工复制导致格式与数字走样。
+用途：需要交 Word/PDF 的文档（项目报告、系统说明、评估报告等）由 docs/*.md 直接
+生成可编辑的 docx，避免手工复制导致格式与数字走样。
 
 支持：`#`~`###` 标题、`>` 引用、`-` 无序列表、`1.` 有序列表、`**粗体**`、
 `` `行内代码` ``、`|` 表格、``` 代码块、`[文字](链接)`、`<!-- -->` 注释（跳过）、`---` 分隔线。
 
 用法：
-    python scripts/export_resume_docx.py                      # 默认导出简历
-    python scripts/export_resume_docx.py 输入.md 输出.docx
+    python scripts/export_md_docx.py docs/项目报告总览.md     # 输出 docs/项目报告总览.docx
+    python scripts/export_md_docx.py 输入.md 输出.docx
 """
 from __future__ import annotations
 
@@ -21,10 +21,6 @@ from pathlib import Path
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt, RGBColor
-
-BASE_DIR = Path(__file__).resolve().parents[1]
-DEFAULT_SRC = BASE_DIR / "docs" / "简历项目经验-STAR.md"
-DEFAULT_DST = BASE_DIR / "docs" / "简历项目经验-STAR.docx"
 
 COMMENT_RE = re.compile(r"<!--.*?-->", re.S)
 LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
@@ -180,8 +176,11 @@ def markdown_to_docx(src: Path, dst: Path) -> dict:
 
 
 def main(argv: list[str]) -> int:
-    src = Path(argv[1]) if len(argv) > 1 else DEFAULT_SRC
-    dst = Path(argv[2]) if len(argv) > 2 else DEFAULT_DST
+    if len(argv) < 2:
+        print("用法: python scripts/export_md_docx.py <输入.md> [输出.docx]")
+        return 2
+    src = Path(argv[1])
+    dst = Path(argv[2]) if len(argv) > 2 else src.with_suffix(".docx")
     if not src.exists():
         print(f"[x] 源文件不存在: {src}")
         return 1

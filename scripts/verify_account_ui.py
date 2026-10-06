@@ -310,6 +310,25 @@ def main() -> int:
         check("没有坏图", broken == 0, f"{broken} 张")
         check("控制台无报错", len(errors) == 0, "; ".join(errors[:2]))
 
+        # ---------------------------------------------------------- 6. 管理端同一个顶栏也能进
+        print("\n=== 6. 管理端：顶栏头像同样能开账号设置 ===")
+        page.goto(f"{base}/admin?tab=overview&lang=zh&theme=light", wait_until="domcontentloaded")
+        page.wait_for_timeout(3000)
+        admin_avatar = page.locator("header button:has(img[alt='avatar'])").first
+        check("管理端顶栏也有头像按钮", admin_avatar.count() == 1)
+        admin_avatar.click()
+        page.wait_for_timeout(450)
+        page.get_by_role("button", name="账号设置").first.click()
+        page.wait_for_timeout(900)
+        admin_dlg = page.locator("[role=dialog]")
+        check("管理端也能打开账号设置弹层", admin_dlg.count() == 1)
+        check("管理端弹层里三页签齐备",
+              all(admin_dlg.get_by_role("button", name=x).count() >= 1 for x in ("头像", "资料", "密码")))
+        page.screenshot(path=str(SHOT_DIR / "account_admin.png"), full_page=False)
+        page.keyboard.press("Escape")
+        page.wait_for_timeout(500)
+        check("管理端 Esc 也能关掉弹层", page.locator("[role=dialog]").count() == 0)
+
         ctx.close()
         browser.close()
 

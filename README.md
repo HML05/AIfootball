@@ -13,7 +13,7 @@
 
 | 入口 | 地址 | 说明 |
 |---|---|---|
-| 用户端 + 管理端（React SPA） | <http://127.0.0.1:8000/> | 16 条路由：总览 / 赛程 / 比赛详情 / 联赛 / 联赛详情 / 球队 / 球队详情 / 球员 / 球员详情 / 预测 / 实时；管理端 4 页签在 `/admin`（数据总览 / 数据资产 / 模型注册表 / 系统与接口） |
+| 用户端 + 管理端（React SPA） | <http://127.0.0.1:8000/> | 19 条路由：总览 / 赛程 / 比赛详情 / 联赛 / 联赛详情 / 球队 / 球队详情 / 球员 / 球员详情 / 预测 / 实时 / **检索与问答 `/ask`**；管理端 4 页签在 `/admin`（数据总览 / 数据资产 / 模型注册表 / 系统与接口） |
 | 登录页（控制台设计稿版） | <http://127.0.0.1:8000/console/login.html> | 未登录访问任何页面都会整页跳到这里；演示账号 `admin / football2026`；页面下方有 **注册新账号** 与 **忘记密码** 两个入口 |
 | 注册 | <http://127.0.0.1:8000/console/register.html> | 自助注册，新账号固定是 `user`（用户端）角色，注册成功即登录；`AUTH_ALLOW_REGISTER=false` 可关闭 |
 | 忘记密码 | <http://127.0.0.1:8000/console/forgot.html> | 两步式：申请一次性 6 位重置码 → 用它设新密码并踢掉旧会话。**默认页面上不显示码**（公网安全），码写在 **`logs/auth_reset.log`**（UTF-8，一行一条）与 uvicorn 日志里，由管理员转告用户；自己一个人用可设 `AUTH_RESET_SHOW_CODE=true` 让它直接回显 |
@@ -30,6 +30,7 @@
 | 数据处理 | Pandas + NumPy + SQLAlchemy |
 | 数据库 | SQLite（开发） |
 | 检索 | SQLite FTS5 + jieba 中文分词（自建索引 `data/database/search.db`，不依赖外部检索服务） |
+| 智能问答 | 自研三步编排（意图 → 工具/检索 → 作答）+ 引用溯源；有 LLM key 走大模型，无 key 降级检索摘要 |
 | 机器学习 | XGBoost + scikit-learn（v9 = v2+v7 集成） |
 | 图表 | React 端：recharts + 自研 SVG（雷达 / 环形 / 条形）；Python 端：Altair / Vega-Lite 出图（`src/visualization/`） |
 | 认证 | 自研 PBKDF2 + 会话令牌；密码登录 + 扫码登录 |
@@ -44,13 +45,16 @@ AIfootball/
 │   ├── main.py              # 应用入口（挂载 /api/*、React 产物 /、控制台 /console）
 │   ├── api/ui.py            # 前端所需的全部聚合接口（26 个端点）
 │   ├── api/search.py        # 全文检索接口（RAG 阶段 0，见 docs/检索层说明.md）
+│   ├── api/qa.py            # 智能问答接口（RAG 阶段 1，见 docs/智能问答说明.md）
+│   ├── qa/                  # 问答编排：tools / router / llm / orchestrator
+│   ├── search/              # 检索层：tokenizer / indexer / query
 │   └── api/auth.py          # 登录 / 会话 / 扫码 / 账号管理
 ├── webui/                   # 前端：React 源码 + 构建产物 dist（node_modules 不入库）
-│   ├── src/pages/           # 16 条路由对应的页面
+│   ├── src/pages/           # 19 条路由对应的页面（含 pages/Ask.tsx 检索与问答）
 │   └── src/sections/        # 首页等页面的区块组件
 ├── docs/
 │   ├── console/             # 控制台静态页（登录页 login.html 就在这里）
-│   ├── webui/               # 交付截图 17 张
+│   ├── webui/               # 交付截图 21 张
 │   └── *.md                 # 设计与实现文档（见下方索引）
 ├── scripts/                 # 构建、导入、自检脚本
 ├── deploy/                  # 部署用：systemd 单元 + nginx 反代示例
@@ -95,6 +99,13 @@ cp .env.example .env
 （19,800 条语料、17.8 MB、单次查询 2~11 ms；内置 unicode61 分词对「马德里」是 0 命中，本方案 518 条）。
 建索引：`python scripts/build_search_index.py`；原理与边界见 [`docs/检索层说明.md`](docs/检索层说明.md)。
 
+**智能问答（RAG 阶段 1）**：问「皇马和巴萨谁赢」「英超积分榜」「凯帕身价多少」，后端先识别意图与实体，
+再查库（6 个结构化工具）+ 检索，最后作答并给每条结论标引用 `[n]`（引用可点回站内页面）。
+`POST /api/ui/ask` 实测 **18~19 ms**（无大模型）。`.env` 里 `LLM_API_KEY` **留空也能用** ——
+自动降级为「库内事实 + 检索片段」的检索摘要（`mode=retrieval`）；填上 key 即切到大模型作答（`mode=llm`），
+`SYSTEM_PROMPT` 五条硬规矩保证「材料里没有就说没有」。原理见 [`docs/智能问答说明.md`](docs/智能问答说明.md)，
+自检 `python scripts/verify_qa.py`（37 项）。
+
 **要放到公网服务器上**：见 [`docs/deploy.md`](docs/deploy.md)（VPS + nginx 同源 + systemd 的完整步骤，含「数据库/模型/特征 CSV 怎么传」与排错表）。
 
 ## 数据与模型
@@ -112,17 +123,20 @@ cp .env.example .env
 
 | 脚本 | 作用 |
 |---|---|
-| `scripts/verify_webui.py` | 17 条路由逐页截图 + 断言（控制台报错 / 坏图 / 横向溢出） |
-| `scripts/smoke_ui_api.py` | 28 个后端端点连通性与关键字段（含检索两个） |
+| `scripts/verify_webui.py` | 19 条路由逐页截图 + 断言（控制台报错 / 坏图 / 横向溢出） |
+| `scripts/smoke_ui_api.py` | 30 个后端端点连通性与关键字段（含检索两个 + 问答两个） |
 | `scripts/_login_flow.py` | 登录链路端到端 17 项（未登录跳转、错密码、回跳、退出、权限卡） |
 | `scripts/verify_auth_register.py` | 注册 / 忘记密码后端自检 30 项（重名、账号密码规则、默认不回码但日志可取码、重置码时效与一次性、旧会话失效、不提权） |
-| `scripts/docs_shots.py` | 重新生成 `docs/webui/` 的 19 张交付截图 |
+| `scripts/docs_shots.py` | 重新生成 `docs/webui/` 的 21 张交付截图 |
 | `scripts/build_webui.py` | 构建前端产物到 `webui/dist` |
 | `scripts/check_deps.py` | 依赖体检：源码 import 与 `requirements.txt` 对照 |
 | `scripts/audit_repo_payload.py` | 按 `.gitignore` 推演「哪些文件会进仓库」、有没有 >100 MB 的大文件 |
 | `scripts/check_sameorigin.py` | 把控制台 5 页挂在假域名（http/https）上，验证接口是否同源 |
 | `scripts/build_search_index.py` | 重建全文检索索引（`data/database/search.db`，19,800 条 / 4.9 秒） |
 | `scripts/verify_search.py` | 检索层自检 23 项（中文分词口径、问题复现、引用溯源、接口闸门） |
+| `scripts/verify_qa.py` | 智能问答自检 37 项（六个工具、意图与检索串、编排与引用回主库核对、接口闸门） |
+| `scripts/verify_ask_ui.py` | `/ask` 页面自检 17 项（浏览器：检索页命中/高亮/筛选、问答页提交与引用、页面质量） |
+| `scripts/export_resume_docx.py` | 把简历 Markdown 导出成 Word（`docs/简历项目经验-STAR.docx`） |
 | `scripts/audit_webui.py` · `scripts/responsive_webui.py` | 信息架构体检 · 多分辨率适配检查 |
 
 ## 文档索引
@@ -135,6 +149,7 @@ cp .env.example .env
 | `docs/模型评估报告.md` | 模型指标、版本对比、概率校准 |
 | `docs/React界面接入说明.md` | 前端路由、登录闸门、脚本与已知边界 |
 | `docs/检索层说明.md` | **全文检索层（RAG 阶段 0）**：中文分词实测对比、19,800 条语料、两个检索接口、溯源结构与边界 |
+| `docs/智能问答说明.md` | **智能问答层（RAG 阶段 1）**：旧 langchain Agent 为什么不可用、六个工具、意图与实体识别、引用溯源与防幻觉、问答接口、37 项后端自检 + 17 项页面自检与边界 |
 | `docs/信息架构评审.md` | 逐页点评、逻辑硬伤整改、目标结构 |
 | `docs/deploy.md` | **部署说明**：VPS + nginx 同源 + systemd、数据/模型怎么传、更新与备份、排错表 |
 | `docs/UI设计规范.md` / `docs/UI高级审美评审报告.md` / `docs/UI合规审计报告.md` / `docs/UI协作交接说明.md` / `docs/UI打磨收口记录.md` | UI 规范、评审与打磨记录 |
@@ -143,11 +158,11 @@ cp .env.example .env
 
 - **已清理**：设计迭代产物、旧数据库备份、已解压的数据集压缩包、渲染帧序列、第三方工具目录等共 596.8 MB，
   已移到项目外的 `D:\AIfootball_已清理_20261005\`（保留可恢复，确认无用后手动删除即可）
-- **仓库里只有代码 + 项目**：约 **603 个文件 / 35.6 MB**（含 `webui/dist` 构建产物）。
+- **仓库里只有代码 + 项目**：约 **617 个文件 / 36.9 MB**（含 `webui/dist` 构建产物与 21 张界面截图）。
   `data/`（含 `data/external` 的 562 MB 与 3 个 >100 MB 的 CSV）、`models/*.joblib|pt`、`.env`、`node_modules`、派生索引 `data/database/search.db` 都已排除 ——
   部署时前三样要单独传（清单见 `docs/deploy.md` 第 5 节），检索索引在服务器上重建
 - 核对命令：`python scripts/audit_repo_payload.py`（按 `.gitignore` 推演会入库的文件，并检查有没有超过 GitHub 100 MB 限制的单文件）
-- **Git 状态**：已 `git init -b main` 并完成首次提交（`78932fb`，593 文件 / 94,891 行），远端尚未配置 ——
+- **Git 状态**：已 `git init -b main`，本地已有四次提交（`78932fb` 首次提交 593 文件 / 94,891 行 → `b339f2c` 检索层阶段 0 → `b10386a` 简历补完 → 最近一次提交：问答层阶段 1 + `/ask` 页面，哈希见 `git log`），远端尚未配置 ——
   建好 GitHub 空仓库后 `git remote add origin <地址>` + `git push -u origin main`（步骤见 `docs/deploy.md` 第 2 节）
 
 ## License

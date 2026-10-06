@@ -67,6 +67,7 @@
 | `/players/:id` | 球员详情（画像 + 赛季记录） | `/api/ui/players/{id}` |
 | `/predictions` | 比赛预测（预测列表 + 页首一处口径定义） | `/api/ui/predictions` |
 | `/live` | 实时比分（最近完赛 + 即将开始） | `/api/ui/live` |
+| `/ask` | 检索与问答（两页签：全文检索 `?tab=search` 默认，命中【】高亮 + 类型筛选 + 分页；智能问答 `?tab=ask`，含模式/意图徽标、可折叠执行步骤、`[n]` 引用来源列表；URL 状态 `tab/q/kind/page`） | `/api/ui/search` + `/api/ui/search/stats` + `/api/ui/ask` + `/api/ui/ask/status` |
 | `/admin?tab=overview` | 管理端 · 数据总览（入库趋势 / 分布 / 管道 / 总进球分布 / 联赛对比） | `/api/ui/admin` |
 | `/admin?tab=asset` | 管理端 · 数据资产（原 `/reports` 全文） | `/api/ui/reports` |
 | `/admin?tab=models` | 管理端 · 模型注册表（生产模型卡 / 概率校准 / 混淆矩阵 / 特征 Top12 / 版本对比 / 最近预测） | `/api/ui/models` + `/api/ui/predictions` |
@@ -87,15 +88,17 @@
 | 脚本 | 作用 |
 | --- | --- |
 | `scripts/_uiauth.py` | **其它脚本的登录助手**：`login()` / `auth_state()` / `init_script()`（给 Playwright 的 `add_init_script` 注入 `localStorage.fauth`）/ `headers()`（直连接口用）；账号取 `FA_USER`/`FA_PWD`（默认 `admin/football2026`）、后端地址取 `FA_API` |
-| `scripts/smoke_ui_api.py` | 28 个 `/api/ui/*` 端点冒烟（含参数组合与关键字断言、检索两个；自动带 Bearer） |
+| `scripts/smoke_ui_api.py` | 30 个 `/api/ui/*` 端点冒烟（含参数组合与关键字断言、检索两个 + 问答两个；自动带 Bearer） |
 | `scripts/build_search_index.py` | 重建全文检索索引 `data/database/search.db`（19,800 条 / 17.8 MB / 约 5 秒；`--bigram` 强制退化分词） |
 | `scripts/verify_search.py` | 检索层自检 23 项：中文分词口径（复现 unicode61 零命中、trigram 两字词失效）、中文与两字词召回、引用完整性（`source.id` 回主库核对）、跳转 URL、未鉴权 401、kind 过滤、空查询、查询耗时 |
-| `scripts/verify_webui.py` | 逐路由体检：控制台错误 / 坏图 / 横向溢出 / 残留骨架 / 真实数据标记，截图存 `%TEMP%\aifootball_view\verify\`；`/console/login.html` 走**未登录**上下文，其余路由自动注入登录态，共 17 条路由 |
+| `scripts/verify_qa.py` | 智能问答自检 37 项：六个结构化工具（别名找队、去重、金额/浮点口径）、意图与检索串（去虚词）、编排（引用编号连续、**逐条回主库核对 (table,id) 无幽灵来源**、timing、无 key 提示）、接口与闸门（GET/POST 未登录 401、top_k 越界 422、耗时） |
+| `scripts/verify_ask_ui.py` | `/ask` 页面浏览器自检 17 项：检索页（命中条数与分词、20 条结果链接、首条为站内路径、Predictions 筛选生效且条数变少）、问答页（提交「皇马和巴萨谁赢」出答案、含真实比分/百分比、`Retrieval summary` 徽标、未配 key 提示、`[n]` 引用、步骤折叠区）、页面质量（无溢出 / 无坏图 / 控制台 0 报错），截图存 `%TEMP%\aifootball_view\ask\` |
+| `scripts/verify_webui.py` | 逐路由体检：控制台错误 / 坏图 / 横向溢出 / 残留骨架 / 真实数据标记，截图存 `%TEMP%\aifootball_view\verify\`；`/console/login.html` 走**未登录**上下文，其余路由自动注入登录态，共 19 条路由 |
 | `scripts/_login_flow.py` | 登录端到端流程（生产 17 项 / 开发 16 项断言）：未登录被守卫送到控制台登录页且带 `next`、错密码提示、正确登录回原地址且用户信息被 `/api/auth/me` 换成真实账号、已登录时该页给「继续进入」、头像菜单退出后清态、非管理员（拦截 `/me` 返回 user 角色）看到权限卡与「换管理员账号登录」且看不到「设置」。`WEBUI_BASE=…:3000` 可验开发路径（跨源 `?auth_token=` 交接） |
 | `scripts/_login_shots.py` | 登录页（控制台版）昼/暮/夜/雨四种天气截图 + 扫码页签检查（二维码真解码、倒计时在走） |
 | `scripts/verify_auth_register.py` | 注册 / 忘记密码**后端**自检 30 项（纯接口、无需浏览器）：注册成功与 `role` 固定 user、塞 `role=admin` 不提权、重名 409、账号与密码规则 400、重置码 6 位与有效期、**默认响应不含 code 且能 `logs/auth_reset.log` 里取到码**、错码计数、重新申请作废旧码、码一次性、重置后旧密码 401 与旧会话 401、`/api/auth/users` 仍只认管理员；默认跑完删掉测试账号（`--keep` 保留） |
 | `scripts/_register_flow.py` | 注册 / 忘记密码**界面**端到端（Playwright 真点击，见下） |
-| `scripts/docs_shots.py` | 重新生成 `docs/webui/` 的 19 张交付截图（生产构建 + 已登录，中文亮色；`/console/login.html`、`18-注册账号`、`19-忘记密码` 走未登录） |
+| `scripts/docs_shots.py` | 重新生成 `docs/webui/` 的 21 张交付截图（生产构建 + 已登录，中文亮色；`/console/login.html`、`18-注册账号`、`19-忘记密码` 走未登录） |
 | `scripts/responsive_webui.py` | 1280 / 1440 / 1920 三宽度响应式体检（自动带登录态） |
 | `scripts/audit_webui.py` | 信息架构盘点（逐页卡片顺序 / KPI 标签 / 表头 / 内滚块；自动带登录态） |
 | `scripts/build_webui.py` | 生产构建（自动处理 TEMP 权限坑） |
@@ -121,4 +124,5 @@
 - **小样本指标**：`/teams/:id` 的核心指标来自 `team_radar` 预计算表（跨赛季全量），样本极少时（如 Santander 仅 6 场）七维画像会严重失真（attack 93 / defense 5），页面已在 hint 中写明「样本 N 场」；Arsenal 的赛季行是**跨赛事聚合**（25/26 为 53 场 / 104 球，含杯赛与欧战），不是联赛口径。
 - **积分榜自身不齐**：同一场比赛的两队 `played` 可能不同（如 Elche 6 场 vs Sociedad 9 场），详情页只展示不校验，并标注「两队场次可能不同步」。
 - **检索层（RAG 阶段 0）**：新增 `/api/ui/search`（`q`/`kind`/`limit`/`offset`）与 `/api/ui/search/stats` 两个端点，走同一登录闸门（未登录 401）；索引是**派生数据** `data/database/search.db`（不入库），数据更新后需重跑 `python scripts/build_search_index.py` 才会反映到检索结果（当前没有挂进定时任务）；细节与边界见 [`docs/检索层说明.md`](检索层说明.md)。
+- **问答层（RAG 阶段 1）**：`/api/ui/ask`（POST，body `{question, top_k, use_llm, kind}`）与 `/api/ui/ask/status`、`GET /api/ui/ask`（调试）三个端点，同样走登录闸门；**必须重启 8000 才生效**（uvicorn 未开 `--reload`，改 `src/` 后不重启会继续跑旧代码 —— 排查时用 `GET /api/ui/ask/status` 或看 `search.query` 字段是否存在来判断新旧）。无 `LLM_API_KEY` 时 `mode=retrieval`（用库内事实 + 检索片段拼答案，不假装生成）；填 key 后 `mode=llm`。前端页面 `/ask` 两页签共用这一组接口，细节见 [`docs/智能问答说明.md`](智能问答说明.md)。
 - **登录相关**：① `viewer`/`user`/`uipreview` 三个非管理员账号的密码本文档未记录，需要时用 `python scripts/add_user.py`（管理员接口）重置；② 扫码登录依赖手机与电脑在同一局域网，且扫码页写的是**后端**的局域网地址（`http://<LAN-IP>:8000/api/auth/qr/scan?...`），若只起了 3000 开发服、没起 8000，手机端会连不上后端；③ 前端 `localStorage` 里的登录态是「本机浏览器级」的，换浏览器需重新登录；④ 语言默认值仍是英文（`webui/src/i18n.tsx` 无本地记录时回落 `en`），首次访问 SPA 会显示英文，切到「中」后按浏览器记住 —— 是否把默认值改成中文待定；⑤ **控制台 5 页的取址已改为同源优先**（2026-10 部署前修复，原「写死 `http://127.0.0.1:8000`」已删除）：`file:` 协议回落到 127.0.0.1:8000，http 且端口非 8000 时用 `同主机:8000`，其余（含 nginx 反代的 HTTPS 域名）用空串走同源；用 `python scripts/check_sameorigin.py` 在假域名上验（10/10）。备份原件在 `D:\AIfootball_部署前备份_20261005\console\`；⑥ 我做的 React 版登录页 `webui/src/pages/Login.tsx` 已不在路由里（留作控制台页缺失时的兜底），页面清单/文档里不再提及。

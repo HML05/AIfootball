@@ -7,7 +7,7 @@ import { consoleLoginUrl } from '../lib/base'
 import { useAuth } from '../lib/auth'
 
 /**
- * 顶栏导航：标题 → 路由（用户端 7 个入口）
+ * 顶栏导航：标题 → 路由（用户端 8 个入口）
  * 报告(/reports) 与 AI 分析(/agent) 已并入管理端，管理端入口 = 右侧「设置」按钮 → /admin。
  */
 export const NAV_ROUTES: { key: string; path: string; label?: string; zh?: string; en?: string }[] = [
@@ -18,6 +18,7 @@ export const NAV_ROUTES: { key: string; path: string; label?: string; zh?: strin
   { key: 'Players', label: 'nav.Players', path: '/players' },
   { key: 'Predict', label: 'nav.Predict', path: '/predictions' },
   { key: 'Live', label: 'nav.Live', path: '/live' },
+  { key: 'Ask', path: '/ask', zh: '问答', en: 'Ask' },
 ]
 
 export default function TopNav({ activePath }: { activePath?: string }) {

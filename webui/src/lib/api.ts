@@ -46,6 +46,26 @@ export async function getJSON<T>(path: string, signal?: AbortSignal): Promise<T>
   return (await res.json()) as T
 }
 
+/**
+ * POST JSON —— 与 getJSON 同款行为：带 Bearer、401 清登录态并广播、错误抛 ApiError。
+ * /api/ui/ask 是 POST，getJSON 只支持 GET，故单独实现。
+ */
+export async function postJSON<T>(path: string, body: unknown, signal?: AbortSignal): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    signal,
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json', ...authHeader() },
+    body: JSON.stringify(body),
+  })
+  if (res.status === 401) {
+    clearAuth()
+    window.dispatchEvent(new Event(UNAUTHORIZED_EVENT))
+    throw new ApiError(401, '登录已过期，请重新登录')
+  }
+  if (!res.ok) throw new ApiError(res.status, `${res.status} ${res.statusText} · ${path}`)
+  return (await res.json()) as T
+}
+
 export function qs(params: Record<string, string | number | undefined | null>): string {
   const sp = new URLSearchParams()
   for (const [k, v] of Object.entries(params)) {
@@ -646,6 +666,113 @@ export interface TeamDetailPayload {
   squadGroups: { GK: number; DF: number; MF: number; FW: number; total: number }
 }
 
+/* ---------------- 检索 / 问答 ---------------- */
+
+/** 全文检索单条命中（snippet 已由后端用【】标出命中词） */
+export interface SearchHit {
+  id: number
+  kind: string
+  kind_label: string
+  ref: string
+  title: string
+  snippet: string
+  score: number
+  source: { table: string; id: string | number; ref: string; url: string | null }
+  extra: Record<string, unknown>
+}
+
+export interface SearchPayload {
+  query: string
+  tokens: string[]
+  operator: string | null
+  mode: string
+  mode_desc?: string
+  kind: string | null
+  count: number
+  returned: number
+  kinds: string[]
+  hits: SearchHit[]
+}
+
+/** 检索索引状态（/api/ui/search/stats）—— by_kind 为各类型条数 */
+export interface SearchStats {
+  ready: boolean
+  total: number
+  mode: string
+  mode_desc: string
+  by_kind: Record<string, number>
+  by_kind_label: Record<string, string>
+  main_db: string
+  path: string
+  size_bytes: number
+  built_at: string
+}
+
+export interface AskStatus {
+  llm_ready: boolean
+  llm_model: string
+  llm_endpoint: string
+  mode: string
+  mode_desc: string
+  intents: string[]
+  tools: { name: string; desc: string }[]
+  alias_teams: number
+  players_indexed: number
+  leagues_indexed: number
+}
+
+export interface AskFact {
+  tool: string
+  ok: boolean
+  summary: string
+  data: Record<string, unknown>
+}
+
+export interface AskSource {
+  n: number
+  table: string
+  id: string | number
+  label: string
+  url: string | null
+  ref: string | null
+  via: string
+}
+
+export interface AskStep {
+  tool: string
+  args: unknown[]
+  reason: string
+}
+
+export interface AskPayload {
+  question: string
+  mode: 'llm' | 'retrieval' | 'empty'
+  answer: string
+  intent: string | null
+  plan: {
+    intent: string | null
+    keywords: string[]
+    steps: AskStep[]
+    entities: { teams: (string | null)[]; player: string | null; league: string | null }
+  }
+  facts: AskFact[]
+  sources: AskSource[]
+  /** 实测：/ask 返回的 search 对象没有 query 字段（只有 /search 有），故为可选 */
+  search: {
+    query?: string
+    count: number
+    tokens: string[]
+    mode: string
+    operator: string | null
+    hits: SearchHit[]
+  }
+  missing: string[]
+  timing: { tools_ms: number; search_ms: number; llm_ms: number; total_ms: number }
+  llm: { ok: boolean; model: string | null; error: string | null; elapsed_ms: number }
+  elapsed_ms: number
+  generatedAt: string
+}
+
 /* ---------------- 端点 ---------------- */
 
 /** 登录页公开信息（/api/ui/public/summary，无需 token） */
@@ -692,6 +819,19 @@ export const api = {
     getJSON<TransferPayload>(`/transfers${qs(p)}`, signal),
   reports: (signal?: AbortSignal) => getJSON<ReportPayload>('/reports', signal),
   live: (signal?: AbortSignal) => getJSON<LivePayload>('/live', signal),
+  /** 全文检索（kind 为空时不带该参数） */
+  search: (q: string, opts: { kind?: string; limit?: number; offset?: number } = {}, signal?: AbortSignal) =>
+    getJSON<SearchPayload>(`/search${qs({ q, kind: opts.kind, limit: opts.limit ?? 20, offset: opts.offset ?? 0 })}`, signal),
+  searchStats: (signal?: AbortSignal) => getJSON<SearchStats>('/search/stats', signal),
+  askStatus: (signal?: AbortSignal) => getJSON<AskStatus>('/ask/status', signal),
+  /** 智能问答（POST，非 GET） */
+  ask: (question: string, opts: { topK?: number; useLlm?: boolean; kind?: string } = {}) =>
+    postJSON<AskPayload>('/ask', {
+      question,
+      top_k: opts.topK ?? 5,
+      use_llm: opts.useLlm ?? true,
+      kind: opts.kind || null,
+    }),
 }
 
 export interface LeagueDetail {

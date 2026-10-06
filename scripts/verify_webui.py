@@ -38,6 +38,8 @@ ROUTES: list[tuple[str, str, str]] = [
     ("/players/1658", "球员详情", r"拉明|Lamine|1658"),
     ("/predictions", "比赛预测", r"1,803|53\.5|50\.14"),
     ("/live", "实时比分", r"2026-09-12|Sevilla"),
+    ("/ask?q=皇家马德里", "检索与问答 · 全文检索", r"518|皇家马德里|jieba"),
+    ("/ask?tab=ask", "检索与问答 · 智能问答", r"智能问答|Ask the assistant"),
     ("/admin?tab=overview", "管理端 · 数据总览", r"12,698|90\.1"),
     ("/admin?tab=asset", "管理端 · 数据资产", r"1\.8M|36"),
     ("/admin?tab=models", "管理端 · 模型注册表", r"v9|50\.14"),

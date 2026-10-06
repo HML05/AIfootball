@@ -44,6 +44,10 @@ CASES: list[tuple[str, list[str]]] = [
     ("/api/ui/search?q=%E7%9A%87%E5%AE%B6%E9%A9%AC%E5%BE%B7%E9%87%8C&limit=3",
      ["hits", "source", "snippet", "tokens"]),
     ("/api/ui/search/stats", ["total", "by_kind", "mode"]),
+    # 智能问答（RAG 阶段 1）—— q 用 URL 编码的「英超积分榜」, use_llm=false 不依赖 LLM key
+    ("/api/ui/ask?q=%E8%8B%B1%E8%B6%85%E7%A7%AF%E5%88%86%E6%A6%9C&use_llm=false",
+     ["answer", "mode", "sources", "timing", "intent"]),
+    ("/api/ui/ask/status", ["llm_ready", "mode", "tools", "intents"]),
 ]
 
 

@@ -2,13 +2,13 @@
 """生成 docs/webui/ 的交付截图（生产构建 + 已登录态，中文、亮色）。
 
 用法:
-    python scripts/docs_shots.py                 # 全部 17 张
-    python scripts/docs_shots.py /login /        # 只重拍指定路由
+    python scripts/docs_shots.py                 # 全部 21 张
+    python scripts/docs_shots.py /ask /         # 只重拍指定路由
 
 约定:
     * 除 /login 外都带登录态（/api/ui/* 现在需要 Bearer）。
     * 只拍视口 1600x1000（不拍 full_page），与历史交付截图规格一致。
-    * 文件名即文档里的编号：01-登录.png … 17-管理端-系统与接口.png
+    * 文件名即文档里的编号：01-登录.png … 21-智能问答.png
 """
 from __future__ import annotations
 
@@ -48,6 +48,9 @@ SHOTS: list[tuple[str, str]] = [
     # 2026-10 新增：注册 / 忘记密码两页（同属控制台登录流程，排在最后避免打乱既有编号）
     ("/console/register.html?next=%2F", "18-注册账号"),
     ("/console/forgot.html?next=%2F", "19-忘记密码"),
+    # 2026-10 新增：RAG 检索与问答
+    ("/ask?q=%E7%9A%87%E5%AE%B6%E9%A9%AC%E5%BE%B7%E9%87%8C", "20-检索与问答"),
+    ("/ask?tab=ask", "21-智能问答"),
 ]
 
 

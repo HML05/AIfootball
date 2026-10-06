@@ -43,18 +43,18 @@
 AIfootball/
 ├── src/                     # 后端：FastAPI 入口、数据源、数据库、分析、预测、可视化、认证、API 路由
 │   ├── main.py              # 应用入口（挂载 /api/*、React 产物 /、控制台 /console）
-│   ├── api/ui.py            # 前端所需的全部聚合接口（26 个端点）
+│   ├── api/ui.py            # 前端所需的全部聚合接口（21 条路径 / 22 个方法）
 │   ├── api/search.py        # 全文检索接口（RAG 阶段 0，见 docs/检索层说明.md）
 │   ├── api/qa.py            # 智能问答接口（RAG 阶段 1，见 docs/智能问答说明.md）
 │   ├── qa/                  # 问答编排：tools / router / llm / orchestrator
 │   ├── search/              # 检索层：tokenizer / indexer / query
-│   └── api/auth.py          # 登录 / 会话 / 扫码 / 账号管理
+│   └── api/auth.py          # 登录 / 会话 / 扫码 / 账号管理 / 头像与个人资料
 ├── webui/                   # 前端：React 源码 + 构建产物 dist（node_modules 不入库）
 │   ├── src/pages/           # 19 条路由对应的页面（含 pages/Ask.tsx 检索与问答）
 │   └── src/sections/        # 首页等页面的区块组件
 ├── docs/
 │   ├── console/             # 控制台静态页（登录页 login.html 就在这里）
-│   ├── webui/               # 交付截图 21 张
+│   ├── webui/               # 交付截图 22 张
 │   └── *.md                 # 设计与实现文档（见下方索引）
 ├── scripts/                 # 构建、导入、自检脚本
 ├── deploy/                  # 部署用：systemd 单元 + nginx 反代示例
@@ -131,7 +131,9 @@ cp .env.example .env
 | `scripts/smoke_ui_api.py` | 30 个后端端点连通性与关键字段（含检索两个 + 问答两个） |
 | `scripts/_login_flow.py` | 登录链路端到端 17 项（未登录跳转、错密码、回跳、退出、权限卡） |
 | `scripts/verify_auth_register.py` | 注册 / 忘记密码后端自检 30 项（重名、账号密码规则、默认不回码但日志可取码、重置码时效与一次性、旧会话失效、不提权） |
-| `scripts/docs_shots.py` | 重新生成 `docs/webui/` 的 21 张交付截图 |
+| `scripts/verify_account.py` | 账号设置后端自检 41 项（改昵称/账号名/手机号与撞车、头像上传的压缩与类型校验、改密码后旧会话失效） |
+| `scripts/verify_account_ui.py` | 账号设置**页面**自检 46 项（浏览器真点：顶栏头像入口与点空白处收起菜单、三页签、选图预览与 multipart 上传落地、恢复默认、>2 MB 拦截、资料真实回填与 400 原文、改密码被后端拒绝且旧密码仍可用、跑完复原不留副作用） |
+| `scripts/docs_shots.py` | 重新生成 `docs/webui/` 的 22 张交付截图 |
 | `scripts/build_webui.py` | 构建前端产物到 `webui/dist` |
 | `scripts/check_deps.py` | 依赖体检：源码 import 与 `requirements.txt` 对照 |
 | `scripts/audit_repo_payload.py` | 按 `.gitignore` 推演「哪些文件会进仓库」、有没有 >100 MB 的大文件 |
@@ -148,7 +150,7 @@ cp .env.example .env
 
 | 文档 | 内容 |
 |---|---|
-| `docs/项目报告总览.md` | **项目报告总览**：一页速览 / 分层架构 / 数据·模型·服务·界面四层说明 / RAG 检索与问答 / 工程质量与 183 项断言 / 部署交付 / 已知限制与规划 / 最小复现路径（另附导出的 Word 版 `项目报告总览.docx`） |
+| `docs/项目报告总览.md` | **项目报告总览**：一页速览 / 分层架构 / 数据·模型·服务·界面四层说明 / RAG 检索与问答 / 工程质量与 270 项断言 / 部署交付 / 已知限制与规划 / 最小复现路径（另附导出的 Word 版 `项目报告总览.docx`） |
 | `docs/详细技术方案.md` | 完整技术设计（模块划分、代码示例、开发路线） |
 | `docs/系统架构设计.md` / `docs/系统实现说明.md` | 架构与实现说明 |
 | `docs/数据来源与采集说明.md` / `docs/API-Football使用说明.md` | 数据来源、采集流程与第三方接口 |
@@ -164,11 +166,11 @@ cp .env.example .env
 
 - **已清理**：设计迭代产物、旧数据库备份、已解压的数据集压缩包、渲染帧序列、第三方工具目录等共 596.8 MB，
   已移到项目外的 `D:\AIfootball_已清理_20261005\`（保留可恢复，确认无用后手动删除即可）
-- **仓库里只有代码 + 项目**：约 **616 个文件 / 37 MB**（含 `webui/dist` 构建产物与 21 张界面截图）。
+- **仓库里只有代码 + 项目**：约 **616 个文件 / 37 MB**（含 `webui/dist` 构建产物与 22 张界面截图）。
   `data/`（含 `data/external` 的 562 MB 与 3 个 >100 MB 的 CSV）、`models/*.joblib|pt`、`.env`、`node_modules`、派生索引 `data/database/search.db` 都已排除 ——
   部署时前三样要单独传（清单见 `docs/deploy.md` 第 5 节），检索索引在服务器上重建
 - 核对命令：`python scripts/audit_repo_payload.py`（按 `.gitignore` 推演会入库的文件，并检查有没有超过 GitHub 100 MB 限制的单文件）
-- **代码规模**：约 **9.9 万行**（Python 3.65 万行 · TypeScript 1.73 万行），另有 `docs/` 18 份设计文档与 `docs/webui/` 21 张交付截图
+- **代码规模**：约 **9.9 万行**（Python 3.65 万行 · TypeScript 1.73 万行），另有 `docs/` 18 份设计文档与 `docs/webui/` 22 张交付截图
 - **Git 状态**：已 `git init -b main`，本地已有完整提交链（首次提交：593 文件 / 94,891 行 → 检索层阶段 0 → 工具与依赖体检 → 问答层阶段 1 + `/ask` 页面 → 接通真实大模型并修复推理模型截断 → 项目报告总览与个人材料清理；完整链见 `git log --oneline`，数量随开发增长，此处不再写死），远端尚未配置 ——
   建好 GitHub 空仓库后 `git remote add origin <地址>` + `git push -u origin main`（步骤见 `docs/deploy.md` 第 2 节）
 

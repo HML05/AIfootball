@@ -251,9 +251,13 @@ journalctl -u footballai -n 50 --no-pager
 sqlite3 /opt/footballai/data/database/football.db ".backup '/opt/backup/football-$(date +%F).db'"
 # 定时备份（crontab -e，每天 4:10）
 10 4 * * * sqlite3 /opt/footballai/data/database/football.db ".backup '/opt/backup/football-$(date +\%F).db'"
-# 模型与配置
-tar -czf /opt/backup/models-$(date +%F).tgz -C /opt/footballai models .env
+# 模型、配置与用户上传（data/uploads 只有头像，丢了会退回默认图，可按需省略）
+tar -czf /opt/backup/models-$(date +%F).tgz -C /opt/footballai models .env data/uploads
 ```
+
+> `data/uploads/avatars/` 是用户上传的头像（`POST /api/auth/avatar` 落盘处）。
+> 它不在仓库里，**丢了只会退回默认头像 `/images/profile.png`**，不备也无所谓；
+> 想连头像一起保住，就照上面那行把 `data/uploads` 一并打包。
 
 ## 12. 排错
 

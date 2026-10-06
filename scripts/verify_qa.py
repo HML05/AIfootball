@@ -218,8 +218,13 @@ def main() -> int:
               honest["mode"] == "retrieval" and any("LLM_API_KEY" in m for m in honest["missing"]),
               "；".join(honest["missing"])[:80] or "missing 里没有说明")
     else:
-        check("已配置 LLM_API_KEY 时 mode 允许为 llm 或 retrieval（调用失败会降级）",
-              r["mode"] in ("llm", "retrieval"), f"mode={r['mode']} llm.ok={r['llm']['ok']}")
+        r_llm = orchestrator.ask("皇马和巴萨谁赢", use_llm=True, top_k=2)
+        ok_llm = r_llm["mode"] == "llm" and bool(r_llm["llm"].get("ok"))
+        ok_degrade = r_llm["mode"] == "retrieval" and any("大模型" in m or "LLM" in m for m in r_llm["missing"])
+        check("已配置 LLM_API_KEY 时走大模型作答（真失败必须如实降级并说明）",
+              ok_llm or ok_degrade,
+              f"mode={r_llm['mode']} llm.ok={r_llm['llm'].get('ok')} model={r_llm['llm'].get('model')} "
+              f"finish={r_llm['llm'].get('finish_reason')} truncated={r_llm['llm'].get('truncated')}")
 
     unknown = orchestrator.ask("齐达内执教哪支球队", use_llm=False)
     check("库内没有的问题也能给出回答或说明（不抛异常）",

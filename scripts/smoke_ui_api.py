@@ -40,6 +40,10 @@ CASES: list[tuple[str, list[str]]] = [
     ("/api/ui/reports", ["tables", "months", "sources", "quality"]),
     ("/api/ui/live", ["recent", "upcoming"]),
     ("/api/ui/logo/52", ["svg", "png", "image"]),
+    # 检索层（RAG 阶段 0）—— q 用 URL 编码的「皇家马德里」
+    ("/api/ui/search?q=%E7%9A%87%E5%AE%B6%E9%A9%AC%E5%BE%B7%E9%87%8C&limit=3",
+     ["hits", "source", "snippet", "tokens"]),
+    ("/api/ui/search/stats", ["total", "by_kind", "mode"]),
 ]
 
 

@@ -20,6 +20,7 @@ from src.api.predictions import router as predictions_router
 from src.api.agent import router as agent_router
 from src.api.auth import router as auth_router
 from src.api.ui import router as ui_router
+from src.api.search import router as search_router
 
 
 # ============ WebSocket 连接管理 ============
@@ -152,6 +153,7 @@ app.include_router(predictions_router, prefix="/api/predictions", tags=["预测"
 app.include_router(agent_router, prefix="/api/agent", tags=["AI分析"])
 app.include_router(auth_router, prefix="/api/auth", tags=["登录认证"])
 app.include_router(ui_router, prefix="/api/ui", tags=["界面数据"])
+app.include_router(search_router, prefix="/api/ui", tags=["全文检索"])
 
 
 # ============ 基础路由 ============

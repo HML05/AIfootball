@@ -40,6 +40,10 @@ lxml==6.1.2
 python-dotenv==1.2.2
 pydantic==2.13.5
 
+# 检索层（RAG 阶段 0：/api/ui/search 的中文分词）
+#   装了就走上等分词；没装会退化成字符 bigram，功能仍可用（见 src/search/tokenizer.py）
+jieba==0.42.1
+
 # 登录二维码（扫码登录用；缺了不影响账号密码登录，但扫码页签会失效）
 qrcode==8.2
 pillow==12.1.0

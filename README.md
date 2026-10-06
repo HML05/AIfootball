@@ -29,6 +29,7 @@
 | 后端框架 | FastAPI + Uvicorn |
 | 数据处理 | Pandas + NumPy + SQLAlchemy |
 | 数据库 | SQLite（开发） |
+| 检索 | SQLite FTS5 + jieba 中文分词（自建索引 `data/database/search.db`，不依赖外部检索服务） |
 | 机器学习 | XGBoost + scikit-learn（v9 = v2+v7 集成） |
 | 图表 | React 端：recharts + 自研 SVG（雷达 / 环形 / 条形）；Python 端：Altair / Vega-Lite 出图（`src/visualization/`） |
 | 认证 | 自研 PBKDF2 + 会话令牌；密码登录 + 扫码登录 |
@@ -42,6 +43,7 @@ AIfootball/
 ├── src/                     # 后端：FastAPI 入口、数据源、数据库、分析、预测、可视化、认证、API 路由
 │   ├── main.py              # 应用入口（挂载 /api/*、React 产物 /、控制台 /console）
 │   ├── api/ui.py            # 前端所需的全部聚合接口（26 个端点）
+│   ├── api/search.py        # 全文检索接口（RAG 阶段 0，见 docs/检索层说明.md）
 │   └── api/auth.py          # 登录 / 会话 / 扫码 / 账号管理
 ├── webui/                   # 前端：React 源码 + 构建产物 dist（node_modules 不入库）
 │   ├── src/pages/           # 16 条路由对应的页面
@@ -89,6 +91,10 @@ cp .env.example .env
 ./start.sh                  # 会先体检依赖/数据/模型，再起 8000
 ```
 
+**全文检索（RAG 阶段 0）**：用 SQLite FTS5 + jieba 自建中文索引，`GET /api/ui/search?q=皇家马德里` 返回带 `sources` 的可溯源结果
+（19,800 条语料、17.8 MB、单次查询 2~11 ms；内置 unicode61 分词对「马德里」是 0 命中，本方案 518 条）。
+建索引：`python scripts/build_search_index.py`；原理与边界见 [`docs/检索层说明.md`](docs/检索层说明.md)。
+
 **要放到公网服务器上**：见 [`docs/deploy.md`](docs/deploy.md)（VPS + nginx 同源 + systemd 的完整步骤，含「数据库/模型/特征 CSV 怎么传」与排错表）。
 
 ## 数据与模型
@@ -107,7 +113,7 @@ cp .env.example .env
 | 脚本 | 作用 |
 |---|---|
 | `scripts/verify_webui.py` | 17 条路由逐页截图 + 断言（控制台报错 / 坏图 / 横向溢出） |
-| `scripts/smoke_ui_api.py` | 26 个后端端点连通性与关键字段 |
+| `scripts/smoke_ui_api.py` | 28 个后端端点连通性与关键字段（含检索两个） |
 | `scripts/_login_flow.py` | 登录链路端到端 17 项（未登录跳转、错密码、回跳、退出、权限卡） |
 | `scripts/verify_auth_register.py` | 注册 / 忘记密码后端自检 30 项（重名、账号密码规则、默认不回码但日志可取码、重置码时效与一次性、旧会话失效、不提权） |
 | `scripts/docs_shots.py` | 重新生成 `docs/webui/` 的 19 张交付截图 |
@@ -115,6 +121,8 @@ cp .env.example .env
 | `scripts/check_deps.py` | 依赖体检：源码 import 与 `requirements.txt` 对照 |
 | `scripts/audit_repo_payload.py` | 按 `.gitignore` 推演「哪些文件会进仓库」、有没有 >100 MB 的大文件 |
 | `scripts/check_sameorigin.py` | 把控制台 5 页挂在假域名（http/https）上，验证接口是否同源 |
+| `scripts/build_search_index.py` | 重建全文检索索引（`data/database/search.db`，19,800 条 / 4.9 秒） |
+| `scripts/verify_search.py` | 检索层自检 23 项（中文分词口径、问题复现、引用溯源、接口闸门） |
 | `scripts/audit_webui.py` · `scripts/responsive_webui.py` | 信息架构体检 · 多分辨率适配检查 |
 
 ## 文档索引
@@ -126,6 +134,7 @@ cp .env.example .env
 | `docs/数据来源与采集说明.md` / `docs/API-Football使用说明.md` | 数据来源、采集流程与第三方接口 |
 | `docs/模型评估报告.md` | 模型指标、版本对比、概率校准 |
 | `docs/React界面接入说明.md` | 前端路由、登录闸门、脚本与已知边界 |
+| `docs/检索层说明.md` | **全文检索层（RAG 阶段 0）**：中文分词实测对比、19,800 条语料、两个检索接口、溯源结构与边界 |
 | `docs/信息架构评审.md` | 逐页点评、逻辑硬伤整改、目标结构 |
 | `docs/deploy.md` | **部署说明**：VPS + nginx 同源 + systemd、数据/模型怎么传、更新与备份、排错表 |
 | `docs/UI设计规范.md` / `docs/UI高级审美评审报告.md` / `docs/UI合规审计报告.md` / `docs/UI协作交接说明.md` / `docs/UI打磨收口记录.md` | UI 规范、评审与打磨记录 |
@@ -134,11 +143,12 @@ cp .env.example .env
 
 - **已清理**：设计迭代产物、旧数据库备份、已解压的数据集压缩包、渲染帧序列、第三方工具目录等共 596.8 MB，
   已移到项目外的 `D:\AIfootball_已清理_20261005\`（保留可恢复，确认无用后手动删除即可）
-- **仓库里只有代码 + 项目**：约 **591 个文件 / 35.5 MB**（含 `webui/dist` 构建产物）。
-  `data/`（含 `data/external` 的 562 MB 与 3 个 >100 MB 的 CSV）、`models/*.joblib|pt`、`.env`、`node_modules` 都已排除 ——
-  部署时这 4 样要单独传，清单见 `docs/deploy.md` 第 5 节
+- **仓库里只有代码 + 项目**：约 **603 个文件 / 35.6 MB**（含 `webui/dist` 构建产物）。
+  `data/`（含 `data/external` 的 562 MB 与 3 个 >100 MB 的 CSV）、`models/*.joblib|pt`、`.env`、`node_modules`、派生索引 `data/database/search.db` 都已排除 ——
+  部署时前三样要单独传（清单见 `docs/deploy.md` 第 5 节），检索索引在服务器上重建
 - 核对命令：`python scripts/audit_repo_payload.py`（按 `.gitignore` 推演会入库的文件，并检查有没有超过 GitHub 100 MB 限制的单文件）
-- 本目录尚未 `git init`（本机也没装 git）；装好 Git 后按 `docs/deploy.md` 第 2 节初始化并推送
+- **Git 状态**：已 `git init -b main` 并完成首次提交（`78932fb`，593 文件 / 94,891 行），远端尚未配置 ——
+  建好 GitHub 空仓库后 `git remote add origin <地址>` + `git push -u origin main`（步骤见 `docs/deploy.md` 第 2 节）
 
 ## License
 

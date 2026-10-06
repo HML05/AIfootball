@@ -118,6 +118,17 @@ ls -lh data/database/football.db models/ensemble_v2_v7.joblib models/xgb_v2.jobl
 
 > `data/external/`（562 MB，含 3 个 >100 MB 的文件）**不用传**：那是离线数据集，运行时只用到 `data/external/af_cache` 缓存目录（会自动创建）。
 
+**还要建一次全文检索索引**（`data/database/search.db` 不在 Git 里，属于可重建的派生数据）：
+
+```bash
+cd /opt/footballai
+python scripts/build_search_index.py     # 19,800 条 / 17.8 MB / 约 5 秒；缺 jieba 会自动退化为字符 bigram
+python scripts/verify_search.py          # 23 项自检（需要服务已在 8000 运行）
+```
+
+不建也不影响主界面：`/api/ui/search` 会返回 503 并提示先建索引，`/api/ui/search/stats` 返回 `ready: false`。
+`data/reference/team_alias_zh.json`（240 支球队中文别名）**在 Git 里**，不用单独传；它决定「皇马」「曼城」这类中文队名能否被搜到。
+
 ## 6. 配置 .env
 
 ```bash
@@ -168,6 +179,8 @@ curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8000/api/ui/home      
 curl -s -X POST http://127.0.0.1:8000/api/auth/login \
      -H 'Content-Type: application/json' \
      -d '{"username":"admin","password":"你的密码"}'                                 # {"ok":true,"token":...}
+python scripts/smoke_ui_api.py      # 28 个端点（含检索两个）
+python scripts/verify_search.py     # 23 项检索层断言
 ```
 
 浏览器打开 `http://服务器IP:8000/`（或先做完第 9 节的 nginx 再访问域名）：应自动跳到登录页，用管理员登录后能看到真实数据。
@@ -287,12 +300,22 @@ python scripts/check_deps.py       # 依赖体检
 | `requirements.txt` 补 `qrcode` + `pillow`，版本改为本机实装版本 | 扫码登录缺这两个包会静默失效；原文件版本号是过时的（numpy 1.26 vs 实装 2.4.1） |
 | 新增 `requirements-dev.txt` | 自检/训练用的 playwright / torch / scipy / vl-convert / pathspec 与生产隔离 |
 | 新增 `scripts/check_deps.py` | 用 `ast` 扫全项目 import 与依赖文件对照，避免再漏包 |
-| 新增 `scripts/audit_repo_payload.py` | 本机没装 git，用 pathspec 等价推演「哪些文件会进仓库」+ 检查 >100 MB 单文件 |
+| 新增 `scripts/audit_repo_payload.py` | 用 pathspec 等价推演「哪些文件会进仓库」+ 检查 >100 MB 单文件（写它的时候本机还没装 git；现在已装 Git 2.55 并已 `git init` + 首次提交） |
 | 新增 `scripts/check_sameorigin.py` | 本机 8000 访问区分不出新旧取址写法，用假域名（http/https）验证同源 |
 | `.env.example` 重写 | 补齐 `config/settings.py` 里全部 env 名（注册/重置码/数据源预算等），并写明必填与生产默认值 |
 | 控制台 5 页（login / register / forgot / index / admin）取址改为**同源优先** | 原写法 `http://<host>:8000` 在「域名 + HTTPS」下会被浏览器按混合内容拦截；备份原件在 `D:\AIfootball_部署前备份_20261005\console\` |
 | 新增 `start.sh`、`deploy/footballai.service`、`deploy/nginx.conf.example`、`docs/deploy.md` | 一套可直接照抄的部署路径 |
 
-**验证记录**：`scripts/check_sameorigin.py` 10/10（假域名下 5 页全部同源、无 `:8000`、无控制台报错）；`scripts/verify_webui.py` 17/17（生产构建）；`scripts/smoke_ui_api.py` 26/26；`scripts/_login_flow.py` 17/17；`scripts/check_deps.py` 通过；`scripts/audit_repo_payload.py` 通过（592 文件 / 35.5 MB，最大单文件 2.28 MB）。
+**验证记录**：`scripts/check_sameorigin.py` 10/10（假域名下 5 页全部同源、无 `:8000`、无控制台报错）；`scripts/verify_webui.py` 17/17（生产构建）；`scripts/smoke_ui_api.py` 28/28；`scripts/_login_flow.py` 17/17；`scripts/verify_search.py` 23/23；`scripts/check_deps.py` 通过；`scripts/audit_repo_payload.py` 通过（603 文件 / 35.6 MB，最大单文件 2.28 MB）。
+
+### 14.1 后续增补：全文检索层（RAG 阶段 0，2026-10）
+
+| 改了什么 | 说明 |
+|---|---|
+| 新增 `src/search/`（tokenizer / indexer / query）与 `src/api/search.py` | 中文全文检索：FTS5 + jieba 分词，语料 19,800 条、索引 17.8 MB、查询 2~11 ms；详见 `docs/检索层说明.md` |
+| 新增 `data/reference/team_alias_zh.json` | 业务库 `teams` 只有英文名，中文队名（皇马/曼城/拜仁…）靠这张 240 队别名表才能召回；**该文件入库** |
+| `data/database/search.db` 属派生数据 | 已被 `data/database/*.db` 忽略，服务器上按第 5 节用 `scripts/build_search_index.py` 重建 |
+| `scripts/smoke_ui_api.py` 26 → **28** 个端点 | 新增 `/api/ui/search`、`/api/ui/search/stats` 两个用例 |
+| `requirements.txt` 增 `jieba==0.42.1` | 装了走上等分词；没装自动退化为字符 bigram（不影响启动） |
 
 **未验证项**：`start.sh` 在本机无法执行（没装 bash，WSL 也没装发行版），只做了人工核对；Windows 路径由 `start_webui.bat` + 直接起 uvicorn 验证过。首次上服务器时请留意第 7 节的逐条自检。

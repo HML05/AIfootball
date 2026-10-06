@@ -87,7 +87,9 @@
 | 脚本 | 作用 |
 | --- | --- |
 | `scripts/_uiauth.py` | **其它脚本的登录助手**：`login()` / `auth_state()` / `init_script()`（给 Playwright 的 `add_init_script` 注入 `localStorage.fauth`）/ `headers()`（直连接口用）；账号取 `FA_USER`/`FA_PWD`（默认 `admin/football2026`）、后端地址取 `FA_API` |
-| `scripts/smoke_ui_api.py` | 26 个 `/api/ui/*` 端点冒烟（含参数组合与关键字断言；自动带 Bearer） |
+| `scripts/smoke_ui_api.py` | 28 个 `/api/ui/*` 端点冒烟（含参数组合与关键字断言、检索两个；自动带 Bearer） |
+| `scripts/build_search_index.py` | 重建全文检索索引 `data/database/search.db`（19,800 条 / 17.8 MB / 约 5 秒；`--bigram` 强制退化分词） |
+| `scripts/verify_search.py` | 检索层自检 23 项：中文分词口径（复现 unicode61 零命中、trigram 两字词失效）、中文与两字词召回、引用完整性（`source.id` 回主库核对）、跳转 URL、未鉴权 401、kind 过滤、空查询、查询耗时 |
 | `scripts/verify_webui.py` | 逐路由体检：控制台错误 / 坏图 / 横向溢出 / 残留骨架 / 真实数据标记，截图存 `%TEMP%\aifootball_view\verify\`；`/console/login.html` 走**未登录**上下文，其余路由自动注入登录态，共 17 条路由 |
 | `scripts/_login_flow.py` | 登录端到端流程（生产 17 项 / 开发 16 项断言）：未登录被守卫送到控制台登录页且带 `next`、错密码提示、正确登录回原地址且用户信息被 `/api/auth/me` 换成真实账号、已登录时该页给「继续进入」、头像菜单退出后清态、非管理员（拦截 `/me` 返回 user 角色）看到权限卡与「换管理员账号登录」且看不到「设置」。`WEBUI_BASE=…:3000` 可验开发路径（跨源 `?auth_token=` 交接） |
 | `scripts/_login_shots.py` | 登录页（控制台版）昼/暮/夜/雨四种天气截图 + 扫码页签检查（二维码真解码、倒计时在走） |
@@ -118,4 +120,5 @@
 - **球队字段缺口**：`teams.manager` 实测多为 null（Elche / Santander / Arsenal 三队全为 null），详情页显示「—」；`htHome/htAway`（半场比分）实测为 null，详情页不渲染半场贴片。
 - **小样本指标**：`/teams/:id` 的核心指标来自 `team_radar` 预计算表（跨赛季全量），样本极少时（如 Santander 仅 6 场）七维画像会严重失真（attack 93 / defense 5），页面已在 hint 中写明「样本 N 场」；Arsenal 的赛季行是**跨赛事聚合**（25/26 为 53 场 / 104 球，含杯赛与欧战），不是联赛口径。
 - **积分榜自身不齐**：同一场比赛的两队 `played` 可能不同（如 Elche 6 场 vs Sociedad 9 场），详情页只展示不校验，并标注「两队场次可能不同步」。
+- **检索层（RAG 阶段 0）**：新增 `/api/ui/search`（`q`/`kind`/`limit`/`offset`）与 `/api/ui/search/stats` 两个端点，走同一登录闸门（未登录 401）；索引是**派生数据** `data/database/search.db`（不入库），数据更新后需重跑 `python scripts/build_search_index.py` 才会反映到检索结果（当前没有挂进定时任务）；细节与边界见 [`docs/检索层说明.md`](检索层说明.md)。
 - **登录相关**：① `viewer`/`user`/`uipreview` 三个非管理员账号的密码本文档未记录，需要时用 `python scripts/add_user.py`（管理员接口）重置；② 扫码登录依赖手机与电脑在同一局域网，且扫码页写的是**后端**的局域网地址（`http://<LAN-IP>:8000/api/auth/qr/scan?...`），若只起了 3000 开发服、没起 8000，手机端会连不上后端；③ 前端 `localStorage` 里的登录态是「本机浏览器级」的，换浏览器需重新登录；④ 语言默认值仍是英文（`webui/src/i18n.tsx` 无本地记录时回落 `en`），首次访问 SPA 会显示英文，切到「中」后按浏览器记住 —— 是否把默认值改成中文待定；⑤ **控制台 5 页的取址已改为同源优先**（2026-10 部署前修复，原「写死 `http://127.0.0.1:8000`」已删除）：`file:` 协议回落到 127.0.0.1:8000，http 且端口非 8000 时用 `同主机:8000`，其余（含 nginx 反代的 HTTPS 域名）用空串走同源；用 `python scripts/check_sameorigin.py` 在假域名上验（10/10）。备份原件在 `D:\AIfootball_部署前备份_20261005\console\`；⑥ 我做的 React 版登录页 `webui/src/pages/Login.tsx` 已不在路由里（留作控制台页缺失时的兜底），页面清单/文档里不再提及。

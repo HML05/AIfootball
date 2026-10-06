@@ -22,7 +22,16 @@ export interface AuthUser {
   role: string
   phone?: string
   last_login?: string
+  /** 头像地址：空串意为未上传过 → 界面回落到默认图 /images/profile.png */
+  avatar_url?: string
 }
+
+/** 默认头像路径：没上传过头像（后端 avatar_url 为空串）时用它 */
+export const DEFAULT_AVATAR = '/images/profile.png'
+
+/** 头像地址：avatar_url 为空/缺失 → 回落默认图（顶栏与账号设置共用） */
+export const avatarSrc = (u: AuthUser | null | undefined): string =>
+  u?.avatar_url ? u.avatar_url : DEFAULT_AVATAR
 
 export interface AuthState {
   token: string
@@ -89,13 +98,27 @@ export function clearAuth() {
   notify()
 }
 
+/**
+ * 把新的用户资料合并写回本地登录态（改昵称/账号名/手机号/头像后用）。
+ * token 与 expires_at 保持不变，只换 user，然后广播 AUTH_EVENT 让顶栏重渲染。
+ * 登录态不存在时什么都不做（例如已被清掉/过期）。
+ */
+export function updateStoredUser(user: AuthUser): void {
+  const cur = readAuth()
+  if (!cur) return
+  writeAuth({ ...cur, user: { ...cur.user, ...user } })
+}
+
 /* ---------------- 请求 ---------------- */
 
 async function request<T>(path: string, init: RequestInit & { token?: string | null } = {}): Promise<T> {
   const { token, ...rest } = init
+  // FormData 的 Content-Type 必须由浏览器自己写（要带 multipart 的 boundary），
+  // 手工写 application/json 会让后端把整个表单当成 JSON 解析 → 422「file 字段缺失」。
+  const isForm = typeof FormData !== 'undefined' && rest.body instanceof FormData
   const headers: Record<string, string> = {
     Accept: 'application/json',
-    ...(rest.body ? { 'Content-Type': 'application/json' } : {}),
+    ...(rest.body && !isForm ? { 'Content-Type': 'application/json' } : {}),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   }
   let res: Response
@@ -163,6 +186,67 @@ export async function fetchMe(): Promise<AuthUser | null> {
     if (e instanceof Error && /401|未登录|过期/.test(e.message)) return null
     return null
   }
+}
+
+/* ---------------- 账号设置（改资料 / 换头像 / 改密码） ---------------- */
+
+/** 后端 /api/auth 里带 user 的成功返回 */
+interface UserResponse {
+  ok: boolean
+  user: AuthUser
+  detail?: string
+}
+
+function requireToken(): string {
+  const t = getToken()
+  if (!t) throw new Error('登录已过期，请重新登录')
+  return t
+}
+
+/** GET /me —— 用当前 token 换最新资料（含 avatar_url） */
+export async function fetchAccount(): Promise<AuthUser> {
+  const r = await request<{ ok: boolean; user: AuthUser }>('/me', { token: requireToken() })
+  return r.user
+}
+
+/** PATCH /profile —— 只传要改的字段；后端返回新资料，同步写回本地登录态 */
+export async function updateProfile(patch: {
+  username?: string
+  display_name?: string
+  phone?: string
+}): Promise<AuthUser> {
+  const r = await request<UserResponse>('/profile', {
+    method: 'PATCH',
+    body: JSON.stringify(patch),
+    token: requireToken(),
+  })
+  updateStoredUser(r.user)
+  return r.user
+}
+
+/** POST /avatar —— multipart/form-data，字段名必须是 file；不手工设 Content-Type，交给浏览器带 boundary */
+export async function uploadAvatar(file: File): Promise<AuthUser> {
+  const fd = new FormData()
+  fd.append('file', file)
+  const r = await request<UserResponse>('/avatar', { method: 'POST', body: fd, token: requireToken() })
+  updateStoredUser(r.user)
+  return r.user
+}
+
+/** DELETE /avatar —— 恢复默认头像 */
+export async function removeAvatar(): Promise<AuthUser> {
+  const r = await request<UserResponse>('/avatar', { method: 'DELETE', token: requireToken() })
+  updateStoredUser(r.user)
+  return r.user
+}
+
+/** POST /password —— 改密码；其它设备上的旧会话失效，当前 token 仍有效 */
+export async function changePassword(oldPassword: string, newPassword: string): Promise<void> {
+  await request<{ ok: boolean; detail?: string }>('/password', {
+    method: 'POST',
+    body: JSON.stringify({ old_password: oldPassword, new_password: newPassword }),
+    token: requireToken(),
+  })
 }
 
 /* ---------------- 扫码登录 ---------------- */

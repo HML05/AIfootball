@@ -2,17 +2,18 @@
 """生成 docs/webui/ 的交付截图（生产构建 + 已登录态，中文、亮色）。
 
 用法:
-    python scripts/docs_shots.py                 # 全部 21 张
+    python scripts/docs_shots.py                 # 全部 22 张
     python scripts/docs_shots.py /ask /         # 只重拍指定路由
 
 约定:
     * 除 /login 外都带登录态（/api/ui/* 现在需要 Bearer）。
     * 只拍视口 1600x1000（不拍 full_page），与历史交付截图规格一致。
-    * 文件名即文档里的编号：01-登录.png … 21-智能问答.png
+    * 文件名即文档里的编号：01-登录.png … 22-账号设置.png
 """
 from __future__ import annotations
 
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -51,29 +52,39 @@ SHOTS: list[tuple[str, str]] = [
     # 2026-10 新增：RAG 检索与问答
     ("/ask?q=%E7%9A%87%E5%AE%B6%E9%A9%AC%E5%BE%B7%E9%87%8C", "20-检索与问答"),
     ("/ask?tab=ask", "21-智能问答"),
+    # 2026-10 新增：账号设置（顶栏头像 → 弹层；panel 参数只是本脚本的标记，页面会忽略）
+    ("/?panel=account", "22-账号设置"),
 ]
 
 
 ASK_TAB = "/ask?tab=ask"
 ASK_QUESTION = "皇马和巴萨谁赢"
+ACCOUNT_PANEL = "/?panel=account"
 
 
 def _prepare(pg, route: str) -> None:
     """个别页面需要在截图前先操作一下才好看。
 
-    目前只有问答页：空态截图没有信息量，所以先提交一个真实问题、
-    等答案渲染完再拍（配了 LLM key 时就是模型作答的样子）。
+    * 问答页：空态截图没有信息量，先提交一个真实问题、等答案渲染完再拍
+      （配了 LLM key 时就是模型作答的样子）。
+    * 账号设置：它是顶栏头像里的弹层，得先点开头像 → 「账号设置」。
     """
-    if route != ASK_TAB:
+    if route == ASK_TAB:
+        box = pg.locator("textarea").first
+        box.fill(ASK_QUESTION)
+        box.press("Control+Enter")  # Ask.tsx 支持 Ctrl/⌘+Enter 提交
+        for _ in range(75):  # 最多等 60 s：模型作答 2~4 s，截断重试时会翻倍
+            pg.wait_for_timeout(800)
+            body = pg.inner_text("body")
+            if "Type a question and press Ask" not in body and "[1]" in body:
+                break
         return
-    box = pg.locator("textarea").first
-    box.fill(ASK_QUESTION)
-    box.press("Control+Enter")  # Ask.tsx 支持 Ctrl/⌘+Enter 提交
-    for _ in range(75):  # 最多等 60 s：模型作答 2~4 s，截断重试时会翻倍
-        pg.wait_for_timeout(800)
-        body = pg.inner_text("body")
-        if "Type a question and press Ask" not in body and "[1]" in body:
-            break
+    if route == ACCOUNT_PANEL:
+        pg.locator("header button:has(img[alt='avatar'])").first.click()
+        pg.wait_for_timeout(500)
+        pg.get_by_role("button", name=re.compile("账号设置|Account settings")).first.click()
+        pg.wait_for_timeout(1200)  # 等弹层动画结束
+        return
 
 
 def main() -> int:

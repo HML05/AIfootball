@@ -13,6 +13,10 @@
   GET  /qr/poll        PC 轮询: 等待手机确认, 确认后一次性取回令牌
   GET  /qr/scan        手机扫码打开的确认页(HTML)
   POST /qr/approve     手机点「同意登录」(需要账号密码或手机上已有的令牌)
+  PATCH /profile       改自己的账号名 / 昵称 / 手机号
+  POST /avatar         上传或更换自己的头像(图片文件)
+  DELETE /avatar       恢复默认头像
+  GET  /avatar/{id}    取某个用户的头像图片(没上传过返回 404, 不要求登录)
   GET  /users          用户列表(仅管理员)
   POST /users          新建/重置用户(仅管理员)
 
@@ -30,8 +34,9 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
-from fastapi.responses import HTMLResponse, Response
+from fastapi import (APIRouter, Depends, File, Header, HTTPException, Query,
+                     Request, UploadFile)
+from fastapi.responses import FileResponse, HTMLResponse, Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -69,6 +74,8 @@ def _user_dict(u: AuthUser) -> dict:
         "display_name": u.display_name or u.username,
         "role": u.role or "user", "phone": u.phone or "",
         "last_login": u.last_login.strftime("%Y-%m-%d %H:%M:%S") if u.last_login else None,
+        # 上传过头像才有值(带修改时间); 空串表示用前端的默认图 /images/profile.png
+        "avatar_url": _avatar_url(u),
     }
 
 
@@ -496,6 +503,161 @@ def qr_approve(payload: ApproveIn, request: Request, db: Session = Depends(get_d
         out["phone_token"] = phone.token
         out["phone_expires_at"] = phone.expires_at.strftime("%Y-%m-%d %H:%M:%S")
     return out
+
+
+# ---------------- 个人资料与头像(点顶栏头像 → 账号设置) ----------------
+
+# 头像只认这三种落盘扩展名; 带透明的存 png, 照片存 jpg(体积小一个数量级)
+AVATAR_EXTS = (".png", ".jpg", ".webp")
+AVATAR_MIME = {".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp"}
+PHONE_RE = re.compile(r"^[0-9+\-() ]{5,20}$")
+
+
+def _avatar_file(user_id: int) -> Optional[Path]:
+    """当前用户的头像文件; 没上传过返回 None(前端回退到 /images/profile.png)。"""
+    for ext in AVATAR_EXTS:
+        p = settings.AVATAR_DIR / f"{user_id}{ext}"
+        if p.exists() and p.stat().st_size > 0:
+            return p
+    return None
+
+
+def _avatar_url(u: AuthUser) -> str:
+    """头像地址; 带上修改时间, 换完头像浏览器立刻拿到新图而不是旧缓存。"""
+    p = _avatar_file(u.user_id)
+    return f"/api/auth/avatar/{u.user_id}?v={int(p.stat().st_mtime)}" if p else ""
+
+
+def _drop_avatars(user_id: int) -> list:
+    """删掉该用户的旧头像(换扩展名时旧文件要一起清掉), 返回删掉的文件名。"""
+    gone = []
+    for ext in AVATAR_EXTS:
+        p = settings.AVATAR_DIR / f"{user_id}{ext}"
+        if p.exists():
+            try:
+                p.unlink()
+                gone.append(p.name)
+            except OSError:
+                pass
+    return gone
+
+
+class ProfileIn(BaseModel):
+    """只改传进来的字段; 全部不传等于没改动。"""
+    username: Optional[str] = None
+    display_name: Optional[str] = None
+    phone: Optional[str] = None
+
+
+@router.patch("/profile", summary="修改自己的资料(账号名/昵称/手机号)")
+def update_profile(payload: ProfileIn, db: Session = Depends(get_db),
+                   authorization: Optional[str] = Header(default=None)):
+    u = _login_or_401(db, authorization)
+    changed = []
+
+    username = (payload.username or "").strip()
+    if username and username != u.username:
+        if not USERNAME_RE.match(username):
+            raise HTTPException(status_code=400,
+                                detail="账号需 3~20 位, 以字母开头, 只能用字母/数字/下划线/点/横线")
+        clash = (db.query(AuthUser)
+                   .filter(AuthUser.username == username, AuthUser.user_id != u.user_id).first())
+        if clash:
+            raise HTTPException(status_code=409, detail="该账号名已被占用, 换一个试试")
+        u.username = username
+        changed.append("账号名")
+
+    if payload.display_name is not None:
+        name = payload.display_name.strip()
+        if len(name) > 50:
+            raise HTTPException(status_code=400, detail="昵称最多 50 个字")
+        u.display_name = name or (username or u.username)
+        changed.append("昵称")
+
+    if payload.phone is not None:
+        phone = payload.phone.strip()
+        if phone and not PHONE_RE.match(phone):
+            raise HTTPException(status_code=400, detail="手机号格式不对(只能数字/+/-/空格/括号, 5~20 位)")
+        u.phone = phone or None
+        changed.append("手机号")
+
+    if not changed:
+        return {"ok": True, "detail": "资料没有变化", "user": _user_dict(u)}
+    db.commit()
+    db.refresh(u)
+    print(f"[auth] 资料已更新: {u.username} (user_id={u.user_id}) {('/'.join(changed))}")
+    return {"ok": True, "detail": "已更新: " + " / ".join(changed), "user": _user_dict(u)}
+
+
+@router.post("/avatar", summary="上传/更换头像(图片文件, 默认上限 2 MB)")
+async def upload_avatar(file: UploadFile = File(...), db: Session = Depends(get_db),
+                        authorization: Optional[str] = Header(default=None)):
+    """收下原图 → 居中裁成正方形 → 压到 AVATAR_MAX_SIDE → 落盘。
+
+    只做「像不像一张图」的校验: 真正的类型判定交给 Pillow 解码, 不信任浏览器送的
+    content-type 与文件名(前端那两样都是可以随便写的)。
+    """
+    u = _login_or_401(db, authorization)
+    limit = max(64 * 1024, settings.AVATAR_MAX_BYTES)
+    raw = await file.read()
+    if not raw:
+        raise HTTPException(status_code=400, detail="没有收到图片内容")
+    if len(raw) > limit:
+        raise HTTPException(status_code=413,
+                            detail=f"图片太大, 上限 {limit // (1024 * 1024)} MB(可先压缩或换小图)")
+
+    try:
+        from PIL import Image, ImageOps
+        img = Image.open(io.BytesIO(raw))
+        img.load()
+    except Exception:
+        raise HTTPException(status_code=400, detail="这不像是能识别的图片(png / jpg / webp)")
+
+    img = ImageOps.exif_transpose(img)                 # 手机竖拍照片别倒过来
+    side = max(64, settings.AVATAR_MAX_SIDE)
+    w, h = img.size
+    if w != h:                                          # 头像在前端是正圆, 先居中裁成正方形
+        s = min(w, h)
+        img = img.crop(((w - s) // 2, (h - s) // 2, (w - s) // 2 + s, (h - s) // 2 + s))
+    if img.size != (side, side) and img.width > side:
+        img = img.resize((side, side), Image.LANCZOS)   # 只缩不放: 小图放大只会更模糊更占地方
+
+    keep_alpha = img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info)
+    _drop_avatars(u.user_id)                            # 换了扩展名, 旧文件不能留
+    if keep_alpha:
+        dst = settings.AVATAR_DIR / f"{u.user_id}.png"
+        img.convert("RGBA").save(dst, "PNG", optimize=True)
+    else:
+        dst = settings.AVATAR_DIR / f"{u.user_id}.jpg"
+        img.convert("RGB").save(dst, "JPEG", quality=88, optimize=True, progressive=True)
+    print(f"[auth] 头像已更新: {u.username} (user_id={u.user_id}) "
+          f"{len(raw)}B -> {dst.name} {dst.stat().st_size}B")
+    return {"ok": True, "detail": "头像已更新", "user": _user_dict(u),
+            "bytes": dst.stat().st_size, "source_bytes": len(raw)}
+
+
+@router.delete("/avatar", summary="恢复默认头像")
+def delete_avatar(db: Session = Depends(get_db),
+                  authorization: Optional[str] = Header(default=None)):
+    u = _login_or_401(db, authorization)
+    gone = _drop_avatars(u.user_id)
+    return {"ok": True, "removed": gone, "user": _user_dict(u),
+            "detail": "已恢复默认头像" if gone else "本来就没有上传过头像"}
+
+
+@router.get("/avatar/{user_id}", summary="取用户头像图片(没上传过返回 404)")
+def get_avatar(user_id: int):
+    """故意不要求登录: 前端用 <img src> 直接显示, 带不了 Authorization 头。
+
+    只暴露「这个人上传过的头像图片」本身, 地址里的 user_id 已经是公开信息(用户管理页可见)。
+    """
+    p = _avatar_file(user_id)
+    if not p:
+        raise HTTPException(status_code=404, detail="该用户没有自定义头像")
+    st = p.stat()
+    return FileResponse(p, media_type=AVATAR_MIME.get(p.suffix, "application/octet-stream"),
+                        headers={"Cache-Control": "public, max-age=86400",
+                                 "ETag": f'W/"{int(st.st_mtime)}-{st.st_size}"'})
 
 
 # ---------------- 用户管理(管理员) ----------------

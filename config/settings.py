@@ -64,6 +64,12 @@ class Settings:
     AUTH_RESET_TTL_MINUTES: int = int(os.getenv("AUTH_RESET_TTL_MINUTES", "10"))
     AUTH_RESET_MAX_TRIES: int = int(os.getenv("AUTH_RESET_MAX_TRIES", "5"))
 
+    # 个人头像上传(见 src/api/auth.py 的 /api/auth/avatar)
+    #   落盘在 data/uploads/avatars/<user_id>.<ext>, 不进数据库也不进仓库
+    #   (.gitignore 忽略 data/uploads/); 原图限额 + 压缩边长都在这里调。
+    AVATAR_MAX_BYTES: int = int(os.getenv("AVATAR_MAX_BYTES", str(2 * 1024 * 1024)))
+    AVATAR_MAX_SIDE: int = int(os.getenv("AVATAR_MAX_SIDE", "512"))
+
     # 定时任务
     ENABLE_LIVE_SCORE_UPDATE: bool = os.getenv("ENABLE_LIVE_SCORE_UPDATE", "true").lower() == "true"
     ENABLE_DAILY_UPDATE: bool = os.getenv("ENABLE_DAILY_UPDATE", "true").lower() == "true"
@@ -73,11 +79,14 @@ class Settings:
     DATA_DIR: Path = BASE_DIR / "data"
     RAW_DATA_DIR: Path = DATA_DIR / "raw"
     MODEL_DIR: Path = BASE_DIR / "models"
+    UPLOAD_DIR: Path = DATA_DIR / "uploads"          # 用户上传(目前只有头像)
+    AVATAR_DIR: Path = UPLOAD_DIR / "avatars"
 
     def __init__(self):
         # 确保目录存在
         for d in [self.DATA_DIR, self.RAW_DATA_DIR, self.MODEL_DIR,
-                  self.DATA_DIR / "processed", self.DATA_DIR / "database"]:
+                  self.DATA_DIR / "processed", self.DATA_DIR / "database",
+                  self.UPLOAD_DIR, self.AVATAR_DIR]:
             d.mkdir(parents=True, exist_ok=True)
 
 

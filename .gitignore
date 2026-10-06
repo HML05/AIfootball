@@ -58,6 +58,8 @@ data/database/*.db-journal
 data/database/*.sqlite
 data/database/*.bak_*
 data/cache/
+# 用户上传(目前只有头像, 见 src/api/auth.py 的 /api/auth/avatar): 属于运行期数据, 不进仓库
+data/uploads/
 # 外部数据集 562 MB，含 3 个 >100 MB 的文件（GitHub 硬限制 100 MB/文件，会直接拒收）；
 # 需要时用 scripts/fetch_external_dataset.py 重新下载 —— 运行时只用到 data/external/af_cache。
 data/external/

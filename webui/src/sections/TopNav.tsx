@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Bell, LogOut, RefreshCw, Settings, ShieldCheck, User as UserIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router'
 import { pick, useHome } from '../data/live'
 import { useLang, type I18nKey } from '../i18n'
 import { consoleLoginUrl } from '../lib/base'
-import { useAuth } from '../lib/auth'
+import { avatarSrc, useAuth } from '../lib/auth'
+import AccountSettings from './AccountSettings'
 
 /**
  * 顶栏导航：标题 → 路由（用户端 8 个入口）
@@ -31,14 +33,18 @@ export default function TopNav({ activePath }: { activePath?: string }) {
   const [spinning, setSpinning] = useState(false)
   const [bell, setBell] = useState(false)
   const [menu, setMenu] = useState(false)
+  const [account, setAccount] = useState(false)
   const log = data?.updateLog ?? []
   const pending = log.filter((r) => !r.done).length
 
   const isActive = (path: string) =>
     path === '/' ? current === '/' : current === path || current.startsWith(`${path}/`)
 
+  // 弹层挂在 <header> 外面：顶栏的 backdrop-filter 会让它成为 fixed 后代的 containing block，
+  // 弹层留在顶栏里就会被限制在那条胶囊内（弹层自身也做了 createPortal，双保险）。
   return (
-    <header className="glass anim-in sticky top-4 z-40 flex items-center gap-5 rounded-full px-5 py-2.5">
+    <>
+      <header className="glass anim-in sticky top-4 z-40 flex items-center gap-5 rounded-full px-5 py-2.5">
       <button onClick={() => nav('/')} className="flex items-center gap-2.5">
         <span className="t-1 text-[20px] font-extrabold leading-none tracking-tight">
           {data?.brand.name ?? 'FootballAI'}
@@ -141,7 +147,7 @@ export default function TopNav({ activePath }: { activePath?: string }) {
             title={user ? `${user.display_name} (@${user.username})` : undefined}
           >
             <img
-              src="/images/profile.png"
+              src={avatarSrc(user)}
               alt="avatar"
               className="h-9 w-9 rounded-full object-cover ring-2 ring-white"
             />
@@ -152,10 +158,13 @@ export default function TopNav({ activePath }: { activePath?: string }) {
 
           {menu && (
             <>
-              <div className="fixed inset-0 z-40" onClick={() => setMenu(false)} />
+              {/* 顶栏的玻璃效果（backdrop-filter）会把它变成 fixed 后代的 containing block，
+                  遮罩留在顶栏里就只能盖住顶栏那一条 → 点页面空白处关不掉菜单。挂到 body 上。
+                  z 必须低于顶栏的 z-40：顶栏自己成层叠上下文，遮罩若同级又排在后面，会挡住菜单里的按钮。 */}
+              {createPortal(<div className="fixed inset-0 z-30" onClick={() => setMenu(false)} />, document.body)}
               <div className="glass-pop anim-in absolute right-0 top-11 z-50 w-[250px] rounded-[22px] p-3">
                 <div className="flex items-center gap-3 px-1.5 pb-3">
-                  <img src="/images/profile.png" alt="avatar" className="h-10 w-10 rounded-full object-cover" />
+                  <img src={avatarSrc(user)} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
                   <div className="min-w-0">
                     <p className="t-1 truncate text-[13px] font-semibold">{user?.display_name ?? '—'}</p>
                     <p className="t-3 truncate text-[11px] tabular-nums">@{user?.username ?? '—'}</p>
@@ -171,6 +180,17 @@ export default function TopNav({ activePath }: { activePath?: string }) {
                     {user?.last_login ? user.last_login.slice(0, 10) : ''}
                   </span>
                 </div>
+
+                <button
+                  onClick={() => {
+                    setMenu(false)
+                    setAccount(true)
+                  }}
+                  className="action-row t-1 mt-2 flex w-full items-center gap-2 rounded-2xl px-3 py-2.5 text-[12.5px] font-semibold transition-colors"
+                >
+                  <Settings size={14} strokeWidth={2.2} />
+                  {pick(lang, '账号设置', 'Account settings')}
+                </button>
 
                 <button
                   onClick={async () => {
@@ -189,6 +209,10 @@ export default function TopNav({ activePath }: { activePath?: string }) {
           )}
         </div>
       </div>
-    </header>
+
+      </header>
+
+      <AccountSettings open={account} user={user} onClose={() => setAccount(false)} />
+    </>
   )
 }

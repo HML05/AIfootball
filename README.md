@@ -169,7 +169,7 @@ cp .env.example .env
   部署时前三样要单独传（清单见 `docs/deploy.md` 第 5 节），检索索引在服务器上重建
 - 核对命令：`python scripts/audit_repo_payload.py`（按 `.gitignore` 推演会入库的文件，并检查有没有超过 GitHub 100 MB 限制的单文件）
 - **代码规模**：约 **9.9 万行**（Python 3.65 万行 · TypeScript 1.73 万行），另有 `docs/` 18 份设计文档与 `docs/webui/` 21 张交付截图
-- **Git 状态**：已 `git init -b main`，本地已有五次提交（首次提交：593 文件 / 94,891 行 → 检索层阶段 0 → 工具与依赖体检 → 问答层阶段 1 + `/ask` 页面 → 接通真实大模型并修复推理模型截断；完整链见 `git log --oneline`），远端尚未配置 ——
+- **Git 状态**：已 `git init -b main`，本地已有完整提交链（首次提交：593 文件 / 94,891 行 → 检索层阶段 0 → 工具与依赖体检 → 问答层阶段 1 + `/ask` 页面 → 接通真实大模型并修复推理模型截断 → 项目报告总览与个人材料清理；完整链见 `git log --oneline`，数量随开发增长，此处不再写死），远端尚未配置 ——
   建好 GitHub 空仓库后 `git remote add origin <地址>` + `git push -u origin main`（步骤见 `docs/deploy.md` 第 2 节）
 
 ## License

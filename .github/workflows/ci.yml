@@ -127,7 +127,25 @@ jobs:
         if: steps.pack.outputs.available == 'true'
         run: |
           curl -fL --retry 3 --retry-delay 2 -o /tmp/data-pack-copy.tar.gz "$DATA_PACK_URL"
-          sh scripts/verify_entrypoint.sh /tmp/data-pack-copy.tar.gz
+          # 失败时逐行发注解：Actions 的原始日志托管在 blob 存储上，从某些网络环境
+          # 拿不到（本机实测连不上 productionresultssa*.blob.core.windows.net），
+          # 注解走 api.github.com，任何环境都能读到「到底哪几项挂了」。
+          if sh scripts/verify_entrypoint.sh /tmp/data-pack-copy.tar.gz > /tmp/entrypoint_check.log 2>&1; then
+            cat /tmp/entrypoint_check.log
+          else
+            cat /tmp/entrypoint_check.log
+            if grep -qF '[FAIL]' /tmp/entrypoint_check.log; then
+              grep -F '[FAIL]' /tmp/entrypoint_check.log | while IFS= read -r line; do
+                echo "::error::入口脚本自检 $line"
+              done
+            else
+              echo "::error::入口脚本自检没有输出 [FAIL] 行（可能是脚本自身在中途报错），最后 5 行："
+              tail -5 /tmp/entrypoint_check.log | while IFS= read -r line; do
+                echo "::error::  $line"
+              done
+            fi
+            exit 1
+          fi
 
       - name: 失败时打印服务日志
         if: failure()

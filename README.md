@@ -57,12 +57,16 @@ AIfootball/
 │   ├── webui/               # 交付截图 22 张
 │   └── *.md                 # 设计与实现文档（见下方索引）
 ├── scripts/                 # 构建、导入、自检脚本
-├── deploy/                  # 部署用：systemd 单元 + nginx 反代示例
+├── deploy/                  # 部署用：systemd 单元 + nginx 示例 + docker-compose / Caddyfile / 容器入口脚本
+├── .github/workflows/       # CI（static 语法与依赖体检 + runtime 131 项断言）
 ├── data/                    # 数据库 + 采集到的原始/外部数据（不入库）
 ├── models/                  # 训练好的模型文件（.joblib/.pt 不入库）
 ├── tools/                   # console_template.html（控制台生成器的输入）与一次性补丁脚本
 ├── frontend/                # 参照版界面（Streamlit，8501/8502）
+├── Dockerfile               # 容器化部署（构建期从 Release 拉数据包）
+├── render.yaml              # Render 免费档 Blueprint（一键建服务）
 ├── requirements.txt         # 运行时依赖（服务器上只需要这一份）
+├── requirements-deploy.txt  # 部署子集（去掉只给 frontend/ 用的 streamlit/altair）
 ├── requirements-dev.txt     # 开发/自检依赖（playwright / torch / scipy / vl-convert）
 ├── .env.example             # 环境变量模板（.env 不入库）
 ├── start_webui.bat          # Windows 一键启动（按需构建前端 + 起 8000）
@@ -110,7 +114,10 @@ cp .env.example .env
 `scripts/check_llm.py` 可体检配置与可用模型。原理见 [`docs/智能问答说明.md`](docs/智能问答说明.md)，
 自检 `python scripts/verify_qa.py`（37 项）。
 
-**要放到公网服务器上**：见 [`docs/deploy.md`](docs/deploy.md)（VPS + nginx 同源 + systemd 的完整步骤，含「数据库/模型/特征 CSV 怎么传」与排错表）。
+**要放到公网给别人访问**：见 [`docs/部署-公网托管.md`](docs/部署-公网托管.md)
+（三条路线：Render 免费容器一键部署 / 云服务器 Docker Compose + Caddy / GitHub Pages 纯静态展示；
+含数据包怎么做与怎么校验、部署后检查清单与排错表）。
+要在自己的服务器上用 systemd + nginx 跑，见 [`docs/deploy.md`](docs/deploy.md)。
 
 ## 数据与模型
 
@@ -160,19 +167,22 @@ cp .env.example .env
 | `docs/智能问答说明.md` | **智能问答层（RAG 阶段 1）**：旧 langchain Agent 为什么不可用、六个工具、意图与实体识别、引用溯源与防幻觉、问答接口、37 项后端自检 + 17 项页面自检与边界 |
 | `docs/信息架构评审.md` | 逐页点评、逻辑硬伤整改、目标结构 |
 | `docs/deploy.md` | **部署说明**：VPS + nginx 同源 + systemd、数据/模型怎么传、更新与备份、排错表 |
+| `docs/部署-公网托管.md` | **公网托管**：Render 免费容器（`render.yaml` 一键建服务）/ 云服务器 Docker Compose + Caddy / GitHub Pages 静态展示；数据包制作与校验、部署后 8 项检查、9 条排错表、本机生产配置 131 项断言实测 |
 | `docs/UI设计规范.md` / `docs/UI高级审美评审报告.md` / `docs/UI合规审计报告.md` / `docs/UI协作交接说明.md` / `docs/UI打磨收口记录.md` | UI 规范、评审与打磨记录 |
 
 ## 维护说明
 
 - **已清理**：设计迭代产物、旧数据库备份、已解压的数据集压缩包、渲染帧序列、第三方工具目录等共 596.8 MB，
   已移到项目外的 `D:\AIfootball_已清理_20261005\`（保留可恢复，确认无用后手动删除即可）
-- **仓库里只有代码 + 项目**：约 **616 个文件 / 37 MB**（含 `webui/dist` 构建产物与 22 张界面截图）。
+- **仓库里只有代码 + 项目**：**622 个文件 / 36.3 MB**（含 `webui/dist` 构建产物与 22 张界面截图）。
   `data/`（含 `data/external` 的 562 MB 与 3 个 >100 MB 的 CSV）、`models/*.joblib|pt`、`.env`、`node_modules`、派生索引 `data/database/search.db` 都已排除 ——
-  部署时前三样要单独传（清单见 `docs/deploy.md` 第 5 节），检索索引在服务器上重建
+  部署时它们合并成一个 51.8 MB 的**数据包**上传（见 `docs/部署-公网托管.md` 第 1 节；不再需要逐个手传、也不需要在服务器上重建索引）
 - 核对命令：`python scripts/audit_repo_payload.py`（按 `.gitignore` 推演会入库的文件，并检查有没有超过 GitHub 100 MB 限制的单文件）
-- **代码规模**：约 **9.9 万行**（Python 3.65 万行 · TypeScript 1.73 万行），另有 `docs/` 18 份设计文档与 `docs/webui/` 22 张交付截图
-- **Git 状态**：已 `git init -b main`，本地已有完整提交链（首次提交：593 文件 / 94,891 行 → 检索层阶段 0 → 工具与依赖体检 → 问答层阶段 1 + `/ask` 页面 → 接通真实大模型并修复推理模型截断 → 项目报告总览与个人材料清理；完整链见 `git log --oneline`，数量随开发增长，此处不再写死），远端尚未配置 ——
-  建好 GitHub 空仓库后 `git remote add origin <地址>` + `git push -u origin main`（步骤见 `docs/deploy.md` 第 2 节）
+- **代码规模**：约 **9.9 万行**（Python 3.65 万行 · TypeScript 1.73 万行），另有 `docs/` 19 份设计文档与 `docs/webui/` 22 张交付截图
+- **Git 状态**：已 `git init -b main` 并推送到 GitHub（<https://github.com/HML05/AIfootball>，Public），
+  本地与 `origin/main` 同步、`main` 已建立跟踪；完整提交链见 `git log --oneline`（数量随开发增长，此处不写死）
+- **持续集成**：`.github/workflows/ci.yml` —— 每次 push / PR 跑 `compileall` + 依赖体检，
+  再拉数据包起真实服务跑检索 23 项、问答 37 项、接口 30 项、账号 41 项；5 个 Playwright 脚本留本机跑（见 `docs/部署-公网托管.md` 第 7 节）
 
 ## License
 

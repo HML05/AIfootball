@@ -1,0 +1,68 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# 云服务器路线：app（FastAPI 容器）+ caddy（自动申请 HTTPS 证书）
+#
+# 用法（在项目根目录）：
+#   docker compose -f deploy/docker-compose.yml up -d --build
+#   打开 https://<你的域名>/   （DOMAIN 变量写在 deploy/.env 里，见同目录 .env.example）
+#
+# 两个容易踩的坑，已经在这里处理掉：
+#   1. **不要**把空卷挂到 /app/data —— 会盖掉镜像里打好的 football.db。
+#      这里只挂 uploads（用户头像）与 logs，数据库保持镜像内只读使用。
+#   2. 想持久化数据库写入（改密码、新账号），要么把宿主机的 data/ 目录整块挂上来，
+#      要么按 docs/部署-公网托管.md 第 3 节第 2 条的「数据库落盘」做法挂单文件。
+# ═══════════════════════════════════════════════════════════════════════════════
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      args:
+        # 服务器上通常已经在本机放好了 data/ 与 models/，所以默认不下载数据包；
+        # 想走 Release 数据包就把它改成对应 URL。
+        DATA_PACK_URL: ""
+    image: aifootball:latest
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      UI_REQUIRE_AUTH: "true"
+      AUTH_ALLOW_REGISTER: "false"
+      AUTH_RESET_SHOW_CODE: "false"
+      DEBUG: "false"
+      ENABLE_DAILY_UPDATE: "false"
+      ENABLE_LIVE_SCORE_UPDATE: "false"
+      # 容器内固定 7860；对外由 caddy 反代
+      PORT: "7860"
+    env_file:
+      # 密钥（LLM_API_KEY 等）放这里，别写进 compose 文件
+      - .env
+    volumes:
+      - ./volumes/uploads:/app/data/uploads
+      - ./volumes/logs:/app/logs
+    expose:
+      - "7860"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:7860/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - app
+    environment:
+      DOMAIN: ${DOMAIN:-:80}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  caddy-data:
+  caddy-config:

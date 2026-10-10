@@ -1,0 +1,128 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# GitHub Actions 轻量自检
+#
+# 为什么是「轻量」：本机那套 16 个脚本里有 5 个依赖 Playwright 真浏览器
+# （verify_webui / verify_ask_ui / verify_account_ui / _login_flow / check_sameorigin），
+# 放进 CI 会让每次跑都要装浏览器，性价比低，所以它们留在本机跑。
+# CI 只跑不需要浏览器的部分 —— 这些恰恰是最容易在别人机器上崩的：
+#   check_deps（依赖清单是否完整）· verify_search（检索层）· verify_qa（问答层）
+#   smoke_ui_api（/api/ui 全端点冒烟）· verify_account（账号设置纯接口 41 项）
+#
+# 数据从哪来：数据库、模型、检索索引、特征 CSV 都不在仓库里（太大），
+# 由 Release 资产 aifootball-data-pack-v1.tar.gz 提供，见 scripts/make_data_pack.py。
+# 那个 Release 还没上传时，runtime 这个 job 会在日志里留一条 warning 并跳过运行时自检
+# （而不是红一片 —— 免得「还没传数据包」被误读成「代码坏了」）；上传之后同一个 job
+# 会自动开始跑全量断言，不需要改这个文件。
+#
+# 大模型：CI 里**故意不配** LLM_API_KEY —— 于是 verify_qa 走的是「无 key 降级为
+# 检索摘要」那条分支，等于每次都在验证「没有大模型也能用」，这是有意的。
+# ═══════════════════════════════════════════════════════════════════════════════
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  DATA_PACK_URL: https://github.com/HML05/AIfootball/releases/download/data-pack-v1/aifootball-data-pack-v1.tar.gz
+  PYTHON_VERSION: "3.13"
+
+jobs:
+  # ── 1. 不依赖数据与服务的静态检查 ────────────────────────────────────────────
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: 安装运行依赖（部署子集，不含 streamlit/altair）
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-deploy.txt
+
+      - name: 语法自检（全部 .py 能被编译）
+        run: python -m compileall -q config src scripts
+
+      - name: 依赖体检（源码 import 与 requirements 对照）
+        run: python scripts/check_deps.py
+
+  # ── 2. 拿到真数据、起真服务、跑真断言 ────────────────────────────────────────
+  runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: 安装运行依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-deploy.txt
+
+      - name: 数据包是否已发布（没发布就跳过运行时自检）
+        id: pack
+        run: |
+          if curl -fsIL --retry 2 "$DATA_PACK_URL" > /dev/null 2>&1; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            echo "数据包可用：$DATA_PACK_URL"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::数据包 Release 还没上传，跳过运行时自检。先在本地跑" \
+                 "python scripts/make_data_pack.py，把它作为 Release 资产传上去" \
+                 "（docs/部署-公网托管.md 第 1 节），之后本 job 会自动开始跑断言。"
+          fi
+
+      - name: 下载数据包（数据库 + 模型 + 检索索引 + 特征）
+        if: steps.pack.outputs.available == 'true'
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 --retry-delay 2 -o /tmp/data-pack.tar.gz "$DATA_PACK_URL"
+          tar -xzf /tmp/data-pack.tar.gz -C .
+          ls -la data/database models | head -20
+
+      - name: 起服务（等 /health 就绪）
+        if: steps.pack.outputs.available == 'true'
+        run: |
+          set -euo pipefail
+          ENABLE_DAILY_UPDATE=false ENABLE_LIVE_SCORE_UPDATE=false DEBUG=false \
+            python -m uvicorn src.main:app --host 127.0.0.1 --port 8000 --workers 1 \
+            > /tmp/uvicorn.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8000/health > /dev/null; then
+              echo "服务已就绪（第 ${i} 次探测）"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::服务 120 秒内没起来，日志如下"
+          cat /tmp/uvicorn.log
+          exit 1
+
+      - name: 检索层自检（23 项）
+        if: steps.pack.outputs.available == 'true'
+        run: python scripts/verify_search.py
+
+      - name: 智能问答自检（37 项，无 key → 走检索摘要分支）
+        if: steps.pack.outputs.available == 'true'
+        run: python scripts/verify_qa.py
+
+      - name: /api/ui 全端点冒烟（30 项）
+        if: steps.pack.outputs.available == 'true'
+        run: python scripts/smoke_ui_api.py
+
+      - name: 账号设置纯接口自检（41 项）
+        if: steps.pack.outputs.available == 'true'
+        run: python scripts/verify_account.py
+
+      - name: 失败时打印服务日志
+        if: failure()
+        run: tail -200 /tmp/uvicorn.log || true

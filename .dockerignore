@@ -1,0 +1,57 @@
+# 构建镜像时不该进上下文的东西。
+# 注意：data/database、data/processed、models/ **故意不排除** ——
+# 本地构建时它们就在磁盘上，直接打进镜像即可；云端构建（仓库里没有这些文件）
+# 由 Dockerfile 的 DATA_PACK_URL 下载补齐。见 docs/部署-公网.md。
+
+# 版本控制与本地环境
+.git
+.gitignore
+.gitattributes
+.venv
+venv
+.env
+.env.*
+!.env.example
+__pycache__
+**/__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+# 前端源码与依赖（镜像里只要构建好的 webui/dist）
+webui/node_modules
+webui/src
+webui/public
+webui/index.html
+webui/*.json
+webui/*.ts
+webui/*.js
+webui/*.md
+webui/.vite
+frontend
+
+# 数据里不需要进镜像的部分
+data/raw
+data/cache
+data/external
+data/uploads
+*.db-wal
+*.db-shm
+*.db-journal
+
+# 文档与截图（/console 走 COPY docs/console，不受这里影响）
+docs/webui
+docs/screenshots
+docs/*.docx
+*.md
+!requirements*.txt
+
+# 其它
+logs
+tmp
+*.log
+*.tar.gz
+stadium-scenes
+node_modules

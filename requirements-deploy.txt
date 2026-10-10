@@ -1,0 +1,49 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# 部署依赖（容器镜像用）—— requirements.txt 的运行子集
+#
+# 与 requirements.txt 的差异（只有「减」，没有「加」）：
+#   去掉 streamlit / altair  → 只被 frontend/（参照版 Streamlit 界面）用，主应用零引用；
+#                             不装可省约 150 MB 镜像体积与相应内存。
+#   本来就不含 torch / playwright / scipy / python-docx → 训练、浏览器自检、Word 导出用，
+#                             主应用运行期不需要（torch 只被 scripts/train_dl.py 导入）。
+#
+# 版本与 requirements.txt 完全一致，避免「本地能跑、容器里行为不同」。
+# 校验方式：python scripts/check_deps.py（本地）／容器内同命令
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Web 框架
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+python-multipart==0.0.32
+
+# 数据处理
+pandas==2.3.3
+numpy==2.4.1
+
+# 数据库（SQLite）
+sqlalchemy==2.0.52
+
+# 机器学习（预测与可解释性；shap 会带进 numba/llvmlite，属于运行期真实依赖）
+xgboost==3.4.1
+scikit-learn==1.9.0
+shap==0.52.0
+joblib==1.6.0
+
+# 定时任务（公网部署默认用 ENABLE_DAILY_UPDATE / ENABLE_LIVE_SCORE_UPDATE=false 关掉，
+# 但代码 import 仍需要这个包）
+APScheduler==3.11.3
+
+# 网络请求与网页解析
+requests==2.33.1
+lxml==6.1.2
+
+# 工具
+python-dotenv==1.2.2
+pydantic==2.13.5
+
+# 检索层（中文分词；缺了会退化成字符 bigram）
+jieba==0.42.1
+
+# 登录二维码 + 头像处理
+qrcode==8.2
+pillow==12.1.0

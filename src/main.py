@@ -243,13 +243,24 @@ if WEBUI_DIST.is_dir():
     from starlette.exceptions import HTTPException as StarletteHTTPException
 
     class SPAStaticFiles(StaticFiles):
-        """SPA 回落：未知路径返回 index.html，让前端路由接管"""
+        """SPA 回落：未知路径返回 index.html，让前端路由接管。
+
+        接口路径（/api/*、/health）**不回落** —— 写错接口名时应该看到 404 JSON，
+        而不是一份 index.html；否则 curl / 监控会把拼错的接口当成 200 正常
+        （2026-10 部署前用 7860 端口探接口时踩到：/api/ui/overview 这个不存在的
+        路径返回了 200 + 首页 HTML）。
+        """
+
+        @staticmethod
+        def _is_api_path(scope) -> bool:
+            path = scope.get("path", "")
+            return path.startswith("/api/") or path == "/health"
 
         async def get_response(self, path, scope):
             try:
                 return await super().get_response(path, scope)
             except StarletteHTTPException as exc:
-                if exc.status_code == 404:
+                if exc.status_code == 404 and not self._is_api_path(scope):
                     return await super().get_response("index.html", scope)
                 raise
 

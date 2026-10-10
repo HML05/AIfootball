@@ -1,0 +1,55 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Render Blueprint —— 在 Render 控制台 New → Blueprint，选中本仓库即可一键建服务。
+#
+# 免费档实情（写清楚，免得部署完才发现）：
+#   · 0.1 CPU / 512 MB ——（Render 官方 blueprint-spec：free = 0.1 CPU / 512 MB）
+#     本机实测常驻约 286 MB，内存够用，但 0.1 CPU 意味着计算类接口（预测、检索）会偏慢
+#   · 闲置 15 分钟休眠，下次访问冷启动约 30~60 s
+#   · 磁盘非持久 —— 容器重启后 data/uploads（用户头像）会回到默认图，数据库只读使用不受影响
+#   · 一个免费实例即够：应用是单 worker + SQLite
+#
+# 密钥怎么给：LLM_API_KEY 用 sync: false，表示「不写进仓库」。
+# Render 只在**首次创建 Blueprint** 时弹框让你填；以后改 Blueprint 会忽略它，
+# 想换 key 要去服务页 Environment 里手改。
+# ═══════════════════════════════════════════════════════════════════════════════
+services:
+  - type: web
+    name: aifootball
+    runtime: docker
+    plan: free
+    region: singapore          # 若该区域免费档不可用，改成 oregon / frankfurt
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeployTrigger: commit   # 推送到 main 即自动重新部署（autoDeploy 的现行写法）
+    envVars:
+      # ── 访问控制：公网部署按最小开放（要登录、不许自助注册）────────────────
+      - key: UI_REQUIRE_AUTH
+        value: "true"
+      - key: AUTH_ALLOW_REGISTER
+        value: "false"
+      - key: AUTH_RESET_SHOW_CODE
+        value: "false"
+      - key: DEBUG
+        value: "false"
+
+      # ── 关掉抓数据的定时任务：免费实例没必要去刷外部 API ───────────────────
+      - key: ENABLE_DAILY_UPDATE
+        value: "false"
+      - key: ENABLE_LIVE_SCORE_UPDATE
+        value: "false"
+
+      # ── 数据包（数据库 + 模型 + 特征 CSV；仓库里没有，构建期下载）──────────
+      - key: DATA_PACK_URL
+        value: https://github.com/HML05/AIfootball/releases/download/data-pack-v1/aifootball-data-pack-v1.tar.gz
+
+      # ── 大模型问答（不填也能跑，自动降级成检索摘要）──────────────────────
+      - key: LLM_BASE_URL
+        value: https://api.deepseek.com
+      - key: LLM_MODEL
+        value: deepseek-flash
+      - key: LLM_API_KEY
+        sync: false            # ← 在 Render 控制台 Environment 里手填，不进仓库
+
+      # ── 首次部署成功后建议补上（扫码登录的链接基址；值就是你的服务地址）────
+      # - key: AUTH_PUBLIC_BASE
+      #   value: https://<你的服务名>.onrender.com

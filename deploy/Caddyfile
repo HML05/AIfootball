@@ -1,0 +1,19 @@
+# Caddy 反代配置（服务器路线）
+#
+# DOMAIN 由 docker-compose.yml 从 deploy/.env 注入：
+#   DOMAIN=football.example.com  → 自动申请并续期 HTTPS 证书（需要域名已解析到本机、80/443 可达）
+#   DOMAIN 不填（默认 :80）      → 只用明文 HTTP，适合先用「服务器 IP + 80 端口」验一遍
+#
+# 想在证书快过期时收到邮件提醒，在最上面加一个全局块：
+#   {
+#       email you@example.com
+#   }
+
+{$DOMAIN} {
+	encode zstd gzip
+	reverse_proxy app:7860
+
+	# 静态资源（React dist）交给 Caddy 直接缓存，减一点内存压力
+	@assets path /assets/* /images/*
+	header @assets Cache-Control "public, max-age=604800"
+}

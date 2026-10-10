@@ -151,7 +151,9 @@ cp .env.example .env
 | `scripts/verify_ask_ui.py` | `/ask` 页面自检 17 项（浏览器：检索页命中/高亮/筛选、问答页提交与引用、页面质量；按是否配了 LLM key 自动切换断言） |
 | `scripts/check_llm.py` | 大模型配置体检：脱敏回显 key/base/model、列账号可用模型、发一次真实 ping（`--models` 只列模型不计费） |
 | `scripts/verify_entrypoint.sh` | 容器入口脚本自检 18 项（POSIX sh；本机没装 docker 也能验：把 `/app` 换成临时目录、用桩命令顶替 uvicorn，拿**真数据包**跑五种情况 —— 缺库时下载解包、库已存在不重复下载、地址不可用仍能启动、缺库缺模型给警告不崩、缺检索索引现场重建） |
+| `scripts/verify_install_vps.sh` | 云主机直装脚本自检 56 项（把 apt/git/python3/pip/curl/tar/systemctl 全换成桩命令，跑九个场景：依赖与 venv、pip 走镜像、只在缺主库时下数据包、`.env` 六项安全开关与 `chmod 600`、systemd 单元内容、重复执行幂等、下载失败仍能起、健康检查超时明确失败、非 root 拒绝、`DRY_RUN` 不落盘） |
 | `scripts/make_data_pack.py` | 生成 / 校验部署数据包（51.8 MB：主库 + 检索索引 + 模型 + 特征 CSV） |
+| `deploy/install_vps.sh` | 云主机一条命令直装（Ubuntu/Debian，不用 Docker）：装依赖 → venv → 拉代码 → 下数据包 → 生成 `.env` → systemd 常驻 → 等 `/health`；幂等、可 `DRY_RUN` |
 | `scripts/export_md_docx.py` | 把任意 Markdown 文档导出成 Word（如 `python scripts/export_md_docx.py docs/项目报告总览.md`） |
 | `scripts/audit_webui.py` · `scripts/responsive_webui.py` | 信息架构体检 · 多分辨率适配检查 |
 
@@ -159,7 +161,7 @@ cp .env.example .env
 
 | 文档 | 内容 |
 |---|---|
-| `docs/项目报告总览.md` | **项目报告总览**：一页速览 / 分层架构 / 数据·模型·服务·界面四层说明 / RAG 检索与问答 / 工程质量与 292 项断言 / 部署交付 / 已知限制与规划 / 最小复现路径（另附导出的 Word 版 `项目报告总览.docx`） |
+| `docs/项目报告总览.md` | **项目报告总览**：一页速览 / 分层架构 / 数据·模型·服务·界面四层说明 / RAG 检索与问答 / 工程质量与 348 项断言 / 部署交付 / 已知限制与规划 / 最小复现路径（另附导出的 Word 版 `项目报告总览.docx`） |
 | `docs/详细技术方案.md` | 完整技术设计（模块划分、代码示例、开发路线） |
 | `docs/系统架构设计.md` / `docs/系统实现说明.md` | 架构与实现说明 |
 | `docs/数据来源与采集说明.md` / `docs/API-Football使用说明.md` | 数据来源、采集流程与第三方接口 |

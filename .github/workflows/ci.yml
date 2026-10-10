@@ -1,12 +1,13 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # GitHub Actions 轻量自检
 #
-# 为什么是「轻量」：本机那套 16 个脚本里有 5 个依赖 Playwright 真浏览器
+# 为什么是「轻量」：本机那套 18 个脚本里有 5 个依赖 Playwright 真浏览器
 # （verify_webui / verify_ask_ui / verify_account_ui / _login_flow / check_sameorigin），
 # 放进 CI 会让每次跑都要装浏览器，性价比低，所以它们留在本机跑。
 # CI 只跑不需要浏览器的部分 —— 这些恰恰是最容易在别人机器上崩的：
 #   check_deps（依赖清单是否完整）· verify_search（检索层）· verify_qa（问答层）
 #   smoke_ui_api（/api/ui 全端点冒烟）· verify_account（账号设置纯接口 41 项）
+#   verify_entrypoint.sh（容器入口）· verify_install_vps.sh（云主机直装脚本）
 #
 # 数据从哪来：数据库、模型、检索索引、特征 CSV 都不在仓库里（太大），
 # 由 Release 资产 aifootball-data-pack-v1.tar.gz 提供，见 scripts/make_data_pack.py。
@@ -51,6 +52,11 @@ jobs:
 
       - name: 依赖体检（源码 import 与 requirements 对照）
         run: python scripts/check_deps.py
+
+      - name: 云主机直装脚本自检（56 项；桩命令跑，不需要真服务器）
+        # 这条顺带补上本机补不了的一环：Windows 的 Git Bash 里 chmod 是空操作，
+        # 只有在这里（Linux）才真的校验 .env 有没有被收到 600。
+        run: bash scripts/verify_install_vps.sh
 
   # ── 2. 拿到真数据、起真服务、跑真断言 ────────────────────────────────────────
   runtime:

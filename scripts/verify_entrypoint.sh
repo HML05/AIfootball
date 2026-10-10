@@ -15,6 +15,11 @@
 #   sh scripts/verify_entrypoint.sh /path/to/aifootball-data-pack-v1.tar.gz
 #   DATA_PACK=/path/to/pack.tar.gz sh scripts/verify_entrypoint.sh
 # 找不到数据包会 exit 2（先跑 python scripts/make_data_pack.py 生成）。
+#
+# 注意：每个场景都要显式给出它需要的环境变量，尤其是 DATA_PACK_URL / LLM_API_KEY ——
+# 子进程会继承当前环境。CI 里 DATA_PACK_URL 是 job 级环境变量，第一版没清掉它，
+# 于是「库缺 + 没配地址」那个场景实际仍然拿到了地址、又下了一次数据包，
+# 警告自然没出现（本机跑的时候环境里没这个变量，所以没暴露）。见场景 1/4/5。
 # ═══════════════════════════════════════════════════════════════════════════════
 set -u
 
@@ -69,13 +74,21 @@ printf '#!/bin/sh\necho "[stub-uvicorn] $@"\n' > "$WORK/bin/uvicorn"
 printf '#!/bin/sh\necho "[stub-python] $@"\n' > "$WORK/bin/python"
 chmod +x "$WORK/bin/uvicorn" "$WORK/bin/python" "$WORK/entry.sh"
 
-run_entry() {  # run_entry [额外环境变量…]
-  ( cd "$WORK" && env PATH="$WORK/bin:$PATH" "$@" sh "$WORK/entry.sh" 2>&1 ) || true
+run_entry() {  # run_entry [KEY=VALUE …]
+  # 不用 env 来做「临时环境变量 + 改 PATH」：本机 ~/.local/bin/env 是 uv 装的一个往
+  # PATH 里加目录的小脚本（328 字节），登录 shell 下它会排在 /usr/bin/env 前面，
+  # 于是 `env PATH=… sh …` 什么都不输出、整个自检假失败（非登录 shell 与 CI 都正常）。
+  # 改成在子 shell 里 export，行为只取决于 POSIX。
+  (
+    cd "$WORK" || exit 1
+    for kv in "$@"; do export "$kv"; done
+    PATH="$WORK/bin:$PATH" sh "$WORK/entry.sh" 2>&1
+  ) || true
 }
 
 echo
 echo "== 场景 1：库不存在 + 数据包可用 → 应下载并解开 =="
-out1=$(run_entry DATA_PACK_URL="$PACK_URL" PORT=9999)
+out1=$(run_entry DATA_PACK_URL="$PACK_URL" PORT=9999 LLM_API_KEY=)
 echo "$out1" | grep -q "数据包解包完成" && ok "报告了解包完成" || bad "没有解包成功的提示"
 [ -f "$WORK/app/data/database/football.db" ] && ok "football.db 已就位" || bad "football.db 缺失"
 [ -f "$WORK/app/data/database/search.db" ] && ok "search.db 已就位" || bad "search.db 缺失"
@@ -102,7 +115,9 @@ echo "$out3" | grep -q "\[stub-uvicorn\]" && ok "下载失败仍继续启动服�
 echo
 echo "== 场景 4：库与模型都缺、又没配地址 → 警告但不崩 =="
 rm -rf "$WORK/app/data" "$WORK/app/models"
-out4=$(run_entry PORT=9999)
+# 显式清空 DATA_PACK_URL：不清的话会继承外层环境（CI 里它是 job 级变量），
+# 变成「又配了地址」，数据包会被重新下载，这两条警告就不会出现。
+out4=$(run_entry PORT=9999 DATA_PACK_URL=)
 echo "$out4" | grep -q "警告：数据库不存在" && ok "提示数据库不存在" || bad "没有提示数据库不存在"
 echo "$out4" | grep -q "警告：预测模型不存在" && ok "提示模型不存在" || bad "没有提示模型不存在"
 echo "$out4" | grep -q "\[stub-uvicorn\]" && ok "仍然启动服务" || bad "没有启动服务"
@@ -112,7 +127,7 @@ echo "== 场景 5：有主库但缺检索索引 → 现场重建 =="
 mkdir -p "$WORK/app/data/database"
 tar -xzf "$PACK" -C "$WORK/app" data/database/football.db models 2>/dev/null
 rm -f "$WORK/app/data/database/search.db"
-out5=$(run_entry PORT=9999)
+out5=$(run_entry PORT=9999 DATA_PACK_URL=)
 echo "$out5" | grep -q "现场重建" && ok "缺索引时走重建分支" || bad "缺索引时没有重建"
 echo "$out5" | grep -q "scripts/build_search_index.py" && ok "调用的是 scripts/build_search_index.py" || bad "重建命令不对"
 

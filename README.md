@@ -180,9 +180,12 @@ cp .env.example .env
 - 核对命令：`python scripts/audit_repo_payload.py`（按 `.gitignore` 推演会入库的文件，并检查有没有超过 GitHub 100 MB 限制的单文件）
 - **代码规模**：约 **9.9 万行**（Python 3.65 万行 · TypeScript 1.73 万行），另有 `docs/` 19 份设计文档与 `docs/webui/` 22 张交付截图
 - **Git 状态**：已 `git init -b main` 并推送到 GitHub（<https://github.com/HML05/AIfootball>，Public），
-  本地与 `origin/main` 同步、`main` 已建立跟踪；完整提交链见 `git log --oneline`（数量随开发增长，此处不写死）
+  本地与 `origin/main` 同步、`main` 已建立跟踪；完整提交链见 `git log --oneline`（数量随开发增长，此处不写死）；
+  CI 状态见 [Actions](https://github.com/HML05/AIfootball/actions)
 - **持续集成**：`.github/workflows/ci.yml` —— 每次 push / PR 跑 `compileall` + 依赖体检，
-  再拉数据包起真实服务跑检索 23 项、问答 37 项、接口 30 项、账号 41 项；5 个 Playwright 脚本留本机跑（见 `docs/部署-公网托管.md` 第 7 节）
+  再拉数据包起真实服务跑检索 23 项、问答 37 项、接口 30 项、账号 41 项
+  （后一段要等数据包 Release 传上去才跑；传之前会自动跳过并留一条 warning，
+  免得「还没传数据包」被误读成「代码坏了」）；5 个 Playwright 脚本留本机跑（见 `docs/部署-公网托管.md` 第 7 节）
 
 ## License
 

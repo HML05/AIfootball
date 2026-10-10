@@ -30,7 +30,7 @@
 | 项 | 值 |
 | --- | --- |
 | 页面位置 | 后端把 `docs/console/` 挂在 **`/console`**（`src/main.py` 的 `CONSOLE_DIR`，只挂载不改文件），所以 `http://127.0.0.1:8000/console/login.html` 就是登录页；它自己的老服务 `scripts/serve_console.py`（8591）依然可用 |
-| 演示账号 | `admin / football2026`（管理员，可进管理端）；库里另有 `viewer` / `user` / `uipreview` 三个非管理员账号（密码未在本文档记录） |
+| 演示账号 | `admin`（管理员，可进管理端；**新克隆的库首次跑用内置初始密码 `football2026`，登录后必须立刻在「头像 → 账号设置 → 密码」里改掉** —— 公开部署的实例上已经改过，仓库里不再有可直接使用的口令）；库里另有 `viewer` / `user` / `uipreview` 三个非管理员账号（密码未在本文档记录） |
 | 登录态存储 | `localStorage['fauth'] = {token, user}`（该页写的格式；本 SPA 额外容忍/补齐 `expires_at`、`remember`）。与后端扫码确认页 `src/auth/qr_page.py` 同一个键，三处登录方式共享一份登录态 |
 | 同源 / 跨源 | 生产（8000 直接提供 dist）与登录页同源 → 直接共享 `localStorage`，`next` 用相对地址；开发（Vite 3000，登录页仍在 8000）跨源 → `next` 用**绝对地址**，该页回跳时附加 `?auth_token=`，由 `webui/src/lib/auth.ts` 的 `adoptTokenFromUrl()` 收进 `fauth`，再用 `/api/auth/me` 换成真实用户 |
 | 会话时长 | 该页「记住我 30 天」勾选框；`GET /api/auth/me` 在冷启动校验一次，失效即清本地并回登录页 |

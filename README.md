@@ -9,12 +9,27 @@
 界面、图表与每一个数字都来自本地 SQLite 数据库（`data/database/football.db`，158.8 MB / 36 张表），
 没有写死的假数据。
 
+## 在线演示
+
+**<http://8.133.235.32:8000>** —— 2026-10-10 上线，跑在阿里云轻量应用服务器（2 vCPU / 2 GiB / Ubuntu 24.04，上海）上，
+用 [`deploy/install_vps.sh`](deploy/install_vps.sh) 一条命令装好（systemd 常驻、开机自启）。演示账号 `admin`，
+密码已不是默认值（部署后第一件事就是改掉它；本机首次跑默认是 `football2026`）。
+
+三条如实说明的现状（细节见 [`docs/部署-公网托管.md`](docs/部署-公网托管.md) 第 8 节）：
+
+- **个人云主机，不是 7×24 商业服务**：机器关机或到期（2027-10-10）站点就下线，冷启动首次访问会慢一点。
+- **HTTP 而非 HTTPS**：`http://IP:端口` 下登录密码是明文过网的，别拿它传真实敏感信息。
+- **数据是 2026-09-12 的快照**：部署时把两个定时抓取任务关掉了，页面数据不会自己更新。
+
+安全口径：强制登录（未登录访问任何业务接口 401）、自助注册关闭（`POST /api/auth/register` 403）、
+忘记密码的验证码不回显、`DEBUG` 关闭；上线后从外网复核 **41 项全绿**（11 项安全与资源 + 30 个接口冒烟）。
+
 ## 入口
 
 | 入口 | 地址 | 说明 |
 |---|---|---|
 | 用户端 + 管理端（React SPA） | <http://127.0.0.1:8000/> | 19 条路由：总览 / 赛程 / 比赛详情 / 联赛 / 联赛详情 / 球队 / 球队详情 / 球员 / 球员详情 / 预测 / 实时 / **检索与问答 `/ask`**；管理端 4 页签在 `/admin`（数据总览 / 数据资产 / 模型注册表 / 系统与接口） |
-| 登录页（控制台设计稿版） | <http://127.0.0.1:8000/console/login.html> | 未登录访问任何页面都会整页跳到这里；演示账号 `admin / football2026`；页面下方有 **注册新账号** 与 **忘记密码** 两个入口 |
+| 登录页（控制台设计稿版） | <http://127.0.0.1:8000/console/login.html> | 未登录访问任何页面都会整页跳到这里；演示账号 `admin` / `viewer` / `user`；**密码不是仓库里的固定值** —— 本机首次跑是 `football2026`，公开部署后必须立刻改掉；页面下方有 **注册新账号** 与 **忘记密码** 两个入口 |
 | 注册 | <http://127.0.0.1:8000/console/register.html> | 自助注册，新账号固定是 `user`（用户端）角色，注册成功即登录；`AUTH_ALLOW_REGISTER=false` 可关闭 |
 | 忘记密码 | <http://127.0.0.1:8000/console/forgot.html> | 两步式：申请一次性 6 位重置码 → 用它设新密码并踢掉旧会话。**默认页面上不显示码**（公网安全），码写在 **`logs/auth_reset.log`**（UTF-8，一行一条）与 uvicorn 日志里，由管理员转告用户；自己一个人用可设 `AUTH_RESET_SHOW_CODE=true` 让它直接回显 |
 | 接口文档 | <http://127.0.0.1:8000/docs> | FastAPI 自动生成 |
@@ -58,7 +73,7 @@ AIfootball/
 │   └── *.md                 # 设计与实现文档（见下方索引）
 ├── scripts/                 # 构建、导入、自检脚本
 ├── deploy/                  # 部署用：systemd 单元 + nginx 示例 + docker-compose / Caddyfile / 容器入口脚本
-├── .github/workflows/       # CI（static 语法与依赖体检 + runtime 131 项断言）
+├── .github/workflows/       # CI（static 语法/依赖体检/直装脚本自检 56 项 + runtime 数据包到位后 149 项）
 ├── data/                    # 数据库 + 采集到的原始/外部数据（不入库）
 ├── models/                  # 训练好的模型文件（.joblib/.pt 不入库）
 ├── tools/                   # console_template.html（控制台生成器的输入）与一次性补丁脚本
@@ -88,7 +103,9 @@ copy .env.example .env      :: 填入 API key（可留空，界面不依赖外�
 start_webui.bat             :: 界面 http://127.0.0.1:8000/
 ```
 
-登录：`admin / football2026`（另有 `viewer` / `user` 两个非管理员账号，用于验证权限控制）。
+登录：`admin` / `viewer` / `user` 三个账号（`admin` 是管理员，另两个用于验证权限控制）。
+**密码不在仓库里**：新克隆下来的库首次跑用的是内置初始密码 `football2026`，登录后请立刻在
+「头像 → 账号设置 → 密码」里改掉（部署到公网时这一步是硬要求，不是可选项）。
 改过前端代码后重新构建：`python scripts\build_webui.py`。
 
 **Linux/macOS**：
@@ -114,9 +131,12 @@ cp .env.example .env
 `scripts/check_llm.py` 可体检配置与可用模型。原理见 [`docs/智能问答说明.md`](docs/智能问答说明.md)，
 自检 `python scripts/verify_qa.py`（37 项）。
 
-**要放到公网给别人访问**：见 [`docs/部署-公网托管.md`](docs/部署-公网托管.md)
-（三条路线：Render 免费容器一键部署 / 云服务器 Docker Compose + Caddy / GitHub Pages 纯静态展示；
-含数据包怎么做与怎么校验、部署后检查清单与排错表）。
+**要放到公网给别人访问**：见 [`docs/部署-公网托管.md`](docs/部署-公网托管.md)。
+最省事的是 **路线 B-直装**（第 8 节，本项目线上就是这么部署的）：在没有 Docker 的云主机上跑一条命令
+`curl -fsSL https://raw.githubusercontent.com/HML05/AIfootball/main/deploy/install_vps.sh | bash`，
+它会装依赖 → 建 swap → 拉代码 → 下数据包 → 生成 `.env` → 写 systemd 单元 → 等 `/health` 通过；
+第 8.1 节记录了阿里云轻量上的**首次真跑实测**（含 GitHub 直连断流、改走国内镜像、外网 41 项复核）。
+另外还有三条路线：Render 免费容器（`render.yaml`）/ 云服务器 Docker Compose + Caddy / GitHub Pages 纯静态展示。
 要在自己的服务器上用 systemd + nginx 跑，见 [`docs/deploy.md`](docs/deploy.md)。
 
 ## 数据与模型
@@ -171,25 +191,31 @@ cp .env.example .env
 | `docs/智能问答说明.md` | **智能问答层（RAG 阶段 1）**：旧 langchain Agent 为什么不可用、六个工具、意图与实体识别、引用溯源与防幻觉、问答接口、37 项后端自检 + 17 项页面自检与边界 |
 | `docs/信息架构评审.md` | 逐页点评、逻辑硬伤整改、目标结构 |
 | `docs/deploy.md` | **部署说明**：VPS + nginx 同源 + systemd、数据/模型怎么传、更新与备份、排错表 |
-| `docs/部署-公网托管.md` | **公网托管**：Render 免费容器（`render.yaml` 一键建服务）/ 云服务器 Docker Compose + Caddy / GitHub Pages 静态展示；数据包制作与校验、部署后 8 项检查、9 条排错表、本机生产配置 131 项断言实测 |
+| `docs/部署-公网托管.md` | **公网托管**：**路线 B-直装**（云主机一条命令，`deploy/install_vps.sh`，含第 8.1 节阿里云轻量首次真跑实测）/ Render 免费容器（`render.yaml` 一键建服务）/ 云服务器 Docker Compose + Caddy / GitHub Pages 静态展示；数据包制作与校验、部署后检查清单、排错表、本机按生产配置实测与 CI 里的 205 项断言 |
 | `docs/UI设计规范.md` / `docs/UI高级审美评审报告.md` / `docs/UI合规审计报告.md` / `docs/UI协作交接说明.md` / `docs/UI打磨收口记录.md` | UI 规范、评审与打磨记录 |
 
 ## 维护说明
 
 - **已清理**：设计迭代产物、旧数据库备份、已解压的数据集压缩包、渲染帧序列、第三方工具目录等共 596.8 MB，
   已移到项目外的 `D:\AIfootball_已清理_20261005\`（保留可恢复，确认无用后手动删除即可）
-- **仓库里只有代码 + 项目**：**622 个文件 / 36.3 MB**（含 `webui/dist` 构建产物与 22 张界面截图）。
+- **仓库里只有代码 + 项目**：**636 个受跟踪文件 / 36.4 MB**（含 `webui/dist` 构建产物与 22 张界面截图；
+  最大的单文件是截图 `docs/webui/01-登录.png`，约 2.3 MB，离 GitHub 的 100 MB 限制很远）。
   `data/`（含 `data/external` 的 562 MB 与 3 个 >100 MB 的 CSV）、`models/*.joblib|pt`、`.env`、`node_modules`、派生索引 `data/database/search.db` 都已排除 ——
   部署时它们合并成一个 51.8 MB 的**数据包**上传（见 `docs/部署-公网托管.md` 第 1 节；不再需要逐个手传、也不需要在服务器上重建索引）
 - 核对命令：`python scripts/audit_repo_payload.py`（按 `.gitignore` 推演会入库的文件，并检查有没有超过 GitHub 100 MB 限制的单文件）
-- **代码规模**：约 **9.9 万行**（Python 3.65 万行 · TypeScript 1.73 万行），另有 `docs/` 19 份设计文档与 `docs/webui/` 22 张交付截图
+- **代码规模**（`git ls-files` 口径，可复跑复核）：**190 个 Python 文件 / 32,264 行** ·
+  **100 个 TS/TSX 文件 / 16,502 行** · **22 份 Markdown / 3,882 行**，另有 `docs/webui/` 22 张交付截图
+  （前端构建产物里的压缩 JS 与 `docs/console/*.html` 这类单行文件没并入统计）。
+  行数一律以脚本量出来的为准、不估算：
+  `git ls-files "*.py" | %{ (Get-Content $_ | Measure-Object -Line).Lines } | Measure-Object -Sum`
 - **Git 状态**：已 `git init -b main` 并推送到 GitHub（<https://github.com/HML05/AIfootball>，Public），
   本地与 `origin/main` 同步、`main` 已建立跟踪；完整提交链见 `git log --oneline`（数量随开发增长，此处不写死）；
   CI 状态见 [Actions](https://github.com/HML05/AIfootball/actions)
-- **持续集成**：`.github/workflows/ci.yml` —— 每次 push / PR 跑 `compileall` + 依赖体检，
-  再拉数据包起真实服务跑检索 23 项、问答 37 项、接口 30 项、账号 41 项
-  （后一段要等数据包 Release 传上去才跑；传之前会自动跳过并留一条 warning，
-  免得「还没传数据包」被误读成「代码坏了」）；5 个 Playwright 脚本留本机跑（见 `docs/部署-公网托管.md` 第 7 节）
+- **持续集成**：`.github/workflows/ci.yml` —— 每次 push / PR 跑 `compileall` + 依赖体检 + **云主机直装脚本自检 56 项**
+  （`bash scripts/verify_install_vps.sh`，纯桩命令、不需要真服务器；`.env` 的 600 权限位只有 Linux 上验得准，
+  所以这一项必须进 CI），再拉数据包起真实服务跑 **149 项**（检索 23 + 问答 37 + 接口 30 + 账号 41 + 容器入口 18）
+  —— 合计 **205 项**。后一段要等数据包 Release 传上去才跑；传之前会自动跳过并留一条 warning，
+  免得「还没传数据包」被误读成「代码坏了」。5 个 Playwright 脚本留本机跑（见 `docs/部署-公网托管.md` 第 7 节）
 
 ## License
 

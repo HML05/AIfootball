@@ -25,7 +25,7 @@
 
 ## 1. 仓库里有什么、没有什么
 
-`.gitignore` 已把大文件与密钥排除，仓库只有 **618 个文件 / 37.2 MB**（含 `webui/dist` 构建产物，最大单文件 2.28 MB）。
+`.gitignore` 已把大文件与密钥排除，仓库只有 **636 个受跟踪文件 / 36.4 MB**（含 `webui/dist` 构建产物，最大单文件是截图 `docs/webui/01-登录.png`，约 2.3 MB）。
 
 **仓库里有**：`src/`（后端）、`webui/`（React 前端源码 + `dist`）、`docs/`（含 `docs/console/*.html` 登录/注册/忘记密码页）、`scripts/`、`tools/`、`frontend/`（旧 Streamlit 参照版）、`stadium-scenes/`、`requirements*.txt`、`deploy/`、`start*.bat`、`start.sh`。
 

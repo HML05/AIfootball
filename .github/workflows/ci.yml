@@ -123,6 +123,12 @@ jobs:
         if: steps.pack.outputs.available == 'true'
         run: python scripts/verify_account.py
 
+      - name: 容器入口脚本自检（18 项；Linux/dash 下再验一遍）
+        if: steps.pack.outputs.available == 'true'
+        run: |
+          curl -fL --retry 3 --retry-delay 2 -o /tmp/data-pack-copy.tar.gz "$DATA_PACK_URL"
+          sh scripts/verify_entrypoint.sh /tmp/data-pack-copy.tar.gz
+
       - name: 失败时打印服务日志
         if: failure()
         run: tail -200 /tmp/uvicorn.log || true

@@ -74,14 +74,17 @@ echo "mkswap $*" >> "$FA_CALLS"
 exit 0
 EOF
 
-# chmod 也桩掉：只为记下「脚本确实对 .env 收紧过权限」，
-# 因为 Windows 的 Git Bash 上 chmod 600 是空操作（stat 恒为 644），
-# 真正的权限位校验留给 Linux（本机 WSL/CI）。
-mkstub chmod <<'EOF'
+# chmod 也桩掉：记下「脚本确实对 .env 收紧过权限」，同时**仍然真的执行 chmod** ——
+# 因为 Linux 分支要核对真实的权限位；而在 Windows 的 Git Bash 上 chmod 本身是空操作
+# （stat 恒 644），那边的分支就只查调用记录。真 chmod 的绝对路径在生成桩时解析。
+REAL_CHMOD="$(command -v chmod)"
+cat > "$TMP/bin/chmod" <<EOF
 #!/bin/sh
-echo "chmod $*" >> "$FA_CALLS"
+echo "chmod \$*" >> "\$FA_CALLS"
+"$REAL_CHMOD" "\$@" 2>/dev/null || true
 exit 0
 EOF
+chmod +x "$TMP/bin/chmod"
 
 mkstub git <<'EOF'
 #!/bin/sh

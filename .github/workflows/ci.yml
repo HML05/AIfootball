@@ -56,7 +56,24 @@ jobs:
       - name: 云主机直装脚本自检（56 项；桩命令跑，不需要真服务器）
         # 这条顺带补上本机补不了的一环：Windows 的 Git Bash 里 chmod 是空操作，
         # 只有在这里（Linux）才真的校验 .env 有没有被收到 600。
-        run: bash scripts/verify_install_vps.sh
+        # 失败时逐行发注解 —— Actions 的原始日志在 blob 存储上，有些网络拿不到（见下）。
+        run: |
+          if bash scripts/verify_install_vps.sh > /tmp/install_check.log 2>&1; then
+            cat /tmp/install_check.log
+          else
+            cat /tmp/install_check.log
+            if grep -qF '[FAIL]' /tmp/install_check.log; then
+              grep -F '[FAIL]' /tmp/install_check.log | while IFS= read -r line; do
+                echo "::error::直装脚本自检 $line"
+              done
+            else
+              echo "::error::直装脚本自检没有输出 [FAIL] 行（脚本自身中途报错），最后 5 行："
+              tail -5 /tmp/install_check.log | while IFS= read -r line; do
+                echo "::error::  $line"
+              done
+            fi
+            exit 1
+          fi
 
   # ── 2. 拿到真数据、起真服务、跑真断言 ────────────────────────────────────────
   runtime:

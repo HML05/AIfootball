@@ -54,7 +54,14 @@ CASES: list[tuple[str, list[str]]] = [
 def main() -> int:
     import _uiauth
 
-    hdrs = _uiauth.headers()
+    # 服务器返回的数据里可能有 GBK 装不下的字符（球员名里的 ü/ö 之类），
+    # Windows 控制台默认 GBK，print 会直接 UnicodeEncodeError 崩掉整个冒烟。
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, OSError):  # pragma: no cover - 老环境兜底
+        pass
+
+    hdrs = _uiauth.headers(_uiauth.login(base=BASE))
     fails: list[str] = []
     for path, needles in CASES:
         url = BASE + path

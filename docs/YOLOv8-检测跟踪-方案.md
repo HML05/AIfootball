@@ -456,6 +456,23 @@ python scripts\verify_vision.py                          # 没有 cv2 的环境�
 - 存盘内容：单应矩阵 + 4 组对应点 + 场地尺寸 + **重投影误差**；误差 > 0.5 米会打印警告；
 - 顺手输出一张 `*.preview.jpg`（标了锚点与对应米制坐标），回头能核对标错没有。
 
+**4 点拟合的残差恒等于 0**（8 个方程解 8 个未知数），所以「重投影误差 0.000 米」不能当质量
+证明。真正的验收看三样：① 4 点铺开 ≥25% 画面对角线；② 每个点附近的「每像素米数」比值 <8×；
+③ 生成的 `*.grid.jpg` 里橙色 5 米网格压在真实白线上。任何一项不合格，脚本退出码 2 并把结果
+写成 `*.rejected.json`，不占用正式文件名。
+
+**权限坑（踩过一次，记下来）**：`.venv-vision` 整个目录树如果带上「Low Mandatory Level」标记，
+Windows 会用**低完整性**进程启动这个解释器，它写不了中等完整性文件，典型报错是
+
+```text
+PermissionError: [Errno 13] Permission denied: 'data\vision\calib\v2.json'
+```
+
+而同一个目录用系统 Python 能写（`scripts/vision_calibrate.py` 只需 numpy + cv2，不需要 torch）。
+两个解法：① 跑一次 `scripts/fix_venv_permissions.ps1`（要管理员/UAC，把目录树改回 Medium，
+一次性永久修好）；② 应急用系统 Python 跑标定 —— `scripts/vision_calibrate.bat` 检测到退出码 3
+会自动改用系统 Python 重跑。查当前标记：`icacls .venv-vision\Scripts\python.exe | findstr Mandatory`。
+
 ### 10.3 这块能做什么、不能做什么（写论文要照抄这段）
 
 - **能**：单机位、机位基本不动的片段上，球员米制坐标误差可以控制到 1~2 米量级，

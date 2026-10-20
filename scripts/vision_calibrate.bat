@@ -34,9 +34,36 @@ if not exist "%VID%" goto novid
 
 "%PY%" -u scripts\vision_calibrate.py --video "%VID%" --frame %FRAME% --anchors halfway_top,halfway_bottom,pa_right_top,pa_right_bottom --out "%OUT%"
 set "RC=%ERRORLEVEL%"
+
+rem Exit 3 = the interpreter could not write the output folder. That happens when the
+rem venv tree carries a "Low Mandatory Level" label, because a low-integrity process may
+rem not write to medium-integrity files. Retry with the system Python (calibration only
+rem needs numpy + cv2, not torch), and point at the permanent fix.
+if "%RC%"=="3" goto retry
 echo.
 echo   Exit code %RC%  ^(0 = ok, 2 = points too clustered, 1 = other error^)
 if exist "%GRID%" start "" "%GRID%"
+goto done
+
+:retry
+echo.
+echo   [!] the venv interpreter cannot write the output folder.
+echo       retrying with the system Python 3.13 ...
+set "PY2="
+if exist "C:\Python313\python.exe" set "PY2=C:\Python313\python.exe"
+if not defined PY2 for /f "delims=" %%i in ('where python 2^>nul') do if not defined PY2 set "PY2=%%i"
+if not defined PY2 goto nopy2
+"%PY2%" -u scripts\vision_calibrate.py --video "%VID%" --frame %FRAME% --anchors halfway_top,halfway_bottom,pa_right_top,pa_right_bottom --out "%OUT%"
+set "RC=%ERRORLEVEL%"
+echo.
+echo   Exit code %RC%  ^(from %PY2%^)
+if "%RC%"=="0" echo   [i] permanent fix: run scripts\fix_venv_permissions.ps1 (needs admin, UAC)
+if exist "%GRID%" start "" "%GRID%"
+goto done
+
+:nopy2
+echo   [x] no system Python found either.
+echo       permanent fix: run scripts\fix_venv_permissions.ps1 (needs admin, UAC)
 goto done
 
 :nopy

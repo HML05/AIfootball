@@ -1,0 +1,54 @@
+@echo off
+rem Pitch calibration launcher (ASCII only on purpose).
+rem
+rem Why English inside a .bat: cmd.exe parses the file in the console OEM codepage
+rem (936/GBK on Chinese Windows), so a UTF-8 file with Chinese text makes it try to
+rem execute mojibake fragments -- the user sees a wall of
+rem "'...' is not recognized as an internal or external command". Keep this file
+rem ASCII and let the Python side print the Chinese guidance (Python talks to the
+rem console through WriteConsoleW, so Chinese shows up correctly there).
+setlocal
+cd /d "%~dp0.."
+set "FRAME=%~1"
+if "%FRAME%"=="" set "FRAME=0"
+set "PY=.venv-vision\Scripts\python.exe"
+set "VID=data\vision\videos\v2.mp4"
+set "OUT=data\vision\calib\v2.json"
+set "GRID=data\vision\calib\v2.grid.jpg"
+
+echo.
+echo   Pitch calibration - frame %FRAME%
+echo.
+echo   Click these 4 anchors IN THIS ORDER (one left click each):
+echo     1) halfway line x TOP touchline      halfway_top
+echo     2) halfway line x BOTTOM touchline   halfway_bottom
+echo     3) right penalty box, upper corner   pa_right_top
+echo     4) right penalty box, lower corner   pa_right_bottom
+echo.
+echo   Esc cancels. Then open v2.grid.jpg: the orange 5 m grid
+echo   must sit ON the real white lines.
+echo.
+
+if not exist "%PY%" goto nopy
+if not exist "%VID%" goto novid
+
+"%PY%" -u scripts\vision_calibrate.py --video "%VID%" --frame %FRAME% --anchors halfway_top,halfway_bottom,pa_right_top,pa_right_bottom --out "%OUT%"
+set "RC=%ERRORLEVEL%"
+echo.
+echo   Exit code %RC%  ^(0 = ok, 2 = points too clustered, 1 = other error^)
+if exist "%GRID%" start "" "%GRID%"
+goto done
+
+:nopy
+echo   [x] missing "%PY%"
+echo       run: powershell -ExecutionPolicy Bypass -File scripts\vision_setup.ps1
+goto done
+
+:novid
+echo   [x] missing "%VID%"
+echo       put a football clip there named v2.mp4
+goto done
+
+:done
+echo.
+pause

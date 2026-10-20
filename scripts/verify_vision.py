@@ -342,6 +342,45 @@ def check_pitch() -> None:
     check("控球百分比分母含无人控球帧", near["owned_pct"] == round(100.0 * 2 / 3, 2), str(near["owned_pct"]))
 
 
+def check_teams() -> None:
+    print("[8] teams 球衣分队")
+    import numpy as np
+
+    from src.vision import teams as vteams
+
+    # 两支球衣颜色各 8 条轨迹、每条 6 次采样；第 17~18 条是裁判（深色），应当被踢出两队
+    red = np.array([0.60, 0.28, 0.35], dtype=np.float32)
+    blue = np.array([0.20, 0.45, 0.35], dtype=np.float32)
+    dark = np.array([0.34, 0.32, 0.10], dtype=np.float32)
+    samples: dict[int, list] = {}
+    for tid in range(8):
+        samples[tid] = [red + np.float32(i) * 0.001 for i in range(6)]
+    for tid in range(8, 16):
+        samples[tid] = [blue + np.float32(i) * 0.001 for i in range(6)]
+    for tid in (16, 17, 18):
+        samples[tid] = [dark + np.float32(i) * 0.001 for i in range(6)]
+
+    res = vteams.assign_teams(samples)
+    teams = res["teams"]
+    check("两支主队各自成一组", len({teams[t] for t in range(8)}) == 1 and len({teams[t] for t in range(8, 16)}) == 1)
+    check("红队与蓝队不在同组", teams[0] != teams[8])
+    check("深色（裁判）不塞进两队", all(t in res["other"] for t in (16, 17, 18)), str(res["other"]))
+    check("质心是 3 维（色度 + 亮度）", all(len(c) == 3 for c in res["centers"]))
+    check("同一份输入结果稳定", vteams.assign_teams(samples)["teams"] == teams)
+    check("采样不足的轨迹被跳过", vteams.assign_teams({**samples, 99: [red] * 2})["skipped"] == [99])
+    try:
+        vteams.assign_teams({i: [red + np.float32(i) * 0.001 for _ in range(6)] for i in range(8)})
+        same = False
+    except vteams.TeamError:
+        same = True
+    check("全是一种颜色时会明确报错，而不是硬分两队", same)
+
+    # 躯干裁剪：只取框的上半部分，且不会越界
+    x1, y1, x2, y2 = vteams.torso_box((10, 100, 50, 200))
+    check("躯干框在人物框上半部", y1 >= 100 and y2 <= 200 and y2 - y1 < 100, f"{x1},{y1},{x2},{y2}")
+    check("退化框不会算出负高度", vteams.torso_box((0, 0, 10, 2))[3] > vteams.torso_box((0, 0, 10, 2))[1])
+
+
 def main() -> int:
     print(f"视觉模块自检（解释器：{sys.version.split()[0]}）")
     check_config()
@@ -351,6 +390,7 @@ def main() -> int:
     check_prelabel()
     check_fetch()
     check_pitch()
+    check_teams()
     print(f"\n合计：{PASSED} 通过 / {FAILED} 失败 / {SKIPPED} 跳过")
     return 1 if FAILED else 0
 

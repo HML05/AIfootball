@@ -2,6 +2,18 @@
 启动: uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 API文档: http://localhost:8000/docs
 """
+# 直接运行这个文件(`python src\main.py`, 或在 IDE 里 F5 起当前文件)时,
+# Python 只把 src\ 放进 sys.path, 于是下面的 `from config.settings import ...`
+# 会报 ModuleNotFoundError: No module named 'config'。
+# 这里把仓库根补进 sys.path —— 这样 `python -m src.main`、`python src\main.py`、
+# IDE 直接运行三种方式都能起来。必须放在 import config 之前。
+if __package__ in (None, ""):
+    import sys
+    from pathlib import Path as _Path
+    _ROOT_DIR = _Path(__file__).resolve().parents[1]
+    if str(_ROOT_DIR) not in sys.path:
+        sys.path.insert(0, str(_ROOT_DIR))
+
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager

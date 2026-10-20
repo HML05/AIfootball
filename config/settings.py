@@ -45,7 +45,9 @@ class Settings:
     # 服务
     SERVER_HOST: str = os.getenv("SERVER_HOST", "0.0.0.0")
     SERVER_PORT: int = int(os.getenv("SERVER_PORT", "8000"))
-    DEBUG: bool = os.getenv("DEBUG", "true").lower() == "true"
+    # 默认关: 打开后会 (a) 让 SQLAlchemy 把每条 SQL 打成 INFO (b) 让 uvicorn 开 reload。
+    #   两者都只该在本地调试时开 —— 否则终端会被 SQL 刷满、且 reload 会多起一个进程。
+    DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
 
     # 界面数据接口是否要求登录(默认开启)
     #   /api/ui/* 需要 Authorization: Bearer <token>(由 /api/auth/login 或扫码登录取得);

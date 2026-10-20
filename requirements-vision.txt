@@ -1,0 +1,22 @@
+# YOLOv8 视频检测跟踪模块的独立依赖（与主应用隔离）
+#
+# 为什么不并进 requirements.txt / requirements-deploy.txt：
+#   torch 的 CUDA 版有 2 GB 以上，线上那台 2 vCPU / 2 GiB 的云主机既装不下也跑不动；
+#   主应用只需要 numpy/pandas/sklearn 就够，不该被 CV 依赖绑架。
+#
+# 安装（Windows，一条命令，会自动建 .venv-vision 并装 CUDA 版 torch）：
+#   powershell -ExecutionPolicy Bypass -File scripts\vision_setup.ps1
+#
+# 手动安装：
+#   py -3.12 -m venv .venv-vision
+#   .venv-vision\Scripts\python.exe -m pip install --index-url https://download.pytorch.org/whl/cu121 torch torchvision
+#   .venv-vision\Scripts\python.exe -m pip install -r requirements-vision.txt
+#
+# 注意：torch / torchvision 必须用上面那条 cu121 的 index-url 单独装；
+# 直接 pip install -r 本文件会从 PyPI 拉 CPU 版（能跑，但慢几十倍，cuda.is_available() 为 False）。
+torch>=2.4
+torchvision>=0.19
+ultralytics>=8.3
+lap>=0.5
+opencv-python>=4.9
+numpy>=1.26

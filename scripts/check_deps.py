@@ -103,7 +103,9 @@ def main() -> int:
     found = scan()
     declared = requirement_names()
     declared_dev = requirement_names(("requirements-dev.txt",))
-    declared_all = declared | declared_dev
+    # 视觉模块(YOLOv8)的依赖单独一个文件: torch CUDA 版 2 GB+, 只装在 .venv-vision,
+    # 主应用与 CI 都不装 —— 所以这里既不能算"缺失", 也不能算 requirements.txt 的一部分。
+    declared_vision = requirement_names(("requirements-vision.txt",))
     third_party = {
         name: files
         for name, files in found.items()
@@ -116,6 +118,7 @@ def main() -> int:
 
     missing: list[tuple[str, str, list[str]]] = []
     dev_only: list[tuple[str, str, list[str]]] = []
+    vision_only: list[tuple[str, str, list[str]]] = []
     for name, files in sorted(third_party.items()):
         dist = DIST_ALIAS.get(name, name).lower().replace("_", "-")
         if dist in declared:
@@ -123,13 +126,17 @@ def main() -> int:
         if dist in declared_dev:
             dev_only.append((name, dist, sorted(files)))
             continue
+        if dist in declared_vision:
+            vision_only.append((name, dist, sorted(files)))
+            continue
         missing.append((name, dist, sorted(files)))
 
     missing_required = [m for m in missing if m[0] not in OPTIONAL]
     missing_optional = [m for m in missing if m[0] in OPTIONAL]
 
     print(f"[deps] requirements.txt 声明 {len(declared)} 个包"
-          f"(+ requirements-dev.txt {len(declared_dev)} 个); "
+          f"(+ requirements-dev.txt {len(declared_dev)} 个, "
+          f"+ requirements-vision.txt {len(declared_vision)} 个); "
           f"源码里用到 {len(third_party)} 个第三方模块")
     if missing_required:
         print("\n[!] 缺失(必须补进 requirements.txt 或 requirements-dev.txt):")
@@ -144,6 +151,10 @@ def main() -> int:
     if dev_only:
         print("\n[i] 只写在 requirements-dev.txt(生产不装, 自检/训练才用):")
         for name, dist, files in dev_only:
+            print(f"    - {name} ({dist})  {len(files)} 处  用在 {files[0]}")
+    if vision_only:
+        print("\n[i] 只写在 requirements-vision.txt(视觉模块独立环境 .venv-vision, 主应用/CI 不装):")
+        for name, dist, files in vision_only:
             print(f"    - {name} ({dist})  {len(files)} 处  用在 {files[0]}")
     if not missing:
         print("[ok] 源码 import 与 requirements 完全对得上")

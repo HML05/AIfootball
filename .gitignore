@@ -41,6 +41,8 @@ venv/
 env/
 ENV/
 .venv/
+# 视觉模块（YOLOv8）的独立环境：torch CUDA 版 2 GB+，且与主应用依赖互不干扰
+.venv-vision/
 
 # ── 环境变量（含 API 密钥，绝不入库）──────────────────────────────────────────
 .env
@@ -63,6 +65,8 @@ data/uploads/
 # 外部数据集 562 MB，含 3 个 >100 MB 的文件（GitHub 硬限制 100 MB/文件，会直接拒收）；
 # 需要时用 scripts/fetch_external_dataset.py 重新下载 —— 运行时只用到 data/external/af_cache。
 data/external/
+# 视觉模块的素材与产物：原始比赛视频有版权风险（仓库是 Public），抽帧/训练产物动辄几 GB
+data/vision/
 *.parquet
 *.gz
 
@@ -71,6 +75,10 @@ models/*.joblib
 models/*.pkl
 models/*.pt
 models/*.json
+# YOLOv8 权重（yolov8s.pt 约 22 MB，训出来的 .pt 更大）：只有代码入库
+models/vision/
+# ultralytics 的设置目录：本机 %APPDATA% 那条路不可写时它会回落到仓库根目录（YOLO_CONFIG_DIR 管不到）
+Ultralytics/
 
 # ── 前端 ──────────────────────────────────────────────────────────────────────
 node_modules/

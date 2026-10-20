@@ -104,46 +104,140 @@ def _parse_anchors(text: str) -> list[tuple[float, float]]:
     return out
 
 
+def _dpi_aware() -> None:
+    """让 Windows 别给窗口做 DPI 缩放。
+
+    150% 缩放的屏幕上，不做这件事的话「看到的像素」和「回调收到的坐标」会差一个比例，
+    表现为「我明明点在禁区角上，它却记到别处去了」。
+    """
+    try:
+        import ctypes
+
+        ctypes.windll.shcore.SetProcessDpiAwareness(2)  # PER_MONITOR_AWARE
+    except Exception:
+        try:
+            import ctypes
+
+            ctypes.windll.user32.SetProcessDPIAware()
+        except Exception:
+            pass
+
+
+class _View:
+    """点选窗口的视图状态：可缩放、可平移。
+
+    转播画面里要点的角落常常贴着画面边缘（甚至被裁掉一点），固定尺寸的窗口里
+    鼠标根本够不着，所以必须能放大再点。
+    """
+
+    def __init__(self, frame) -> None:
+        self.h, self.w = frame.shape[:2]
+        self.zoom = 1.0
+        self.cx = self.w / 2.0
+        self.cy = self.h / 2.0
+
+    def window_size(self) -> tuple[int, int]:
+        max_w, max_h = 1600, 900
+        vw = min(self.w, max_w) / self.zoom
+        vh = min(self.h, max_h) / self.zoom
+        return max(200, int(vw)), max(150, int(vh))
+
+    def crop(self, frame):
+        import cv2
+
+        vw, vh = self.window_size()
+        vw = min(vw, self.w)
+        vh = min(vh, self.h)
+        x0 = int(round(min(max(self.cx - vw / 2, 0), self.w - vw)))
+        y0 = int(round(min(max(self.cy - vh / 2, 0), self.h - vh)))
+        self.cx, self.cy = x0 + vw / 2, y0 + vh / 2
+        patch = frame[y0:y0 + vh, x0:x0 + vw]
+        return patch, x0, y0
+
+    def to_image(self, x: float, y: float, x0: int, y0: int, shape) -> tuple[float, float]:
+        vh, vw = shape[:2]
+        vwid, vhei = self.window_size()
+        return x * (vw / max(vwid, 1)) + x0, y * (vh / max(vhei, 1)) + y0
+
+    def zoom_at(self, factor: float, img_pt: tuple[float, float]) -> None:
+        self.zoom = min(8.0, max(1.0, self.zoom * factor))
+        self.cx, self.cy = img_pt
+
+
 def _click_points(frame, names: list[str]) -> list[tuple[float, float]]:
-    """弹窗点选，Esc 取消。"""
+    """弹窗点选，Esc 取消。滚轮放大、右键拖动平移、u 撤销、r 重来。"""
     cv2 = _load_cv2()
+    _dpi_aware()
     clicked: list[tuple[float, float]] = []
-    win = "calibrate: click the anchors in order (Esc to cancel)"
+    win = "calibrate: click the anchors in order (Esc=cancel)"
     total = len(names)
+    view = _View(frame)
+    mapping: dict[str, int] = {"x0": 0, "y0": 0, "vw": view.window_size()[0], "vh": view.window_size()[1]}
+    drag: list[float] = []
 
     def on_mouse(event, x, y, flags, param):  # noqa: ANN001
+        if event == cv2.EVENT_MOUSEWHEEL:
+            step = 1.25 if flags > 0 else 1 / 1.25
+            img_pt = view.to_image(x, y, mapping["x0"], mapping["y0"], (mapping["vh"], mapping["vw"]))
+            view.zoom_at(step, img_pt)
+            return
+        if event == cv2.EVENT_RBUTTONDOWN:
+            drag[:] = [x, y]
+            return
+        if event == cv2.EVENT_MOUSEMOVE and drag:
+            dx = (x - drag[0]) / view.zoom
+            dy = (y - drag[1]) / view.zoom
+            drag[:] = [x, y]
+            view.cx -= dx
+            view.cy -= dy
+            return
+        if event == cv2.EVENT_RBUTTONUP:
+            drag.clear()
+            return
         if event == cv2.EVENT_LBUTTONDOWN and len(clicked) < total:
-            clicked.append((float(x), float(y)))
+            iu, iv = view.to_image(x, y, mapping["x0"], mapping["y0"], (mapping["vh"], mapping["vw"]))
+            clicked.append((float(iu), float(iv)))
+            print(f"[i] 第 {len(clicked)} 点 / {total} ({names[len(clicked) - 1]}) → 像素 ({iu:.0f}, {iv:.0f})")
 
-    h, w = frame.shape[:2]
-    # 有些机器上 OpenCV 的窗口会开在别的窗口后面、或跑到屏幕外，
-    # 看起来就像「双击了没反应」。所以显式给个位置与大小，并置顶。
-    cv2.namedWindow(win, cv2.WINDOW_NORMAL)
-    scale = min(1.0, 1600.0 / max(w, 1))
-    cv2.resizeWindow(win, int(w * scale), int(h * scale))
-    cv2.moveWindow(win, 60, 40)
+    cv2.namedWindow(win, cv2.WINDOW_AUTOSIZE)
+    cv2.moveWindow(win, 40, 20)
     try:
         cv2.setWindowProperty(win, cv2.WND_PROP_TOPMOST, 1)
     except Exception:  # 老版本/无此属性时忽略
         pass
     cv2.setMouseCallback(win, on_mouse)
     print("[i] 点选窗口已打开（标题 calibrate…）。没看到就把其他窗口最小化，或看任务栏。")
-    print(f"[i] 按 1→{total} 的顺序点，Esc 取消。")
-    cv2.setMouseCallback(win, on_mouse)
+    print(f"[i] 按 1→{total} 的顺序点：鼠标滚轮放大、按住右键拖动画面、u 撤销上一点、r 重来、Esc 取消。")
     while True:
-        canvas = frame.copy()
+        patch, x0, y0 = view.crop(frame)
+        mapping["x0"], mapping["y0"] = x0, y0
+        mapping["vw"], mapping["vh"] = patch.shape[1], patch.shape[0]
+        canvas = patch.copy()
         for i, (x, y) in enumerate(clicked):
-            cv2.circle(canvas, (int(x), int(y)), 8, (0, 0, 255), -1)
-            cv2.putText(canvas, f"{i + 1} {names[i]}", (int(x) + 12, int(y) - 12),
+            px, py = int(x - x0), int(y - y0)
+            if not (0 <= px < canvas.shape[1] and 0 <= py < canvas.shape[0]):
+                continue
+            cv2.drawMarker(canvas, (px, py), (0, 0, 255), cv2.MARKER_CROSS, 26, 2)
+            cv2.putText(canvas, f"{i + 1} {names[i]}", (px + 12, py - 12),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
         todo = names[len(clicked)] if len(clicked) < total else "done"
-        cv2.putText(canvas, f"next ({len(clicked) + 1}/{total}): {todo}",
-                    (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 255), 2)
+        cv2.putText(canvas, f"next ({min(len(clicked) + 1, total)}/{total}): {todo}   zoom x{view.zoom:.2f}",
+                    (16, 34), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 255), 2)
         cv2.imshow(win, canvas)
-        key = cv2.waitKey(30) & 0xFF
+        key = cv2.waitKey(20) & 0xFF
         if key == 27:
             cv2.destroyAllWindows()
             raise SystemExit("[取消] 已退出标定")
+        if key in (ord("u"), ord("U")) and clicked:
+            print(f"[i] 撤销：{names[len(clicked) - 1]}")
+            clicked.pop()
+        if key in (ord("r"), ord("R")):
+            print("[i] 重来：清空已点的位置")
+            clicked.clear()
+        if key in (ord("+"), ord("=")):
+            view.zoom_at(1.25, (view.cx, view.cy))
+        if key in (ord("-"), ord("_")):
+            view.zoom_at(1 / 1.25, (view.cx, view.cy))
         if len(clicked) >= total:
             cv2.destroyAllWindows()
             return clicked

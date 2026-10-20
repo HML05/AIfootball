@@ -11,6 +11,11 @@ setlocal
 cd /d "%~dp0.."
 set "FRAME=%~1"
 if "%FRAME%"=="" set "FRAME=0"
+rem optional 2nd argument = anchor list. If one anchor is unreachable in this frame,
+rem swap the list, e.g.
+rem   scripts\vision_calibrate.bat 0 halfway_top,halfway_bottom,penalty_spot_right,pa_right_goal_top
+set "ANCHORS=%~2"
+if "%ANCHORS%"=="" set "ANCHORS=halfway_top,halfway_bottom,pa_right_top,pa_right_goal_top"
 set "PY=.venv-vision\Scripts\python.exe"
 set "VID=data\vision\videos\v2.mp4"
 set "OUT=data\vision\calib\v2.json"
@@ -19,13 +24,20 @@ set "GRID=data\vision\calib\v2.grid.jpg"
 echo.
 echo   Pitch calibration - frame %FRAME%
 echo.
-echo   Click these 4 anchors IN THIS ORDER (one left click each):
-echo     1) halfway line x TOP touchline      halfway_top
-echo     2) halfway line x BOTTOM touchline   halfway_bottom
-echo     3) right penalty box: the long line parallel to the goal line,
-echo        where it meets the TOP touchline   pa_right_top
-echo     4) same long line, where it meets the BOTTOM touchline
-echo                                            pa_right_bottom
+echo   Anchors in click order: %ANCHORS%
+echo.
+echo   Default set:
+echo     1) halfway line x TOP touchline             halfway_top
+echo     2) halfway line x BOTTOM touchline          halfway_bottom
+echo     3) right box 16.5m line x TOP touchline     pa_right_top
+echo     4) right box 16.5m line x GOAL LINE (the corner right next to
+echo        the goal, far side)                       pa_right_goal_top
+echo.
+echo   Why not the near-side corner: on this clip the near touchline is
+echo   hidden behind the advertising boards, so that corner is not clickable.
+echo.
+echo   Mouse: left click = pick, WHEEL = zoom, RIGHT-DRAG = pan,
+echo          u = undo last, r = reset, Esc = cancel
 echo.
 echo   THEN a check window appears: red outline / magenta penalty box /
 echo   green halfway line must sit ON the real white lines.
@@ -36,7 +48,7 @@ echo.
 if not exist "%PY%" goto nopy
 if not exist "%VID%" goto novid
 
-"%PY%" -u scripts\vision_calibrate.py --video "%VID%" --frame %FRAME% --anchors halfway_top,halfway_bottom,pa_right_top,pa_right_bottom --out "%OUT%"
+"%PY%" -u scripts\vision_calibrate.py --video "%VID%" --frame %FRAME% --anchors %ANCHORS% --out "%OUT%"
 set "RC=%ERRORLEVEL%"
 
 rem Exit 3 = the interpreter could not write the output folder. That happens when the
@@ -57,7 +69,7 @@ set "PY2="
 if exist "C:\Python313\python.exe" set "PY2=C:\Python313\python.exe"
 if not defined PY2 for /f "delims=" %%i in ('where python 2^>nul') do if not defined PY2 set "PY2=%%i"
 if not defined PY2 goto nopy2
-"%PY2%" -u scripts\vision_calibrate.py --video "%VID%" --frame %FRAME% --anchors halfway_top,halfway_bottom,pa_right_top,pa_right_bottom --out "%OUT%"
+"%PY2%" -u scripts\vision_calibrate.py --video "%VID%" --frame %FRAME% --anchors %ANCHORS% --out "%OUT%"
 set "RC=%ERRORLEVEL%"
 echo.
 echo   Exit code %RC%  ^(from %PY2%^)

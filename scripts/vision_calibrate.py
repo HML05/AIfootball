@@ -442,34 +442,78 @@ def _overlay(frame, cal, names: list[str], hit: float, ctrl: float):
     return img
 
 
-def _confirm(frame, cal, names: list[str], hit: float, ctrl: float) -> str:
-    """把验收叠图摊给用户看：红线/品红框没压住场地线就按 n 重点。"""
+def _confirm(frame, cal, names: list[str], hit: float, ctrl: float):
+    """把验收叠图摊给用户看：红线/品红框没压住场地线就按 n 重点，或按键改单点。
+
+    返回值：("y"|"n"|"esc") 或 ("redo", 下标)。
+    为什么要能改单点：这段素材里禁区远端线和球门线的交点只有几十个像素宽，
+    一次点不准很正常；整轮重来代价太大，边看叠图边改一个点才收敛得动。
+    为什么要能缩放：判「压没压住」得看几十像素，整图缩到 1600 宽根本分不清，
+    所以这里和点选窗一样支持滚轮缩放 + 右键拖动。
+    """
     cv2 = _load_cv2()
-    win = "calibrate: check the overlay (y=save n=redo esc=cancel)"
-    img = _overlay(frame, cal, names, hit, ctrl)
-    h, w = img.shape[:2]
-    cv2.namedWindow(win, cv2.WINDOW_NORMAL)
-    scale = min(1.0, 1600.0 / max(w, 1))
-    cv2.resizeWindow(win, int(w * scale), int(h * scale))
-    cv2.moveWindow(win, 60, 40)
+    _dpi_aware()
+    win = "calibrate: check the overlay (y=save n=redo 1-4=fix one point esc=cancel)"
+    base = _overlay(frame, cal, names, hit, ctrl)
+    view = _View(base)
+    mapping: dict[str, int] = {"x0": 0, "y0": 0, "vw": view.window_size()[0], "vh": view.window_size()[1]}
+    drag: list[float] = []
+    result: list = []
+
+    def on_mouse(event, x, y, flags, param):  # noqa: ANN001
+        if event == cv2.EVENT_MOUSEWHEEL:
+            img_pt = view.to_image(x, y, mapping["x0"], mapping["y0"], (mapping["vh"], mapping["vw"]))
+            view.zoom_at(1.25 if flags > 0 else 1 / 1.25, img_pt)
+            return
+        if event == cv2.EVENT_RBUTTONDOWN:
+            drag[:] = [x, y]
+            return
+        if event == cv2.EVENT_MOUSEMOVE and drag:
+            view.cx -= (x - drag[0]) / view.zoom
+            view.cy -= (y - drag[1]) / view.zoom
+            drag[:] = [x, y]
+            return
+        if event == cv2.EVENT_RBUTTONUP:
+            drag.clear()
+
+    cv2.namedWindow(win, cv2.WINDOW_AUTOSIZE)
+    cv2.moveWindow(win, 40, 20)
     try:
         cv2.setWindowProperty(win, cv2.WND_PROP_TOPMOST, 1)
     except Exception:
         pass
-    cv2.imshow(win, img)
+    cv2.setMouseCallback(win, on_mouse)
     print("[i] 验收窗已打开：红色外框 / 品红禁区 / 绿色中线 要压在真实白线上")
-    print("[i] 对得上按 y 保存；对不上按 n 重新点；Esc 取消")
+    print("[i] 滚轮放大、右键拖动看清楚；y=保存  n=整轮重来  1~4=只改第几个点  Esc=取消")
     while True:
-        key = cv2.waitKey(30) & 0xFF
+        patch, x0, y0 = view.crop(base)
+        mapping["x0"], mapping["y0"] = x0, y0
+        mapping["vw"], mapping["vh"] = patch.shape[1], patch.shape[0]
+        canvas = patch.copy()
+        cv2.putText(canvas, f"zoom x{view.zoom:.2f}", (16, canvas.shape[0] - 18),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 255), 2)
+        cv2.imshow(win, canvas)
+        key = cv2.waitKey(20) & 0xFF
         if key in (ord("y"), ord("Y"), 13):
-            cv2.destroyAllWindows()
-            return "y"
+            result = ["y", None]
+            break
         if key in (ord("n"), ord("N")):
-            cv2.destroyAllWindows()
-            return "n"
+            result = ["n", None]
+            break
+        if key in (ord("+"), ord("=")):
+            view.zoom_at(1.25, (view.cx, view.cy))
+        if key in (ord("-"), ord("_")):
+            view.zoom_at(1 / 1.25, (view.cx, view.cy))
         if key == 27:
-            cv2.destroyAllWindows()
-            return "esc"
+            result = ["esc", None]
+            break
+        if ord("1") <= key <= ord("9"):
+            idx = key - ord("1")
+            if idx < len(names):
+                result = ["redo", idx]
+                break
+    cv2.destroyAllWindows()
+    return (result[0], result[1]) if result else ("esc", None)
 
 
 def _evaluate(frame, px_points, anchors, names):
@@ -636,9 +680,20 @@ def main() -> int:
         )
         if args.points:
             break
-        key = _confirm(frame, res["cal"], [names[i] for i in list(combo) + list(rest)], res["hit"], res["ctrl"])
+        key, redo = _confirm(frame, res["cal"], [names[i] for i in list(combo) + list(rest)], res["hit"], res["ctrl"])
         if key == "y":
             break
+        if key == "redo" and redo is not None:
+            # 只重设这一个点：在叠图上看出哪条线没压住，就只改它对应的那个点
+            target = names[redo]
+            print(f"[i] 只改第 {redo + 1} 个点（{target}），其余点保留")
+            again = _click_points(frame, [target])
+            if not again:
+                raise SystemExit("[取消] 已退出标定")
+            px_points = list(px_points)
+            px_points[redo] = again[0]
+            print(f"[i] {target} 改成 ({again[0][0]:.0f}, {again[0][1]:.0f})，重新计算")
+            continue
         if key == "n":
             px_points = None
             print(f"[i] 重新点：按 1→{len(names)} 的顺序再来一次")

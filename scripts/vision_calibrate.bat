@@ -15,7 +15,7 @@ rem optional 2nd argument = anchor list. If one anchor is unreachable in this fr
 rem swap the list, e.g.
 rem   scripts\vision_calibrate.bat 0 halfway_top,halfway_bottom,penalty_spot_right,pa_right_goal_top
 set "ANCHORS=%~2"
-if "%ANCHORS%"=="" set "ANCHORS=halfway_top,halfway_bottom,penalty_spot_right,goal_right_top,goal_right_bottom"
+if "%ANCHORS%"=="" set "ANCHORS=halfway_top,halfway_bottom,pa_right_top,penalty_spot_right"
 set "PY=.venv-vision\Scripts\python.exe"
 set "VID=data\vision\videos\v2.mp4"
 set "OUT=data\vision\calib\v2.json"
@@ -26,24 +26,24 @@ echo   Pitch calibration - frame %FRAME%
 echo.
 echo   Anchors in click order: %ANCHORS%
 echo.
-echo   Default set (5 clicks; the program keeps the best 4 and validates with
-echo   the rest, so one sloppy click does not ruin it):
-echo     1) halfway line x TOP touchline (far side)      halfway_top
-echo     2) halfway line x BOTTOM touchline (near side)  halfway_bottom
-echo     3) RIGHT penalty spot (the painted dot)         penalty_spot_right
-echo     4) RIGHT goal: base of the FAR post              goal_right_top
-echo     5) RIGHT goal: base of the NEAR post             goal_right_bottom
+echo   Default set (4 clicks):
+echo     1) halfway line x TOP touchline (far side)         halfway_top
+echo     2) halfway line x BOTTOM touchline (near side)     halfway_bottom
+echo     3) RIGHT penalty area: the far-side corner where
+echo        the box line meets the touchline side          pa_right_top
+echo     4) RIGHT penalty spot (the painted dot)           penalty_spot_right
 echo.
-echo   All five are long lines / painted dots / post bases -- no "16.5 m
-echo   line corner" hunting. Zoom in with the wheel for the spot and posts.
+echo   No "16.5 m line corner hunting": click the corner of the box that
+echo   you can actually see, zoom in with the wheel.
 echo.
 echo   Mouse: left click = pick, WHEEL = zoom, RIGHT-DRAG = pan,
 echo          u = undo last, r = reset, Esc = cancel
 echo.
-echo   THEN a check window appears: red outline / magenta penalty box /
-echo   green halfway line must sit ON the real white lines.
-echo     y = save     n = click again     Esc = cancel
-echo   It refuses to save if any of those lines misses the paint.
+echo   THEN the check window opens, zoomable: red outline / magenta penalty
+echo   box / green halfway line must sit ON the real white lines.
+echo     y = save   n = redo all   1-4 = redo just that point   Esc = cancel
+echo   It refuses to save while any of those lines misses the paint, and it
+echo   tells you which line failed, so fix that one point and look again.
 echo.
 
 if not exist "%PY%" goto nopy

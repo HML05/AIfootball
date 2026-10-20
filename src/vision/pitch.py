@@ -37,6 +37,22 @@ ANCHORS: dict[str, tuple[float, float]] = {
     "halfway_bottom": (PITCH_LENGTH / 2, PITCH_WIDTH),
 }
 
+# 禁区角点（16.5 米深、40.32 米宽）。转播的战术机位常常看不到角旗，
+# 但禁区线几乎总在画面里，所以这四个点才是实战里最常用的锚点。
+_PA_DEPTH = 16.5
+_PA_TOP = (PITCH_WIDTH - 40.32) / 2      # 13.84
+_PA_BOTTOM = PITCH_WIDTH - _PA_TOP        # 54.16
+ANCHORS.update({
+    "pa_left_top": (0.0 + _PA_DEPTH, _PA_TOP),
+    "pa_left_bottom": (0.0 + _PA_DEPTH, _PA_BOTTOM),
+    "pa_right_top": (PITCH_LENGTH - _PA_DEPTH, _PA_TOP),
+    "pa_right_bottom": (PITCH_LENGTH - _PA_DEPTH, _PA_BOTTOM),
+    "goal_left_top": (0.0, PITCH_WIDTH / 2 - 3.66),
+    "goal_left_bottom": (0.0, PITCH_WIDTH / 2 + 3.66),
+    "goal_right_top": (PITCH_LENGTH, PITCH_WIDTH / 2 - 3.66),
+    "goal_right_bottom": (PITCH_LENGTH, PITCH_WIDTH / 2 + 3.66),
+})
+
 # 人类足球运动员的物理上限：冲刺 9~10 m/s。超过这个数基本是 ID 跳变或标定错了。
 MAX_HUMAN_SPEED = 12.0
 

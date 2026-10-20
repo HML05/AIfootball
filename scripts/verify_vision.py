@@ -254,6 +254,18 @@ def check_prelabel() -> None:
     check("类别号生效", out.startswith("1 "), out)
 
 
+def check_fetch() -> None:
+    print("\n[6] vision_fetch：文件名与时间解析")
+    from scripts.vision_fetch import _parse_ts, ascii_name
+
+    check("_parse_ts 纯秒", _parse_ts("83") == 83, _parse_ts("83"))
+    check("_parse_ts 分:秒", _parse_ts("1:23") == 83, _parse_ts("1:23"))
+    check("_parse_ts 时:分:秒", _parse_ts("1:02:03") == 3723, _parse_ts("1:02:03"))
+    check("ascii_name 保留 ASCII 名", ascii_name("match_1") == "match_1", ascii_name("match_1"))
+    cn = ascii_name("英超 第3轮")
+    check("ascii_name 中文回退成哈希", cn.isascii() and len(cn) == 8, cn)
+
+
 def main() -> int:
     print(f"视觉模块自检（解释器：{sys.version.split()[0]}）")
     check_config()
@@ -261,6 +273,7 @@ def main() -> int:
     check_io()
     check_detector()
     check_prelabel()
+    check_fetch()
     print(f"\n合计：{PASSED} 通过 / {FAILED} 失败 / {SKIPPED} 跳过")
     return 1 if FAILED else 0
 

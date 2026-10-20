@@ -67,7 +67,8 @@ def run(args: argparse.Namespace) -> int:
     print("配置：", {k: info[k] for k in ("model", "imgsz", "conf", "tracker")})
     print(f"目录：{info['VISION_DIR']}")
 
-    src = Path(args.src) if args.src else config.VIDEO_DIR / DEMO_NAME
+    given = args.src or args.src_opt
+    src = Path(given) if given else config.VIDEO_DIR / DEMO_NAME
     if args.demo and not src.exists():
         print("没有真实片段，先造一段合成片段验证管线 …")
         make_demo_clip(src)
@@ -150,7 +151,8 @@ def run(args: argparse.Namespace) -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="YOLOv8 检测跟踪可行性冒烟")
-    ap.add_argument("--src", default="", help="视频路径（默认 data/vision/videos）")
+    ap.add_argument("src", nargs="?", default="", help="视频路径（也可以写成 --src）")
+    ap.add_argument("--src", dest="src_opt", default="", help="视频路径（默认 data/vision/videos）")
     ap.add_argument("--demo", action="store_true", help="没有真实片段时造一段合成片段验证管线")
     ap.add_argument("--model", default=config.DEFAULT_MODEL, help="权重（.pt 不存在会自动下载）")
     ap.add_argument("--imgsz", type=int, default=config.DEFAULT_IMGSZ)

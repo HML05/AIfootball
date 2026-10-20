@@ -32,6 +32,7 @@ D:\AIfootball
 │   └─ io.py            视频探测、轨迹 JSON 读写、画框与带框视频
 ├─ scripts/
 │   ├─ vision_setup.ps1          一键建 .venv-vision 并装 CUDA 版 torch
+│   ├─ vision_fetch.py           把网页链接/mp4 直链抓成本地片段（可只取 30~120 秒）
 │   ├─ vision_extract_frames.py  按间隔抽帧（保留原帧号，写 frames_index.json）
 │   ├─ vision_prelabel.py        预标注 → YOLO txt（可拼 images/ labels/ data.yaml）
 │   └─ vision_smoke.py           阶段 1 可行性冒烟（统计 JSON + 轨迹 + 带框视频）
@@ -87,10 +88,14 @@ py -3.12 -m venv .venv-vision
 
 ---
 
-## 4. 四条命令
+## 4. 五条命令
 
 ```powershell
 $PY = ".venv-vision\Scripts\python.exe"
+
+# 0) 素材是网页链接也能用：先看清晰度，再只抓一段（B 站/腾讯视频/抖音都行，mp4 直链也行）
+python scripts\vision_fetch.py "https://www.bilibili.com/video/BVxxxx" --list
+python scripts\vision_fetch.py "https://www.bilibili.com/video/BVxxxx" --start 01:20 --duration 60 --max-height 1080
 
 # 1) 抽帧：每 15 帧取一张（25 fps 下约 0.6 秒一张），保留原帧号
 & $PY scripts\vision_extract_frames.py --src data\vision\videos\clip.mp4 --step 15
@@ -101,11 +106,18 @@ $PY = ".venv-vision\Scripts\python.exe"
 
 # 3) 阶段 1 冒烟：先验证管线通不通（没有真实片段就用 --demo）
 & $PY scripts\vision_smoke.py --demo --overlay
-& $PY scripts\vision_smoke.py --src data\vision\videos\clip.mp4 --max-frames 300 --overlay
+& $PY scripts\vision_smoke.py data\vision\videos\clip.mp4 --max-frames 300 --overlay
 
 # 4) 训练（等数据集标好再跑；参数是 6 GB 显存下的保守值）
 & $PY -c "from ultralytics import YOLO; YOLO('yolov8s.pt').train(data=r'data\vision\dataset\data.yaml', imgsz=960, batch=4, epochs=60, device=0)"
 ```
+
+**抓链接的两个坑**（`vision_fetch.py` 里已处理，写下来免得重踩）：
+yt-dlp 只认名字叫 `ffmpeg.exe` 的可执行文件，而 `imageio-ffmpeg` 给的是
+`ffmpeg-win-x86_64-v7.1.exe`，直接把路径传给 `ffmpeg_location` 会一直报
+`You have requested downloading the video partially, but ffmpeg is not installed`；
+而且「只下一段」（`--start/--duration`）在解析阶段就要求 ffmpeg 可达。现在的做法是复制改名成
+`data/vision/.bin/ffmpeg.exe` 并塞进 PATH。**B 站 1080p 需要登录 cookies**，不登录一般拿到 720p 及以下。
 
 产物：`data/vision/out/<名字>_tracks.json.gz`、`_summary.json`、`_overlay.mp4`；
 训练产物在 `data/vision/runs/`。
@@ -193,10 +205,10 @@ python scripts\verify_vision.py
 .venv-vision\Scripts\python.exe scripts\verify_vision.py
 ```
 
-当前实测：**45 项断言全过**（本机系统 Python 3.13 与 `.venv-vision` 都是 45/45）。
+当前实测：**50 项断言全过**（本机系统 Python 3.13 与 `.venv-vision` 都是 50/50）。
 没有 cv2 的环境（CI 的 static job 只装 `requirements.txt`，实测用一个裸 Python 3.12 跑过）会把
 「中文路径改道 2 项 + probe_video 尺寸/帧数 + iter_frames 跳帧 + 带框视频 + meta 透传」这 7 项
-合并成 1 条跳过 → **38 通过 + 1 跳过**，退出码仍 0。这个脚本暂未接入 CI —— 等视觉接口落地时再一起接。
+合并成 1 条跳过 → **43 通过 + 1 跳过**，退出码仍 0。这个脚本暂未接入 CI —— 等视觉接口落地时再一起接。
 
 ---
 

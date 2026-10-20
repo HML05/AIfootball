@@ -146,6 +146,13 @@ jobs:
         if: steps.pack.outputs.available == 'true'
         run: python scripts/verify_account.py
 
+      # 视觉模块的「处理」需要 torch + ultralytics（2.4 GB，装不进 CI 的
+      # 分钟预算），所以这里只验接口面：上传/排队/进度/轨迹/媒体流/取消/删除。
+      # 处理进程 scripts/run_vision_jobs.py 在本机 .venv-vision 里跑。
+      - name: 视觉 Web 接口自检（39 项；不做推理）
+        if: steps.pack.outputs.available == 'true'
+        run: python scripts/verify_vision_web.py
+
       - name: 容器入口脚本自检（18 项；Linux/dash 下再验一遍）
         if: steps.pack.outputs.available == 'true'
         run: |

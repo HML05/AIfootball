@@ -208,7 +208,8 @@ python scripts\verify_vision.py
 当前实测：**50 项断言全过**（本机系统 Python 3.13 与 `.venv-vision` 都是 50/50）。
 没有 cv2 的环境（CI 的 static job 只装 `requirements.txt`，实测用一个裸 Python 3.12 跑过）会把
 「中文路径改道 2 项 + probe_video 尺寸/帧数 + iter_frames 跳帧 + 带框视频 + meta 透传」这 7 项
-合并成 1 条跳过 → **43 通过 + 1 跳过**，退出码仍 0。这个脚本暂未接入 CI —— 等视觉接口落地时再一起接。
+合并成 1 条跳过 → **43 通过 + 1 跳过**，退出码仍 0。模块这 50 项留本机跑；**接口面的 39 项
+（`verify_vision_web.py`）已进 CI 的 runtime job**，见 §8.6。
 
 ---
 
@@ -224,12 +225,97 @@ python scripts\verify_vision.py
 
 ---
 
-## 8. 与现有系统的接入点（后续工作，尚未开始）
+## 8. 与现有系统的接入（2026-10-20 已落地）
 
-1. 表（只增不改）：`vision_videos`、`vision_jobs`、`vision_tracks`（抽样入库）、`vision_summary`；
-2. 接口：`src/api/vision.py`，在 `src/main.py` 里 `include_router`；
-3. 处理进程：`scripts/run_vision_jobs.py`（独立进程，绝不塞进 uvicorn 请求里——单 worker 会卡整站）；
-4. 前端：`webui/src/sections/Vision.tsx` + `App.tsx` 加一条 `/vision` 路由，用 canvas 叠框而不是预渲染视频。
+分工一句话：**推理只在本地 `.venv-vision` 里跑，Web 进程只排队与展示**（线上 2 GiB / 无 GPU，装不下
+torch，也不该让单 worker 被一次推理卡住）。
+
+### 8.1 表（只增不改）
+
+| 表 | 作用 |
+| --- | --- |
+| `vision_videos` | 上传的视频：名称、路径、字节数、时长/帧率/宽高/帧数、状态（`uploaded/queued/running/done/failed`） |
+| `vision_jobs` | 一次处理任务：`step`/`model`/`conf`/`imgsz`、进度（`frames_done/frames_total/progress`）、`worker`、`overlay_path`、起止时间、错误 |
+| `vision_tracks` | 抽样轨迹：`(job_id, frame)` 建索引，每行一个框（`track_id/cls/conf/x1..y2`） |
+| `vision_summaries` | 每个任务一份 JSON（`metrics.summarize` 的产物 + `verdict`） |
+
+建表靠 `src/database/crud.py:23 init_db()`（`Base.metadata.create_all`），启动即自动建。
+
+### 8.2 接口（`src/api/vision.py`，12 条）
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| GET | `/api/vision/overview` | 视频数/状态分布、任务数、能力探测（`importlib.util.find_spec` 查 cv2/ultralytics，**不 import**）、处理进程在线状态 |
+| GET | `/api/vision/videos` | 视频列表（带最新任务、已处理任务的指标摘要） |
+| POST | `/api/vision/videos` | multipart 上传，默认上限 300 MB，落 `data/vision/videos/v<id>.<ext>`；空文件/非视频 400，超限 413 |
+| DELETE | `/api/vision/videos/{id}` | 有排队/处理中任务时 409；级联删 tracks / summary / 文件 |
+| POST | `/api/vision/videos/{id}/process` | 建排队任务（`step` 1~60、`conf` 0.05~0.95、`imgsz` 320~1280）；同视频已有排队/处理中 409 |
+| GET | `/api/vision/jobs/{id}` | 进度 |
+| POST | `/api/vision/jobs/{id}/cancel` | 取消（重复取消 409） |
+| GET | `/api/vision/videos/{id}/tracks` | 抽样轨迹，紧凑数组 `{"f": 帧, "b": [[id, cls, conf, x1, y1, x2, y2], …]}` |
+| GET | `/api/vision/videos/{id}/summary` | 指标 + 五条判定（未完成 404） |
+| GET | `/api/vision/videos/{id}/overlay/meta` | 带框视频是否已生成 |
+| GET | `/api/vision/videos/{id}/stream?token=` | 原视频（`<video src>` 带不了请求头 → 令牌放查询串） |
+| GET | `/api/vision/videos/{id}/overlay?token=` | 带框视频（`--overlay` 生成，mp4v，浏览器多半只给下载） |
+
+### 8.3 处理进程 `scripts/run_vision_jobs.py`
+
+纯 stdlib `sqlite3`（不依赖 SQLAlchemy），所以只要 `.venv-vision` 里装了 torch/ultralytics 就能跑：
+
+```powershell
+.venv-vision\Scripts\python.exe scripts\run_vision_jobs.py            # 常驻，每 3 秒领一次队列
+.venv-vision\Scripts\python.exe scripts\run_vision_jobs.py --once     # 只跑一轮（验收/CI 用）
+.venv-vision\Scripts\python.exe scripts\run_vision_jobs.py --job-id 3 --overlay
+```
+
+- `BEGIN IMMEDIATE` + `UPDATE … WHERE status='queued'` 领取任务（`rowcount` 必须为 1），并发起两个进程不会重复吃；
+- 每 25 帧更新一次 `frames_done/progress`，并检查 `status='canceled'` 立即停；
+- 按 `frame % step == 0` 抽样写库，`metrics.summarize` + `verdict` 写 `vision_summaries`；
+- 每轮写心跳 `data/vision/worker.json`（原子替换），网页据此显示「处理进程在线 / 显卡 / 依赖版本」。
+
+### 8.4 页面 `/vision`
+
+顶栏第 8 个入口「视频分析」，与其它页同一套 `PageShell` / `SectionCard` / `KpiStrip` / `Bar` / `Pill`：
+左侧原视频 + 绝对定位 canvas（`requestAnimationFrame` 里按 `currentTime*fps` 二分找最近的抽样帧，
+画黄框人 / 粉框球 + `#id 置信度%` + 回看 12 帧的轨迹折线；只给高度 ≥46 px（near 档）的框标 ID、每帧最多 10 个），
+右侧视频库 / 上传 / 抽样间隔 / 开始处理 / 进度 / 取消 / 删除，下方指标卡与五条判定（`OK / 待看 / 不行`）。
+**用 canvas 叠框而不是预渲染带框视频**：浏览器能直接播原视频（H.264），叠框是数据驱动的，随时可关。
+
+### 8.5 首次端到端实测（2026-10-20，本机 RTX 3060 Laptop）
+
+素材：B 站公开业余比赛集锦裁 30 秒（`BV1ehn36VEak`，`scripts/vision_fetch.py --start 00:20 --duration 30 --max-height 720`），
+1280×720 / 30 fps / 900 帧 / 6.3 MB。
+
+| 指标 | 实测 | 说明 |
+| --- | --- | --- |
+| 处理速度 | **34.26 帧/秒**（900 帧 26.27 秒） | `yolov8s` + imgsz 960 + ByteTrack，6 GB 显存够用 |
+| 场上人数 | 平均 **11.27 人/帧**（最多 16） | 业余单机位远景，符合画面观感 |
+| 唯一 ID | **123** | 30 秒内 123 个 ID 明显偏多 |
+| ID 碎裂 | **7.69**（唯一 ID / 单帧最多人数） | >3 即严重，交叉与出画都在换 ID —— **这正是论文要改进的点** |
+| 球覆盖率 | **11.89%**（最长连续 33 帧） | COCO 预训练对「远处白球」本来就弱，微调后应显著上升 |
+| 框高中位 | **69.3 px**（far 5.1% / mid 66.8% / near 28.1%） | 远景占比高，符合转播机位 |
+
+这些数字只证明「管线通、指标算得对」，**不是模型精度**（没有人工标注真值，算不出召回/mAP）。
+
+### 8.6 自检
+
+```powershell
+python scripts\verify_vision_web.py                     # 39 项接口断言（只需一个跑着的服务）
+.venv-vision\Scripts\python.exe scripts\verify_vision.py # 50 项模块断言
+python scripts\verify_vision.py                          # 无 cv2 环境：43 通过 + 1 跳过
+```
+
+`verify_vision_web.py` 已进 CI 的 runtime job（不需要 torch：它用 `scripts/fixtures/tiny.mp4`，
+一个 2,774 B 的真 mp4）。**处理进程本身不进 CI** —— 2.4 GB 的 torch 装不进分钟预算，
+所以「推理真的跑通了」这条只能靠本机实测记录（就是上面 8.5 那张表）。
+
+### 8.7 部署上的边界（别误解）
+
+- 线上实例能**上传、排队、看已入库的结果**；点「开始处理」只是建一条 `queued` 任务，
+  **不会真的推理**（网页进程没有 torch），要靠本机跑 `run_vision_jobs.py`；
+- 因此线上页面里「处理进程」那一栏常显示 `offline`、显卡/依赖为空 —— 这是设计如此，不是坏了；
+- 视频文件落在 `data/vision/`（已 gitignore），不进仓库、不进 Release，公网实例上也只是临时数据；
+- 若以后要「服务器自己处理」，得换带 GPU 的机器或把推理做成独立服务，属于另一件工程。
 
 ---
 

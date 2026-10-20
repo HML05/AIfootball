@@ -72,6 +72,15 @@ class Settings:
     AVATAR_MAX_BYTES: int = int(os.getenv("AVATAR_MAX_BYTES", str(2 * 1024 * 1024)))
     AVATAR_MAX_SIDE: int = int(os.getenv("AVATAR_MAX_SIDE", "512"))
 
+    # 视觉模块(YOLOv8 球员检测跟踪, 见 docs/YOLOv8-检测跟踪-方案.md)
+    #   主应用只负责「上传 + 排队 + 展示结果」; 真正的推理要 torch/ultralytics,
+    #   在独立环境 .venv-vision 里由 scripts/run_vision_jobs.py 领任务跑。
+    #   所以 src/api/vision.py 里绝不 import cv2/ultralytics —— 部署机(2 GiB)和 CI 都没装。
+    VISION_MAX_BYTES: int = int(os.getenv("VISION_MAX_BYTES", str(300 * 1024 * 1024)))
+    VISION_VIDEO_EXTS: tuple = (".mp4", ".m4v", ".mov", ".mkv", ".avi", ".flv", ".webm")
+    VISION_DEFAULT_STEP: int = int(os.getenv("VISION_DEFAULT_STEP", "5"))
+    VISION_DEFAULT_MODEL: str = os.getenv("VISION_DEFAULT_MODEL", "yolov8s.pt")
+
     # 定时任务
     ENABLE_LIVE_SCORE_UPDATE: bool = os.getenv("ENABLE_LIVE_SCORE_UPDATE", "true").lower() == "true"
     ENABLE_DAILY_UPDATE: bool = os.getenv("ENABLE_DAILY_UPDATE", "true").lower() == "true"
@@ -81,14 +90,19 @@ class Settings:
     DATA_DIR: Path = BASE_DIR / "data"
     RAW_DATA_DIR: Path = DATA_DIR / "raw"
     MODEL_DIR: Path = BASE_DIR / "models"
-    UPLOAD_DIR: Path = DATA_DIR / "uploads"          # 用户上传(目前只有头像)
+    UPLOAD_DIR: Path = DATA_DIR / "uploads"          # 用户上传(头像、视频)
     AVATAR_DIR: Path = UPLOAD_DIR / "avatars"
+    # 视觉模块的数据目录与 src/vision/config.py 的 VISION_DIR 是同一个(都认 VISION_DIR 环境变量)
+    VISION_DIR: Path = Path(os.getenv("VISION_DIR", str(DATA_DIR / "vision")))
+    VISION_VIDEO_DIR: Path = VISION_DIR / "videos"
+    VISION_OUT_DIR: Path = VISION_DIR / "out"
 
     def __init__(self):
         # 确保目录存在
         for d in [self.DATA_DIR, self.RAW_DATA_DIR, self.MODEL_DIR,
                   self.DATA_DIR / "processed", self.DATA_DIR / "database",
-                  self.UPLOAD_DIR, self.AVATAR_DIR]:
+                  self.UPLOAD_DIR, self.AVATAR_DIR,
+                  self.VISION_DIR, self.VISION_VIDEO_DIR, self.VISION_OUT_DIR]:
             d.mkdir(parents=True, exist_ok=True)
 
 

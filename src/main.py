@@ -34,6 +34,8 @@ from src.api.auth import router as auth_router
 from src.api.ui import router as ui_router
 from src.api.search import router as search_router
 from src.api.qa import router as qa_router
+from src.api.vision import media_router as vision_media_router
+from src.api.vision import router as vision_router
 
 
 # ============ WebSocket 连接管理 ============
@@ -168,6 +170,9 @@ app.include_router(auth_router, prefix="/api/auth", tags=["登录认证"])
 app.include_router(ui_router, prefix="/api/ui", tags=["界面数据"])
 app.include_router(search_router, prefix="/api/ui", tags=["全文检索"])
 app.include_router(qa_router, prefix="/api/ui", tags=["智能问答"])
+# 视觉模块: JSON 接口要登录; media 路由(path 里带 /stream 与 /overlay)自带 ?token= 校验
+app.include_router(vision_router, prefix="/api/vision", tags=["视觉分析"])
+app.include_router(vision_media_router, prefix="/api/vision", tags=["视觉分析"])
 
 
 # ============ 基础路由 ============

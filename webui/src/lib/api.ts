@@ -8,7 +8,7 @@
  * 401 时清掉本地登录态并广播 UNAUTHORIZED_EVENT，由路由守卫跳回 /login。
  */
 import { API_BASE, SERVER_ROOT, AUTH_BASE } from './base'
-import { authHeader, clearAuth, UNAUTHORIZED_EVENT } from './auth'
+import { authHeader, clearAuth, getToken, UNAUTHORIZED_EVENT } from './auth'
 
 export { API_BASE, SERVER_ROOT, AUTH_BASE }
 
@@ -74,6 +74,50 @@ export function qs(params: Record<string, string | number | undefined | null>): 
   const s = sp.toString()
   return s ? `?${s}` : ''
 }
+
+/* ---------------- 视觉（YOLOv8 视频分析，挂在 /api/vision） ---------------- */
+
+/** 视觉接口前缀：不在 /api/ui 下面，所以单独一个 base */
+export const VISION_BASE: string = `${SERVER_ROOT}/api/vision`
+
+/**
+ * 视觉接口统一走这里：GET / POST(JSON) / POST(FormData) / DELETE 都能用。
+ * 与 getJSON 的差别只有 base，401 的处理完全一致（清登录态 + 广播跳回登录页）。
+ */
+async function visionJSON<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const isForm = typeof FormData !== 'undefined' && init.body instanceof FormData
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    ...(init.body && !isForm ? { 'Content-Type': 'application/json' } : {}),
+    ...authHeader(),
+  }
+  const res = await fetch(`${VISION_BASE}${path}`, { ...init, headers })
+  if (res.status === 401) {
+    clearAuth()
+    window.dispatchEvent(new Event(UNAUTHORIZED_EVENT))
+    throw new ApiError(401, '登录已过期，请重新登录')
+  }
+  if (!res.ok) {
+    // 后端把「格式不对 / 超上限 / 已有任务」写在 detail 里，直接透给用户看
+    let detail = ''
+    try {
+      const b = (await res.json()) as { detail?: unknown }
+      detail = typeof b?.detail === 'string' ? b.detail : ''
+    } catch {
+      /* 响应不是 JSON 就用状态码文案 */
+    }
+    throw new ApiError(res.status, detail || `${res.status} ${res.statusText} · ${path}`)
+  }
+  if (res.status === 204) return undefined as T
+  return (await res.json()) as T
+}
+
+/** <video src> 带不了 Authorization 头，所以流地址把 token 放查询串（与头像同样的取舍） */
+export const visionStreamUrl = (videoId: number): string =>
+  `${VISION_BASE}/videos/${videoId}/stream?token=${encodeURIComponent(getToken() ?? '')}`
+
+export const visionOverlayUrl = (videoId: number): string =>
+  `${VISION_BASE}/videos/${videoId}/overlay?token=${encodeURIComponent(getToken() ?? '')}`
 
 export const logoUrl = (teamId?: number | null): string | undefined =>
   teamId === undefined || teamId === null ? undefined : `${API_BASE}/logo/${teamId}`
@@ -832,6 +876,38 @@ export const api = {
       use_llm: opts.useLlm ?? true,
       kind: opts.kind || null,
     }),
+  /* ---- 视觉（YOLOv8 检测跟踪；处理在本地 .venv-vision 里跑，网页只排队与展示） ---- */
+  visionOverview: (signal?: AbortSignal) => visionJSON<VisionOverview>('/overview', { signal }),
+  visionVideos: (signal?: AbortSignal) => visionJSON<{ items: VisionVideo[]; total: number }>('/videos', { signal }),
+  visionUpload: (file: File) => {
+    const fd = new FormData()
+    fd.append('file', file)
+    return visionJSON<VisionVideo>('/videos', { method: 'POST', body: fd })
+  },
+  visionDelete: (videoId: number) =>
+    visionJSON<{ ok: boolean }>(`/videos/${videoId}`, { method: 'DELETE' }),
+  visionProcess: (
+    videoId: number,
+    opts: { step?: number; conf?: number; imgsz?: number; model?: string; maxFrames?: number } = {},
+  ) =>
+    visionJSON<VisionJob>(`/videos/${videoId}/process`, {
+      method: 'POST',
+      body: JSON.stringify({
+        step: opts.step,
+        conf: opts.conf,
+        imgsz: opts.imgsz,
+        model: opts.model,
+        max_frames: opts.maxFrames,
+      }),
+    }),
+  visionJob: (jobId: number, signal?: AbortSignal) => visionJSON<VisionJob>(`/jobs/${jobId}`, { signal }),
+  visionCancel: (jobId: number) => visionJSON<VisionJob>(`/jobs/${jobId}/cancel`, { method: 'POST' }),
+  visionTracks: (videoId: number, jobId?: number, signal?: AbortSignal) =>
+    visionJSON<VisionTracks>(`/videos/${videoId}/tracks${qs({ job_id: jobId })}`, { signal }),
+  visionSummary: (videoId: number, jobId?: number, signal?: AbortSignal) =>
+    visionJSON<VisionSummaryPayload>(`/videos/${videoId}/summary${qs({ job_id: jobId })}`, { signal }),
+  visionStreamUrl,
+  visionOverlayUrl,
 }
 
 export interface LeagueDetail {
@@ -988,4 +1064,129 @@ export interface ModelsPayload {
   calibration: { outcome: string; predicted: number; actual: number; n: number }[]
   confusion: { actual: string; predicted: string; count: number }[]
   featureImportance: { feature: string; importance: number }[]
+}
+
+/* ---------------- 视觉（YOLOv8 检测跟踪）类型 ---------------- */
+
+export interface VisionCaps {
+  cv2: boolean
+  ultralytics: boolean
+  can_process: boolean
+  note: string | null
+}
+
+export interface VisionJob {
+  job_id: number
+  video_id: number
+  status: 'queued' | 'running' | 'done' | 'failed' | 'canceled' | string
+  progress: number
+  frames_done: number
+  frames_total: number | null
+  step: number
+  model: string
+  conf: number
+  imgsz: number
+  message: string | null
+  error: string | null
+  worker: string | null
+  overlay: boolean
+  started_at: string | null
+  finished_at: string | null
+  created_at: string | null
+}
+
+export interface VisionVideoBrief {
+  persons_per_frame: number | null
+  ball_pct: number | null
+  fragmentation: number | null
+}
+
+export interface VisionVideo {
+  video_id: number
+  name: string
+  status: string
+  size_bytes: number
+  duration: number | null
+  fps: number | null
+  width: number | null
+  height: number | null
+  frames: number | null
+  message: string | null
+  created_at: string | null
+  job: VisionJob | null
+  done_job_id: number | null
+  brief: VisionVideoBrief | null
+}
+
+export interface VisionOverview {
+  server: VisionCaps
+  defaults: { step: number; model: string; max_bytes: number; exts: string[] }
+  videos: { total: number; by_status: Record<string, number> }
+  jobs: { total: number; done: number }
+  worker: {
+    online: boolean
+    name: string | null
+    job_id: number | null
+    host: string | null
+    pid: number | null
+    gpu: string | null
+    deps: string | null
+    heartbeat_age: number | null
+  }
+  recent_jobs: VisionJob[]
+}
+
+/** 一个框 = [track_id, cls, conf, x1, y1, x2, y2]（像素坐标，原始分辨率） */
+export type VisionBox = [number | null, number, number, number, number, number, number]
+
+export interface VisionTracks {
+  job_id: number
+  step: number
+  frames: { f: number; b: VisionBox[] }[]
+  boxes: number
+  note: string
+}
+
+export interface VisionMetrics {
+  frames_processed: number
+  video: Record<string, unknown>
+  person: {
+    frames_with_person: number
+    frames_with_person_pct: number
+    per_frame_mean: number | null
+    per_frame_max: number
+    per_frame_min: number | null
+    boxes_total: number
+    mean_conf: number | null
+  }
+  tracking: {
+    unique_ids: number
+    max_ids_in_one_frame: number
+    fragmentation: number | null
+    id_lifetime_median: number | null
+    id_lifetime_mean: number | null
+  }
+  ball: {
+    frames_with_ball: number
+    frames_with_ball_pct: number
+    boxes_total: number
+    mean_conf: number | null
+    longest_consecutive_run: number
+  }
+  box_height_px: {
+    median: number | null
+    buckets: { far: number; mid: number; near: number }
+    buckets_pct: { far: number; mid: number; near: number }
+    cutoffs_px: { far_below: number; mid_below: number }
+  }
+  speed?: { elapsed_sec: number; fps_processed: number | null }
+  notes: string[]
+}
+
+export interface VisionSummaryPayload {
+  video_id: number
+  job_id: number
+  summary: VisionMetrics
+  verdict: { mark: string; text: string }[]
+  elapsed: number | null
 }

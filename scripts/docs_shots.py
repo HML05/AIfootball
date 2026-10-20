@@ -8,7 +8,7 @@
 约定:
     * 除 /login 外都带登录态（/api/ui/* 现在需要 Bearer）。
     * 只拍视口 1600x1000（不拍 full_page），与历史交付截图规格一致。
-    * 文件名即文档里的编号：01-登录.png … 22-账号设置.png
+    * 文件名即文档里的编号：01-登录.png … 23-视频分析.png
 """
 from __future__ import annotations
 
@@ -54,12 +54,15 @@ SHOTS: list[tuple[str, str]] = [
     ("/ask?tab=ask", "21-智能问答"),
     # 2026-10 新增：账号设置（顶栏头像 → 弹层；panel 参数只是本脚本的标记，页面会忽略）
     ("/?panel=account", "22-账号设置"),
+    # 2026-10 新增：视觉模块（YOLOv8 检测跟踪）的视频分析页
+    ("/vision", "23-视频分析"),
 ]
 
 
 ASK_TAB = "/ask?tab=ask"
 ASK_QUESTION = "皇马和巴萨谁赢"
 ACCOUNT_PANEL = "/?panel=account"
+VISION = "/vision"
 
 
 def _prepare(pg, route: str) -> None:
@@ -84,6 +87,24 @@ def _prepare(pg, route: str) -> None:
         pg.wait_for_timeout(500)
         pg.get_by_role("button", name=re.compile("账号设置|Account settings")).first.click()
         pg.wait_for_timeout(1200)  # 等弹层动画结束
+        return
+    if route == VISION:
+        # 视频分析页：把播放器定位到第 6 秒并暂停，等 canvas 叠好框再拍
+        try:
+            pg.wait_for_selector("video", timeout=15000)
+            pg.evaluate(
+                """() => new Promise((res) => {
+                    const v = document.querySelector('video');
+                    if (!v) return res();
+                    v.muted = true;
+                    const go = () => { v.currentTime = 6; v.pause(); setTimeout(res, 600); };
+                    if (v.readyState >= 2) go();
+                    else v.addEventListener('loadeddata', go, { once: true });
+                })"""
+            )
+            pg.wait_for_timeout(1200)
+        except Exception as e:  # noqa: BLE001 —— 没有处理过的视频时拍空态也行
+            print(f"  [warn] /vision 播放器没就绪: {type(e).__name__}")
         return
 
 

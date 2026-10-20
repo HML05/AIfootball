@@ -1,5 +1,5 @@
 """数据库模型 - SQLAlchemy ORM"""
-from sqlalchemy import Column, Integer, String, Float, DateTime, Date, Text, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, Float, DateTime, Date, Text, ForeignKey, Boolean, Index
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime
 
@@ -202,4 +202,85 @@ class AuthResetCode(Base):
     used = Column(Boolean, default=False, comment="用过一次就作废")
     tries = Column(Integer, default=0, comment="连续试错次数, 超上限作废")
     client_ip = Column(String(45), nullable=True)
+
+
+# ============ 视觉(YOLOv8 球员检测跟踪) ============
+# 只增不改: 视频 -> 处理任务 -> 抽样轨迹 -> 指标摘要。
+# 推理要 torch/ultralytics(约 2.5 GB), 主应用与云主机都不装, 由
+# scripts/run_vision_jobs.py 在 .venv-vision 里领任务跑; 这四张表只负责
+# 「排队 + 存结果」, 所以 src/api/vision.py 可以完全不知道 cv2/ultralytics。
+
+class VisionVideo(Base):
+    """上传的视频(落 data/vision/videos/, 已在 .gitignore 里)"""
+    __tablename__ = "vision_videos"
+
+    video_id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(200), nullable=False, comment="原始文件名")
+    path = Column(String(400), nullable=False, comment="相对仓库根的文件路径")
+    size_bytes = Column(Integer, default=0)
+    duration = Column(Float, nullable=True, comment="秒")
+    fps = Column(Float, nullable=True)
+    width = Column(Integer, nullable=True)
+    height = Column(Integer, nullable=True)
+    frames = Column(Integer, nullable=True, comment="总帧数")
+    status = Column(String(12), default="uploaded",
+                    comment="uploaded/queued/running/done/failed")
+    message = Column(String(400), nullable=True, comment="给界面看的一句话说明")
+    owner_id = Column(Integer, ForeignKey("auth_users.user_id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now)
+
+
+class VisionJob(Base):
+    """一次检测跟踪任务: 排队 -> 处理中 -> 出指标"""
+    __tablename__ = "vision_jobs"
+
+    job_id = Column(Integer, primary_key=True, autoincrement=True)
+    video_id = Column(Integer, ForeignKey("vision_videos.video_id"), nullable=False)
+    status = Column(String(12), default="queued",
+                    comment="queued/running/done/failed/canceled")
+    progress = Column(Float, default=0.0, comment="0~100")
+    frames_done = Column(Integer, default=0)
+    frames_total = Column(Integer, nullable=True)
+    step = Column(Integer, default=5, comment="每 N 帧存一条轨迹(抽样入库)")
+    model = Column(String(80), default="yolov8s.pt")
+    conf = Column(Float, default=0.25)
+    imgsz = Column(Integer, default=960)
+    message = Column(String(400), nullable=True)
+    error = Column(Text, nullable=True)
+    worker = Column(String(80), nullable=True, comment="哪个进程领走的")
+    overlay_path = Column(String(400), nullable=True, comment="带框视频(可选, 只做下载)")
+    started_at = Column(DateTime, nullable=True)
+    finished_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now)
+
+
+class VisionTrack(Base):
+    """抽样轨迹: 每 step 帧存该帧所有框, 前端 canvas 叠加用"""
+    __tablename__ = "vision_tracks"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    job_id = Column(Integer, ForeignKey("vision_jobs.job_id"), nullable=False)
+    frame = Column(Integer, nullable=False)
+    track_id = Column(Integer, nullable=True, comment="跟踪 ID, 检测模式为 NULL")
+    cls = Column(Integer, nullable=False, comment="COCO 类别: 0=人, 32=球")
+    conf = Column(Float, nullable=True)
+    x1 = Column(Float, nullable=False)
+    y1 = Column(Float, nullable=False)
+    x2 = Column(Float, nullable=False)
+    y2 = Column(Float, nullable=False)
+
+    __table_args__ = (Index("ix_vision_tracks_job_frame", "job_id", "frame"),)
+
+
+class VisionSummary(Base):
+    """任务指标: metrics.summarize 的 JSON + verdict 逐条判定"""
+    __tablename__ = "vision_summaries"
+
+    job_id = Column(Integer, ForeignKey("vision_jobs.job_id"), primary_key=True)
+    video_id = Column(Integer, ForeignKey("vision_videos.video_id"), nullable=False)
+    payload = Column(Text, nullable=False,
+                     comment="JSON: {'summary': {...}, 'verdict': [[标记, 文字]], 'elapsed': 秒}")
+    created_at = Column(DateTime, default=datetime.now)
 

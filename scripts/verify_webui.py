@@ -44,6 +44,7 @@ ROUTES: list[tuple[str, str, str]] = [
     ("/admin?tab=asset", "管理端 · 数据资产", r"1\.8M|36"),
     ("/admin?tab=models", "管理端 · 模型注册表", r"v9|50\.14"),
     ("/admin?tab=system", "管理端 · 系统与接口", r"12\.7k|901\.4k"),
+    ("/vision", "视频分析（视觉模块）", r"视频分析|Video analysis"),
 ]
 
 

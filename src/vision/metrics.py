@@ -147,16 +147,24 @@ def verdict(summary: dict) -> list[tuple[str, str]]:
         mark = "OK  " if ok else ("待看 " if ok is None else "不行")
         return mark, f"{label}：{detail}"
 
+    def num(value, digits: int = 2) -> str:
+        """数值统一保留位数——「69.27999999999997 px」这种浮点尾巴不该出现在判定里。"""
+        if value is None:
+            return "—"
+        if isinstance(value, (int, float)):
+            return f"{value:.{digits}f}"
+        return str(value)
+
     frag = tracking.get("fragmentation")
     rows = [
-        row((person.get("per_frame_mean") or 0) >= 10, "场上人数", f"平均 {person.get('per_frame_mean')} 人/帧"),
-        row(frag is not None and frag <= 3, "ID 碎裂", f"{frag}（≤3 可接受）"),
-        row((ball.get("frames_with_ball_pct") or 0) >= 20, "球检出覆盖率", f"{ball.get('frames_with_ball_pct')}%"),
-        row((ball.get("longest_consecutive_run") or 0) >= 15, "球最长连续段", f"{ball.get('longest_consecutive_run')} 帧"),
+        row((person.get("per_frame_mean") or 0) >= 10, "场上人数", f"平均 {num(person.get('per_frame_mean'))} 人/帧"),
+        row(frag is not None and frag <= 3, "ID 碎裂", f"{num(frag)}（≤3 可接受）"),
+        row((ball.get("frames_with_ball_pct") or 0) >= 20, "球检出覆盖率", f"{num(ball.get('frames_with_ball_pct'))}%"),
+        row((ball.get("longest_consecutive_run") or 0) >= 15, "球最长连续段", f"{num(ball.get('longest_consecutive_run'), 0)} 帧"),
         row(
             (summary.get("box_height_px", {}).get("median") or 0) >= FAR_MAX,
             "框尺寸",
-            f"中位高 {summary.get('box_height_px', {}).get('median')} px",
+            f"中位高 {num(summary.get('box_height_px', {}).get('median'), 1)} px",
         ),
     ]
     return rows

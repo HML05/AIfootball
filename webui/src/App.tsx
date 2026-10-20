@@ -14,6 +14,7 @@ import MatchDetail from './pages/MatchDetail'
 import Predictions from './pages/Predictions'
 import Live from './pages/Live'
 import Ask from './pages/Ask'
+import Vision from './pages/Vision'
 import Switcher from './components/Switcher'
 import { pick } from './data/live'
 import { consoleLoginUrl } from './lib/base'
@@ -22,7 +23,7 @@ import { LanguageProvider, useLang } from './i18n'
 import { ThemeProvider, useTheme } from './theme'
 
 /**
- * 路由结构（登录后可见：用户端 8 个入口 + 管理端 4 个页签）
+ * 路由结构（登录后可见：用户端 9 个入口 + 管理端 4 个页签）
  *  用户端: /            总览
  *          /matches     赛程与赛果（/matches/:id 比赛详情）
  *          /leagues     联赛（/leagues/:id 联赛详情）
@@ -31,6 +32,7 @@ import { ThemeProvider, useTheme } from './theme'
  *          /predictions 预测
  *          /live        实时
  *          /ask         检索与问答（?tab=search|ask）
+ *          /vision      视频分析（YOLOv8 检测跟踪；处理在本地 .venv-vision 里跑）
  *  管理端: /admin?tab=overview|asset|models|system（仅管理员角色）
  *  旧入口 /reports、/agent 已并入管理端，保留为重定向。
  *
@@ -129,6 +131,7 @@ function Shell() {
                 <Route path="/predictions" element={<Predictions />} />
                 <Route path="/live" element={<Live />} />
                 <Route path="/ask" element={<Ask />} />
+                <Route path="/vision" element={<Vision />} />
                 <Route
                   path="/admin"
                   element={

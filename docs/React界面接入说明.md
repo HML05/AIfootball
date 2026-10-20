@@ -49,7 +49,7 @@
 
 ## 2. 页面 → 接口对照
 
-用户端导航 7 个入口（总览 / 赛程 / 联赛 / 球队 / 球员 / 预测 / 实时），管理端入口 = 顶栏右侧「设置」（仅管理员可见）。下面所有页面都需要登录（登录页本身在 SPA 之外，见 §1.1）。
+用户端导航 8 个入口（总览 / 赛程 / 联赛 / 球队 / 球员 / 预测 / 实时 / 视频分析），管理端入口 = 顶栏右侧「设置」（仅管理员可见）。下面所有页面都需要登录（登录页本身在 SPA 之外，见 §1.1）。
 
 | 路由 | 页面 | 数据来源 |
 | --- | --- | --- |
@@ -68,6 +68,7 @@
 | `/predictions` | 比赛预测（预测列表 + 页首一处口径定义） | `/api/ui/predictions` |
 | `/live` | 实时比分（最近完赛 + 即将开始） | `/api/ui/live` |
 | `/ask` | 检索与问答（两页签：全文检索 `?tab=search` 默认，命中【】高亮 + 类型筛选 + 分页；智能问答 `?tab=ask`，含模式/意图徽标、可折叠执行步骤、`[n]` 引用来源列表；URL 状态 `tab/q/kind/page`） | `/api/ui/search` + `/api/ui/search/stats` + `/api/ui/ask` + `/api/ui/ask/status` |
+| `/vision` | 视频分析（视觉模块，2026-10 新增）：原视频 + canvas 叠框（黄框人 / 粉框球 + ID 与置信度 + 回看轨迹）、4 个 KPI、框尺寸三档、五条判定、视频库 / 上传 / 排队处理进度 / 取消 / 删除、处理进程在线状态与怎么在本机跑推理 | `/api/vision/overview`、`/api/vision/videos`（GET/POST/DELETE）、`/api/vision/videos/{id}/process`、`/api/vision/jobs/{id}`、`/api/vision/videos/{id}/tracks`、`/api/vision/videos/{id}/summary`、`/api/vision/videos/{id}/overlay/meta`；媒体流 `/api/vision/videos/{id}/stream?token=` 与 `…/overlay?token=`（`<video src>` 带不了请求头，所以令牌放查询串） |
 | `/admin?tab=overview` | 管理端 · 数据总览（入库趋势 / 分布 / 管道 / 总进球分布 / 联赛对比） | `/api/ui/admin` |
 | `/admin?tab=asset` | 管理端 · 数据资产（原 `/reports` 全文） | `/api/ui/reports` |
 | `/admin?tab=models` | 管理端 · 模型注册表（生产模型卡 / 概率校准 / 混淆矩阵 / 特征 Top12 / 版本对比 / 最近预测） | `/api/ui/models` + `/api/ui/predictions` |
@@ -100,7 +101,7 @@
 | `scripts/verify_account.py` | 账号设置**后端**自检 41 项（纯接口）：`PATCH /api/auth/profile` 改昵称/账号名/手机号与校验（账号名 3~20 位且字母开头、重名 409、非法手机号 400）、改名后旧账号名登录 401 但**已有令牌仍可用**、头像上传（PNG 与真照片都验、后端居中裁方并压到 512、伪装成图片的文本 400、>2 MB 413）、`GET /api/auth/avatar/{id}` 不鉴权可取图且带 `?v=` 版本号、`DELETE` 后 404、改密码后**其它设备的会话失效而当前会话保留**；默认跑完删掉测试账号与头像文件（`--keep` 保留） |
 | `scripts/verify_account_ui.py` | 账号设置**弹层**自检 50 项（Playwright 真点）：顶栏头像 → 菜单「账号设置」→ `[role=dialog]`、点页面空白处能收起账号菜单、三页签齐备；头像页选图即时 `blob:` 预览、真发 multipart 上传并让**顶栏立刻换图**（带 `?v=` 防旧缓存）、「恢复默认头像」回到 `/images/profile.png`、>2 MB 本地拦截（错误文案带实际体积且不发请求）；资料页三个输入框是**后端真实值**回填、未改动时保存禁用、改昵称保存后顶栏与 `/me` 同步、非法账号名把后端 400 原文显示且不落库、测完把昵称改回原值；密码页本地拦「新密码至少 6 位」、错原密码显示后端「原密码不正确」且旧密码仍可登录；末尾断言弹层关掉后 0 坏图 / 0 横向溢出 / 0 控制台报错（负向用例故意打的 400 不计） |
 | `scripts/_register_flow.py` | 注册 / 忘记密码**界面**端到端（Playwright 真点击，见下） |
-| `scripts/docs_shots.py` | 重新生成 `docs/webui/` 的 22 张交付截图（生产构建 + 已登录，中文亮色；`/console/login.html`、`18-注册账号`、`19-忘记密码` 走未登录；`21-智能问答` 会先提一个真问题、`22-账号设置` 会先点头像开弹层） |
+| `scripts/docs_shots.py` | 重新生成 `docs/webui/` 的 23 张交付截图（生产构建 + 已登录，中文亮色；`/console/login.html`、`18-注册账号`、`19-忘记密码` 走未登录；`21-智能问答` 会先提一个真问题、`22-账号设置` 会先点头像开弹层、`23-视频分析` 会把播放器定到第 6 秒等叠框完成） |
 | `scripts/responsive_webui.py` | 1280 / 1440 / 1920 三宽度响应式体检（自动带登录态） |
 | `scripts/audit_webui.py` | 信息架构盘点（逐页卡片顺序 / KPI 标签 / 表头 / 内滚块；自动带登录态） |
 | `scripts/build_webui.py` | 生产构建（自动处理 TEMP 权限坑） |

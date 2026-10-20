@@ -44,6 +44,14 @@ MIN_SPREAD = 0.25
 # 同一画面里「每像素多少米」的最大/最小比值上限。战术机位约 2~4 倍，
 # 超过 8 倍基本说明点配错了（把禁区角当成了角旗之类）
 MAX_SCALE_RATIO = 8.0
+# 投影出来的场地线有多少比例落在画面里的白线上。这是唯一不依赖「用户多点一个校验点」
+# 的自动精度指标：点错了整条线会跑到草皮上，命中率立刻掉。同时算一个「整体平移 50 像素」
+# 的对照组——判据看的是两者之差，不是绝对值（绝对值会被广告牌、观众席的白像素抬高）。
+MIN_LINE_HIT = 0.55
+MIN_HIT_LIFT = 1.6
+# 单条线的最低命中率。总命中率会被「点对的那条线」拉高（实测：中线 100% + 小禁区 28%
+# 合计还是 61%），所以每条线单独判——28% 说明小禁区那个框根本没扣在真实小禁区上。
+MIN_LINE_EACH = 0.45
 
 
 def _load_cv2():
@@ -184,6 +192,109 @@ def _pitch_to_pixel(h_inv: np.ndarray, x: float, y: float) -> tuple[float, float
     return (p[0] / p[2], p[1] / p[2])
 
 
+def _draw_features(frame, h: np.ndarray):
+    """把禁区、中线、中圈这些「一眼能认出来」的线按标定结果画回去。
+
+    只看 5 米网格很难判断对不对（网格密、缺参照），但「禁区方框扣没扣在真实的禁区上」
+    是一眼就能看出来的。颜色：外框红、中线绿、两个禁区品红、两个小禁区橙、中圈青。
+    """
+    cv2 = _load_cv2()
+    h_inv = np.linalg.inv(h)
+    out = frame.copy()
+    h_img, w_img = out.shape[:2]
+    L, W = pitch.PITCH_LENGTH, pitch.PITCH_WIDTH
+    cy = W / 2
+    pa_half, ga_half = 40.32 / 2, 18.32 / 2
+
+    def line(pts, color, thick=3):
+        prev = None
+        for x, y in pts:
+            u, v = _pitch_to_pixel(h_inv, x, y)
+            if any(math.isnan(t) for t in (u, v)):
+                prev = None
+                continue
+            if abs(u) > 6 * w_img or abs(v) > 6 * h_img:
+                prev = None
+                continue
+            if prev is not None:
+                cv2.line(out, prev, (int(u), int(v)), color, thick, cv2.LINE_AA)
+            prev = (int(u), int(v))
+
+    def seg(x0, y0, x1, y1, n=24):
+        return [(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n) for i in range(n + 1)]
+
+    line(seg(0, 0, L, 0) + seg(L, 0, L, W) + seg(L, W, 0, W) + seg(0, W, 0, 0), (60, 60, 255))
+    line(seg(L / 2, 0, L / 2, W), (0, 210, 0))
+    for x0, x1 in ((0.0, 16.5), (L, L - 16.5)):
+        line(seg(x0, cy - pa_half, x1, cy - pa_half) + seg(x1, cy - pa_half, x1, cy + pa_half)
+             + seg(x1, cy + pa_half, x0, cy + pa_half), (255, 0, 255), 2)
+    for x0, x1 in ((0.0, 5.5), (L, L - 5.5)):
+        line(seg(x0, cy - ga_half, x1, cy - ga_half) + seg(x1, cy - ga_half, x1, cy + ga_half)
+             + seg(x1, cy + ga_half, x0, cy + ga_half), (0, 165, 255), 2)
+    circle = [(L / 2 + 9.15 * math.cos(2 * math.pi * i / 90), cy + 9.15 * math.sin(2 * math.pi * i / 90))
+              for i in range(91)]
+    line(circle, (255, 255, 0), 2)
+    return out
+
+
+def _line_hit_ratio(frame, h: np.ndarray, tol: int = 4) -> tuple[float, float, list[tuple[str, float]]]:
+    """自动质量指标：投影出来的场地线有多少比例落在「白漆」上。
+
+    「白漆」= HSV 里亮且几乎没颜色（草皮饱和度高，白线饱和度低），比灰色阈值靠谱得多。
+    同时算一个对照组：把同样的线整体平移 50 像素后有多少落白漆。标定歪掉时两组会差不多
+    （≈ 随机命中率），标定正确时投影组要明显高——所以判据看的是「两者之差」，不是绝对值。
+    """
+    cv2 = _load_cv2()
+    h_inv = np.linalg.inv(h)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    paint = ((hsv[:, :, 1] < 70) & (hsv[:, :, 2] > 165)).astype(np.uint8)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * tol + 1, 2 * tol + 1))
+    near_paint = cv2.dilate(paint, kernel)  # 线上某点 tol 像素内有白漆就算命中
+    h_img, w_img = near_paint.shape[:2]
+    L, W = pitch.PITCH_LENGTH, pitch.PITCH_WIDTH
+    cy = W / 2
+
+    bars: list[tuple[str, tuple[tuple[float, float], tuple[float, float]]]] = [
+        ("halfway", ((L / 2, 0), (L / 2, W))),
+        ("pa_right", ((L - 16.5, cy - 20.16), (L - 16.5, cy + 20.16))),
+        ("pa_left", ((16.5, cy - 20.16), (16.5, cy + 20.16))),
+        ("ga_right", ((L - 5.5, cy - 9.16), (L - 5.5, cy + 9.16))),
+        ("ga_left", ((5.5, cy - 9.16), (5.5, cy + 9.16))),
+    ]
+
+    def ratio(bar, dy: float = 0.0, n: int = 60) -> tuple[int, int]:
+        (x0, y0), (x1, y1) = bar
+        hits = seen = 0
+        for i in range(n + 1):
+            t = i / n
+            u, v = _pitch_to_pixel(h_inv, x0 + (x1 - x0) * t, y0 + (y1 - y0) * t)
+            if any(math.isnan(z) for z in (u, v)):
+                continue
+            ui, vi = int(round(u)), int(round(v + dy))
+            if not (0 <= ui < w_img and 0 <= vi < h_img):
+                continue
+            seen += 1
+            if near_paint[vi, ui]:
+                hits += 1
+        return hits, seen
+
+    detail: list[tuple[str, float]] = []
+    total_hit = total_seen = ctrl_hit = 0
+    for name, bar in bars:
+        hits, seen = ratio(bar)
+        chits, _ = ratio(bar, dy=50.0)
+        if seen >= 10:  # 采样太少（线基本在画面外）就不报，避免噪音
+            detail.append((name, hits / seen))
+            total_hit += hits
+            total_seen += seen
+            ctrl_hit += chits
+    if not total_seen:
+        return 0.0, 1.0, detail
+    hit = total_hit / total_seen
+    ctrl = ctrl_hit / total_seen
+    return hit, ctrl, detail
+
+
 def _draw_grid(frame, h: np.ndarray, step: float = 5.0):
     """把球场网格按标定结果画回画面：线该压在真实白线上。"""
     cv2 = _load_cv2()
@@ -219,6 +330,111 @@ def _draw_grid(frame, h: np.ndarray, step: float = 5.0):
     return out
 
 
+def _overlay(frame, cal, names: list[str], hit: float, ctrl: float):
+    """验收叠图：5 米网格 + 能一眼认出的场地线 + 点击位置 + 白线命中率。"""
+    cv2 = _load_cv2()
+    img = _draw_grid(frame, cal.homography)
+    img = _draw_features(img, cal.homography)
+    for i, ((u, v), _) in enumerate(cal.pairs, 1):
+        cv2.circle(img, (int(u), int(v)), 12, (0, 0, 0), -1, cv2.LINE_AA)
+        cv2.circle(img, (int(u), int(v)), 10, (0, 255, 255), -1, cv2.LINE_AA)
+        label = names[i - 1] if i - 1 < len(names) else str(i)
+        cv2.putText(img, label, (int(u) + 14, int(v) - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2, cv2.LINE_AA)
+    text = f"paint hit {hit * 100:.0f}% (ctrl {ctrl * 100:.0f}%)   y=save  n=redo  esc=cancel"
+    cv2.putText(img, text, (24, 44), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 0), 5, cv2.LINE_AA)
+    cv2.putText(img, text, (24, 44), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2, cv2.LINE_AA)
+    return img
+
+
+def _confirm(frame, cal, names: list[str], hit: float, ctrl: float) -> str:
+    """把验收叠图摊给用户看：红线/品红框没压住场地线就按 n 重点。"""
+    cv2 = _load_cv2()
+    win = "calibrate: check the overlay (y=save n=redo esc=cancel)"
+    img = _overlay(frame, cal, names, hit, ctrl)
+    h, w = img.shape[:2]
+    cv2.namedWindow(win, cv2.WINDOW_NORMAL)
+    scale = min(1.0, 1600.0 / max(w, 1))
+    cv2.resizeWindow(win, int(w * scale), int(h * scale))
+    cv2.moveWindow(win, 60, 40)
+    try:
+        cv2.setWindowProperty(win, cv2.WND_PROP_TOPMOST, 1)
+    except Exception:
+        pass
+    cv2.imshow(win, img)
+    print("[i] 验收窗已打开：红色外框 / 品红禁区 / 绿色中线 要压在真实白线上")
+    print("[i] 对得上按 y 保存；对不上按 n 重新点；Esc 取消")
+    while True:
+        key = cv2.waitKey(30) & 0xFF
+        if key in (ord("y"), ord("Y"), 13):
+            cv2.destroyAllWindows()
+            return "y"
+        if key in (ord("n"), ord("N")):
+            cv2.destroyAllWindows()
+            return "n"
+        if key == 27:
+            cv2.destroyAllWindows()
+            return "esc"
+
+
+def _evaluate(frame, px_points, anchors, names):
+    """拟合 + 全套自检，返回一个 dict（main 保存时要用）。"""
+    n_fit = min(4, len(px_points), len(anchors))
+    fit_px = px_points[:n_fit]
+    fit_anchor = anchors[:n_fit]
+    holdout = list(zip(px_points[n_fit:], anchors[n_fit:]))
+    cal = pitch.build_calibration(list(zip(fit_px, fit_anchor)))
+
+    spread = _spread(fit_px, frame.shape)
+    scales = [_local_scale(cal.homography, p) for p in fit_px]
+    scale_ratio = max(scales) / max(min(scales), 1e-9)
+    hit, ctrl, hit_detail = _line_hit_ratio(frame, cal.homography)
+
+    worst, _ = _reproject_error(cal.homography, cal.pairs)
+    print(f"     内点误差 {worst:.3f} 米（4 点拟合恒为 0，不能当质量证明）")
+    print(f"     4 点铺开程度 {spread * 100:.0f}% 画面对角线（建议 >{MIN_SPREAD * 100:.0f}%）")
+    print(f"     每像素米数 {min(scales):.4f} ~ {max(scales):.4f}（比值 {scale_ratio:.1f}×，建议 <{MAX_SCALE_RATIO:.0f}×）")
+    print(f"     投影线压在白漆上的比例 {hit * 100:.0f}%（对照组 {ctrl * 100:.0f}%，"
+          f"要求 >{MIN_LINE_HIT * 100:.0f}% 且高出对照组 {MIN_HIT_LIFT:.1f} 倍）")
+    for name, r in hit_detail:
+        print(f"        {name:10s} {r * 100:4.0f}%")
+
+    problems: list[str] = []
+    if spread < MIN_SPREAD:
+        problems.append(
+            f"4 个点只铺开了画面的 {spread * 100:.0f}%，太集中——解出来的球场尺度基本是猜的。"
+            "请点在画面四角附近（中圈两端、左右禁区角）"
+        )
+    if scale_ratio > MAX_SCALE_RATIO:
+        problems.append(
+            f"画面不同位置的比例差 {scale_ratio:.1f} 倍，正常机位不该这么大——多半是把禁区角/门柱当成了角旗"
+        )
+    if hit < MIN_LINE_HIT or hit < ctrl * MIN_HIT_LIFT:
+        problems.append(
+            f"投出来的场地线只有 {hit * 100:.0f}% 落在白漆上（对照组 {ctrl * 100:.0f}%）——"
+            "说明点位对错了场地特征，看验收图里哪个框没压住再点"
+        )
+    weak = [(n, r) for n, r in hit_detail if r < MIN_LINE_EACH]
+    if weak:
+        problems.append(
+            "这几条线明显没压在真实场地线上：" + "、".join(f"{n} {r * 100:.0f}%" for n, r in weak)
+            + f"（要求每条 >{MIN_LINE_EACH * 100:.0f}%）——对应的点重新找一下"
+        )
+    if holdout:
+        worst_hold = 0.0
+        for (u, v), (x, y) in holdout:
+            px, py = pitch.pixel_to_pitch(cal.homography, (u, v))
+            err = math.hypot(px - x, py - y)
+            worst_hold = max(worst_hold, err)
+            print(f"     留出点 ({x:.1f},{y:.1f})m 误差 {err:.2f} 米")
+        if worst_hold > 3.0:
+            problems.append(f"留出点误差 {worst_hold:.1f} 米偏大，标定不可信（>3 米）")
+    else:
+        print("     [!] 没给留出点：精度证据只有上面那条白漆命中率。多给 1 个锚点会更硬")
+    return dict(cal=cal, fit_px=fit_px, fit_anchor=fit_anchor, problems=problems,
+                hit=hit, ctrl=ctrl)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="把转播画面标定到 105×68 米球场坐标")
     src = ap.add_mutually_exclusive_group(required=True)
@@ -248,48 +464,35 @@ def main() -> int:
         frame = _grab_frame(Path(args.video), max(args.frame, 0))
         stem = Path(args.video).stem
 
-    px_points = _parse_points(args.points) if args.points else _click_points(frame, names)
-    if len(px_points) < 4:
-        raise SystemExit(f"[错误] 只给了 {len(px_points)} 个像素点，至少要 4 个")
-    n_fit = min(4, len(px_points), len(anchors))
-    fit_px = px_points[:n_fit]
-    fit_anchor = anchors[:n_fit]
-    holdout = list(zip(px_points[n_fit:], anchors[n_fit:]))
-
-    cal = pitch.build_calibration(list(zip(fit_px, fit_anchor)), note=f"{stem} @ frame {args.frame}")
-    worst, errs = _reproject_error(cal.homography, list(zip(fit_px, fit_anchor)))
-
+    px_points = _parse_points(args.points) if args.points else None
     out = Path(args.out) if args.out else ROOT / "data" / "vision" / "calib" / f"{stem}.json"
 
-    spread = _spread(fit_px, frame.shape)
-    scales = [_local_scale(cal.homography, p) for p in fit_px]
-    scale_ratio = max(scales) / max(min(scales), 1e-9)
+    # 交互模式下不直接存盘：先算一遍、把验收叠图摊出来，用户按 y 才认。
+    # 这一环补的是「4 点残差恒为 0」那个洞——点错了照样解出完美残差，只有看图才抓得住。
+    res = None
+    while True:
+        if px_points is None:
+            px_points = _click_points(frame, names)
+            if len(px_points) < 4:
+                raise SystemExit(f"[错误] 只给了 {len(px_points)} 个像素点，至少要 4 个")
+        res = _evaluate(frame, px_points, anchors, names)
+        if args.points:
+            break
+        key = _confirm(frame, res["cal"], names, res["hit"], res["ctrl"])
+        if key == "y":
+            break
+        if key == "n":
+            px_points = None
+            print("[i] 重新点：按 1→4 的顺序再来一次")
+            continue
+        raise SystemExit("[取消] 已退出标定")
 
-    print(f"     内点误差 {worst:.3f} 米（4 点拟合恒为 0，不能当质量证明）")
-    print(f"     4 点铺开程度 {spread * 100:.0f}% 画面对角线（建议 >{MIN_SPREAD * 100:.0f}%）")
-    print(f"     每像素米数 {min(scales):.4f} ~ {max(scales):.4f}（比值 {scale_ratio:.1f}×，建议 <{MAX_SCALE_RATIO:.0f}×）")
-
-    problems: list[str] = []
-    if spread < MIN_SPREAD:
-        problems.append(
-            f"4 个点只铺开了画面的 {spread * 100:.0f}%，太集中——解出来的球场尺度基本是猜的。"
-            "请点在画面四角附近（中圈两端、左右禁区角）"
-        )
-    if scale_ratio > MAX_SCALE_RATIO:
-        problems.append(
-            f"画面不同位置的比例差 {scale_ratio:.1f} 倍，正常机位不该这么大——多半是把禁区角/门柱当成了角旗"
-        )
-    if holdout:
-        worst_hold = 0.0
-        for (u, v), (x, y) in holdout:
-            px, py = pitch.pixel_to_pitch(cal.homography, (u, v))
-            err = math.hypot(px - x, py - y)
-            worst_hold = max(worst_hold, err)
-            print(f"     留出点 ({x:.1f},{y:.1f})m 误差 {err:.2f} 米")
-        if worst_hold > 3.0:
-            problems.append(f"留出点误差 {worst_hold:.1f} 米偏大，标定不可信（>3 米）")
-    else:
-        print("     [!] 没给留出点：这里没有可信的精度证据。想验收就多给 1 个锚点当第 5 点")
+    assert res is not None
+    cal = res["cal"]
+    fit_px = res["fit_px"]
+    fit_anchor = res["fit_anchor"]
+    problems = res["problems"]
+    cal.note = f"{stem} @ frame {args.frame}"
 
     # 只有在自检没挑出毛病时才落到正式文件名；不合格的存成 .rejected.json 留证据，
     # 免得下游脚本误把一份歪的标定当成可用的（之前就出过这个坑）。
@@ -315,7 +518,7 @@ def main() -> int:
 
     grid_path = None
     if not args.no_grid:
-        grid = _draw_grid(frame, cal.homography)
+        grid = _draw_features(_draw_grid(frame, cal.homography), cal.homography)
         grid_path = written.with_suffix(".grid.jpg")
         _imwrite(grid_path, grid)
 

@@ -22,11 +22,15 @@ echo.
 echo   Click these 4 anchors IN THIS ORDER (one left click each):
 echo     1) halfway line x TOP touchline      halfway_top
 echo     2) halfway line x BOTTOM touchline   halfway_bottom
-echo     3) right penalty box, upper corner   pa_right_top
-echo     4) right penalty box, lower corner   pa_right_bottom
+echo     3) right penalty box: the long line parallel to the goal line,
+echo        where it meets the TOP touchline   pa_right_top
+echo     4) same long line, where it meets the BOTTOM touchline
+echo                                            pa_right_bottom
 echo.
-echo   Esc cancels. Then open v2.grid.jpg: the orange 5 m grid
-echo   must sit ON the real white lines.
+echo   THEN a check window appears: red outline / magenta penalty box /
+echo   green halfway line must sit ON the real white lines.
+echo     y = save     n = click again     Esc = cancel
+echo   It refuses to save if any of those lines misses the paint.
 echo.
 
 if not exist "%PY%" goto nopy

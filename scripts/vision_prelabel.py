@@ -42,6 +42,31 @@ def parse_map(text: str) -> dict[int, int]:
     return mapping
 
 
+def parse_roi(text: str) -> tuple[float, float, float, float] | None:
+    """'0.02,0.16,0.98,0.99' → 归一化矩形；传空则不过滤。
+
+    为什么要这个：转播机位的看台、替补席、场边广告牌上全是「人」，
+    COCO 会把它们一起检出来（实测一段 1080p 片段每帧 28 个框，其中一半在看台上）。
+    预标注阶段先用一个固定矩形把场地圈出来，人工改框的工作量能砍掉一半。
+    """
+    text = (text or "").strip()
+    if not text:
+        return None
+    parts = [float(x) for x in text.split(",")]
+    if len(parts) != 4:
+        raise SystemExit("[错误] --roi 需要 4 个数：x1,y1,x2,y2（归一化 0~1）")
+    return parts[0], parts[1], parts[2], parts[3]
+
+
+def in_roi(box: dict, width: int, height: int, roi: tuple[float, float, float, float]) -> bool:
+    """框中心点是否落在 ROI 内。"""
+    x1, y1, x2, y2 = box["xyxy"]
+    cx = (x1 + x2) / 2.0 / max(width, 1)
+    cy = (y1 + y2) / 2.0 / max(height, 1)
+    rx1, ry1, rx2, ry2 = roi
+    return rx1 <= cx <= rx2 and ry1 <= cy <= ry2
+
+
 def to_yolo_line(box: dict, width: int, height: int, cls_id: int) -> str:
     x1, y1, x2, y2 = box["xyxy"]
     cx = (x1 + x2) / 2.0 / width
@@ -63,6 +88,8 @@ def main() -> int:
     ap.add_argument("--out", default="", help="labels 输出目录（默认 <src>/labels）")
     ap.add_argument("--dataset-root", default="", help="可选：拼 YOLO 目录结构并写 data.yaml")
     ap.add_argument("--copy-images", action="store_true", help="把图片复制进 dataset/images")
+    ap.add_argument("--roi", default="", help="只保留中心点落在该归一化矩形内的框，格式 x1,y1,x2,y2（如 0.02,0.16,0.98,0.99）")
+    ap.add_argument("--min-height", type=float, default=0.0, help="丢弃像素高度小于该值的框（去噪，远处像素小人）")
     args = ap.parse_args()
 
     from src.vision.detector import Detector
@@ -79,10 +106,12 @@ def main() -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
     mapping = parse_map(args.mapping)
     classes = [int(c) for c in args.classes.split(",") if c.strip()]
+    roi = parse_roi(args.roi)
 
     det = Detector(model=args.weights, imgsz=args.imgsz, conf=args.conf, classes=classes)
     manifest: list[dict] = []
     total_boxes = dropped = 0
+    roi_dropped = small_dropped = 0
 
     for i, image in enumerate(images, 1):
         result = det.predict(image)[0]
@@ -98,6 +127,12 @@ def main() -> int:
             coco = int(box["cls"])
             if coco not in mapping:
                 dropped += 1
+                continue
+            if roi is not None and not in_roi(box, width, height, roi):
+                roi_dropped += 1
+                continue
+            if args.min_height > 0 and (box["xyxy"][3] - box["xyxy"][1]) < args.min_height:
+                small_dropped += 1
                 continue
             lines.append(to_yolo_line(box, width, height, mapping[coco]))
             kept += 1
@@ -131,7 +166,8 @@ def main() -> int:
             encoding="utf-8",
         )
 
-    print(f"\n完成：{len(manifest)} 张图 / {total_boxes} 个框（丢弃非目标类别 {dropped} 个）")
+    extra = f"，ROI 外 {roi_dropped} 个，过小 {small_dropped} 个" if (roi_dropped or small_dropped) else ""
+    print(f"\n完成：{len(manifest)} 张图 / {total_boxes} 个框（丢弃非目标类别 {dropped} 个{extra}）")
     print(f"标签目录：{out_dir}")
     if yaml_path:
         print(f"数据集配置：{yaml_path}（val 先指向 train，标够之后按视频划分再改）")

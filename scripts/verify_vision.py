@@ -243,7 +243,7 @@ def check_detector() -> None:
 
 def check_prelabel() -> None:
     print("\n[5] prelabel：YOLO 标签换算")
-    from scripts.vision_prelabel import parse_map, to_yolo_line
+    from scripts.vision_prelabel import in_roi, parse_map, parse_roi, to_yolo_line
 
     check("parse_map 解析映射", parse_map("0:0,32:1") == {0: 0, 32: 1})
     line = to_yolo_line({"xyxy": [100, 100, 300, 400]}, 1000, 1000, 0)
@@ -252,6 +252,18 @@ def check_prelabel() -> None:
     out = to_yolo_line({"xyxy": [-10, -10, 1010, 1010]}, 1000, 1000, 1)
     check("越界坐标被夹到 [0,1]", all(0.0 <= float(v) <= 1.0 for v in out.split()[1:]), out)
     check("类别号生效", out.startswith("1 "), out)
+
+    # --roi 把看台/替补席上的人从预标注里剔掉；框中心点判断，空串表示不过滤
+    roial = parse_roi("0.1,0.2,0.9,0.8")
+    check("parse_roi 解析四段", roial == (0.1, 0.2, 0.9, 0.8), roial)
+    check("parse_roi 空串不过滤", parse_roi("") is None)
+    check("in_roi 场内框保留", in_roi({"xyxy": [400, 400, 600, 700]}, 1000, 1000, roial))
+    check("in_roi 看台框剔除", not in_roi({"xyxy": [400, 20, 460, 90]}, 1000, 1000, roial))
+    try:
+        parse_roi("0.1,0.2,0.9")
+        check("parse_roi 段数不对要报错", False, "没有抛错")
+    except SystemExit:
+        check("parse_roi 段数不对要报错", True)
 
 
 def check_fetch() -> None:

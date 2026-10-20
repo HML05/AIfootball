@@ -107,7 +107,20 @@ def _click_points(frame, names: list[str]) -> list[tuple[float, float]]:
         if event == cv2.EVENT_LBUTTONDOWN and len(clicked) < total:
             clicked.append((float(x), float(y)))
 
+    h, w = frame.shape[:2]
+    # 有些机器上 OpenCV 的窗口会开在别的窗口后面、或跑到屏幕外，
+    # 看起来就像「双击了没反应」。所以显式给个位置与大小，并置顶。
     cv2.namedWindow(win, cv2.WINDOW_NORMAL)
+    scale = min(1.0, 1600.0 / max(w, 1))
+    cv2.resizeWindow(win, int(w * scale), int(h * scale))
+    cv2.moveWindow(win, 60, 40)
+    try:
+        cv2.setWindowProperty(win, cv2.WND_PROP_TOPMOST, 1)
+    except Exception:  # 老版本/无此属性时忽略
+        pass
+    cv2.setMouseCallback(win, on_mouse)
+    print("[i] 点选窗口已打开（标题 calibrate…）。没看到就把其他窗口最小化，或看任务栏。")
+    print(f"[i] 按 1→{total} 的顺序点，Esc 取消。")
     cv2.setMouseCallback(win, on_mouse)
     while True:
         canvas = frame.copy()

@@ -150,6 +150,19 @@ def _reproject_error(h: np.ndarray, pairs) -> tuple[float, list[float]]:
     return max(errs), errs
 
 
+def _imwrite(path: Path, img) -> bool:
+    """cv2.imwrite 失败不抛异常、只返回 False，这里把它变成显式结果。"""
+    cv2 = _load_cv2()
+    try:
+        ok = bool(cv2.imwrite(str(path), img))
+    except Exception as exc:  # noqa: BLE001 - 权限/路径问题都归到这里
+        print(f"     [!] 写图失败 {path.name}: {exc}")
+        return False
+    if not ok:
+        print(f"     [!] 写图失败 {path.name}（目录不可写？）")
+    return ok
+
+
 def _spread(points: list[tuple[float, float]], shape) -> float:
     xs = [p[0] for p in points]
     ys = [p[1] for p in points]
@@ -247,13 +260,11 @@ def main() -> int:
     worst, errs = _reproject_error(cal.homography, list(zip(fit_px, fit_anchor)))
 
     out = Path(args.out) if args.out else ROOT / "data" / "vision" / "calib" / f"{stem}.json"
-    pitch.save_calibration(cal, out)
 
     spread = _spread(fit_px, frame.shape)
     scales = [_local_scale(cal.homography, p) for p in fit_px]
     scale_ratio = max(scales) / max(min(scales), 1e-9)
 
-    print(f"[ok] 标定写入 {out}")
     print(f"     内点误差 {worst:.3f} 米（4 点拟合恒为 0，不能当质量证明）")
     print(f"     4 点铺开程度 {spread * 100:.0f}% 画面对角线（建议 >{MIN_SPREAD * 100:.0f}%）")
     print(f"     每像素米数 {min(scales):.4f} ~ {max(scales):.4f}（比值 {scale_ratio:.1f}×，建议 <{MAX_SCALE_RATIO:.0f}×）")
@@ -280,19 +291,33 @@ def main() -> int:
     else:
         print("     [!] 没给留出点：这里没有可信的精度证据。想验收就多给 1 个锚点当第 5 点")
 
+    # 只有在自检没挑出毛病时才落到正式文件名；不合格的存成 .rejected.json 留证据，
+    # 免得下游脚本误把一份歪的标定当成可用的（之前就出过这个坑）。
+    written = out if not problems else out.with_suffix(".rejected.json")
+    try:
+        pitch.save_calibration(cal, written)
+    except PermissionError:
+        print("")
+        print(f"[x] 写不进去：{written}")
+        print("    Windows 拒绝了这个目录的写入（常见于目录权限被收紧）。修复命令：")
+        print(f'    icacls "{written.parent}" /grant "%USERNAME%":(OI)(CI)F /T')
+        print("    或者换个能写的输出位置，例如 --out v2.json（就写到仓库根目录）")
+        return 3
+    print(f"[ok] 标定写入 {written}")
+
     preview = frame.copy()
     for i, ((u, v), (x, y)) in enumerate(zip(fit_px, fit_anchor), 1):
         cv2.circle(preview, (int(u), int(v)), 9, (0, 255, 0), 2)
         cv2.putText(preview, f"{i}:{names[i - 1]}", (int(u) + 14, int(v) - 14),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-    prev_path = out.with_suffix(".preview.jpg")
-    cv2.imwrite(str(prev_path), preview)
+    prev_path = written.with_suffix(".preview.jpg")
+    _imwrite(prev_path, preview)
 
     grid_path = None
     if not args.no_grid:
         grid = _draw_grid(frame, cal.homography)
-        grid_path = out.with_suffix(".grid.jpg")
-        cv2.imwrite(str(grid_path), grid)
+        grid_path = written.with_suffix(".grid.jpg")
+        _imwrite(grid_path, grid)
 
     print(f"     预览图 {prev_path.name}")
     if grid_path:

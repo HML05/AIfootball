@@ -51,6 +51,12 @@ ANCHORS.update({
     "goal_left_bottom": (0.0, PITCH_WIDTH / 2 + 3.66),
     "goal_right_top": (PITCH_LENGTH, PITCH_WIDTH / 2 - 3.66),
     "goal_right_bottom": (PITCH_LENGTH, PITCH_WIDTH / 2 + 3.66),
+    # 禁区在球门线上的两个角（和 pa_*_top/bottom 一起，正好是禁区的四个角）。
+    # 转播画面里禁区常常是整个画面中最大、最清楚的矩形，用它标定比找角旗可靠。
+    "pa_left_goal_top": (0.0, _PA_TOP),
+    "pa_left_goal_bottom": (0.0, _PA_BOTTOM),
+    "pa_right_goal_top": (PITCH_LENGTH, _PA_TOP),
+    "pa_right_goal_bottom": (PITCH_LENGTH, _PA_BOTTOM),
 })
 
 # 人类足球运动员的物理上限：冲刺 9~10 m/s。超过这个数基本是 ID 跳变或标定错了。
@@ -96,18 +102,43 @@ def homography_from_points(pairs: Sequence[tuple[tuple[float, float], tuple[floa
 
     用的是标准 DLT：把 h33 固定成 1，解 8 个未知数的 8×8 线性方程组。
     点少于 4 组直接报错——3 组只能解仿射，透视方向会错，那样远端球员的位置会显著偏。
+
+    **坐标必须先归一化再解**：像素是几百上千的量级、米是个位到百位，直接丢进
+    lstsq 条件数极差（实测：同样的 4 个点，不归一化解出 2.1 米的残差，
+    归一化后 1e-13）。Hartley 归一化：平移到质心、缩放到平均距离 √2，
+    解完再用 T2⁻¹ · H · T1 还原。
     """
     if len(pairs) < 4:
         raise ValueError(f"标定至少要 4 组对应点，收到 {len(pairs)} 组")
+
+    src = np.array([p[0] for p in pairs[:4]], dtype=float)
+    dst = np.array([p[1] for p in pairs[:4]], dtype=float)
+
+    def _normalizer(pts: np.ndarray) -> np.ndarray:
+        center = pts.mean(axis=0)
+        dist = float(np.sqrt(((pts - center) ** 2).sum(axis=1)).mean())
+        s = math.sqrt(2.0) / dist if dist > 1e-12 else 1.0
+        return np.array(
+            [[s, 0.0, -s * center[0]], [0.0, s, -s * center[1]], [0.0, 0.0, 1.0]],
+            dtype=float,
+        )
+
+    t_src = _normalizer(src)
+    t_dst = _normalizer(dst)
+    src_h = (t_src @ np.column_stack([src, np.ones(4)]).T).T
+    dst_h = (t_dst @ np.column_stack([dst, np.ones(4)]).T).T
+    src_n = src_h[:, :2] / src_h[:, 2:3]
+    dst_n = dst_h[:, :2] / dst_h[:, 2:3]
+
     a_rows: list[list[float]] = []
     b_rows: list[float] = []
-    for (u, v), (x, y) in pairs[:4]:
+    for (u, v), (x, y) in zip(src_n, dst_n):
         a_rows.append([u, v, 1.0, 0.0, 0.0, 0.0, -x * u, -x * v])
         b_rows.append(x)
         a_rows.append([0.0, 0.0, 0.0, u, v, 1.0, -y * u, -y * v])
         b_rows.append(y)
     sol, *_ = np.linalg.lstsq(np.array(a_rows, dtype=float), np.array(b_rows, dtype=float), rcond=None)
-    h = np.array(
+    h_n = np.array(
         [
             [sol[0], sol[1], sol[2]],
             [sol[3], sol[4], sol[5]],
@@ -115,6 +146,8 @@ def homography_from_points(pairs: Sequence[tuple[tuple[float, float], tuple[floa
         ],
         dtype=float,
     )
+    h = np.linalg.inv(t_dst) @ h_n @ t_src
+    h = h / h[2, 2] if abs(h[2, 2]) > 1e-12 else h
     if not np.all(np.isfinite(h)):
         raise ValueError("标定点共线或退化，解不出单应矩阵；换几个分散在画面四角的点")
     return h

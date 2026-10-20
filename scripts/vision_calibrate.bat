@@ -15,7 +15,7 @@ rem optional 2nd argument = anchor list. If one anchor is unreachable in this fr
 rem swap the list, e.g.
 rem   scripts\vision_calibrate.bat 0 halfway_top,halfway_bottom,penalty_spot_right,pa_right_goal_top
 set "ANCHORS=%~2"
-if "%ANCHORS%"=="" set "ANCHORS=halfway_top,halfway_bottom,pa_right_top,penalty_spot_right"
+if "%ANCHORS%"=="" set "ANCHORS=halfway_top,halfway_bottom,pa_right_top,pa_right_bottom,penalty_spot_right,goal_right_top,goal_right_bottom"
 set "PY=.venv-vision\Scripts\python.exe"
 set "VID=data\vision\videos\v2.mp4"
 set "OUT=data\vision\calib\v2.json"
@@ -26,18 +26,25 @@ echo   Pitch calibration - frame %FRAME%
 echo.
 echo   Anchors in click order: %ANCHORS%
 echo.
-echo   Default set (4 clicks):
-echo     1) halfway line x TOP touchline (far side)         halfway_top
-echo     2) halfway line x BOTTOM touchline (near side)     halfway_bottom
-echo     3) RIGHT penalty area: the far-side corner where
-echo        the box line meets the touchline side          pa_right_top
-echo     4) RIGHT penalty spot (the painted dot)           penalty_spot_right
+echo   MORE POINTS = MORE ACCURATE. Click as many as you can, then press
+echo   ENTER once you have 4 or more:
+echo     with 5+ points it does a least-squares fit over all of them and drops
+echo     the one bad click by itself. With exactly 4 the error is always zero
+echo     by construction, so extra points are the only real error check.
 echo.
-echo   No "16.5 m line corner hunting": click the corner of the box that
-echo   you can actually see, zoom in with the wheel.
+echo     1) halfway line x TOP touchline (far side)      halfway_top
+echo     2) halfway line x BOTTOM touchline (near side)  halfway_bottom
+echo     3) RIGHT penalty area: far-side corner, top     pa_right_top
+echo     4) RIGHT penalty area: far-side corner, bottom  pa_right_bottom
+echo     5) RIGHT penalty spot (the painted dot)         penalty_spot_right
+echo     6) RIGHT goal: base of the FAR post             goal_right_top
+echo     7) RIGHT goal: base of the NEAR post            goal_right_bottom
+echo.
+echo   Skipping is fine - click 5 or 6 of them and hit ENTER. Every point above
+echo   is a painted line crossing, a painted dot or a post base. Zoom in first.
 echo.
 echo   Mouse: left click = pick, WHEEL = zoom, RIGHT-DRAG = pan,
-echo          u = undo last, r = reset, Esc = cancel
+echo          u = undo last, r = reset, ENTER = done (4+), Esc = cancel
 echo.
 echo   THEN the check window opens, zoomable: red outline / magenta penalty
 echo   box / green halfway line must sit ON the real white lines.

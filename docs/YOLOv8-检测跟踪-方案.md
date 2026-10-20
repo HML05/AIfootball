@@ -205,10 +205,10 @@ python scripts\verify_vision.py
 .venv-vision\Scripts\python.exe scripts\verify_vision.py
 ```
 
-当前实测：**80 项断言全过**（本机系统 Python 3.13 与 `.venv-vision` 都是 80/80）。
+当前实测：**87 项断言全过**（本机系统 Python 3.13 与 `.venv-vision` 都是 87/87）。
 没有 cv2 的环境（CI 的 static job 只装 `requirements.txt`，实测用一个裸 Python 3.12 跑过）会把
 「中文路径改道 2 项 + probe_video 尺寸/帧数 + iter_frames 跳帧 + 带框视频 + meta 透传」这 7 项
-合并成 1 条跳过，退出码仍 0。模块这 80 项留本机跑；**接口面的 39 项
+合并成 1 条跳过，退出码仍 0。模块这 87 项留本机跑；**接口面的 39 项
 （`verify_vision_web.py`）已进 CI 的 runtime job**，见 §8.6。
 
 ---
@@ -324,7 +324,7 @@ torch，也不该让单 worker 被一次推理卡住）。
 
 ```powershell
 python scripts\verify_vision_web.py                     # 39 项接口断言（只需一个跑着的服务）
-.venv-vision\Scripts\python.exe scripts\verify_vision.py # 80 项模块断言
+.venv-vision\Scripts\python.exe scripts\verify_vision.py # 87 项模块断言
 python scripts\verify_vision.py                          # 没有 cv2 的环境：60 通过 + 1 跳过，退出码仍 0
 ```
 
@@ -439,27 +439,42 @@ python scripts\verify_vision.py                          # 没有 cv2 的环境�
 `motion_stats()` 里那条 12 m/s 的闸门不是保守，是必须的：**当前 ID 碎裂 5.72，
 一次误配就能让某个 ID 瞬移半场**，若直接累加，单帧就能给一名球员刷出几百米。
 
-### 10.2 `scripts/vision_calibrate.py`（点 4 下就标定完）
+### 10.2 `scripts/vision_calibrate.py`（点 4 下能标，点 5~7 下才准）
 
 ```powershell
-# 弹窗点选：按提示顺序点 4 个锚点（默认 4 个角球点）
-.venv-vision\Scripts\python.exe scripts\vision_calibrate.py `
-  --video data\vision\videos\v2.mp4 --frame 300 --out data\vision\calib\v2.json
+# 双击启动（纯 ASCII 的 launcher，内部调下面这条命令）
+scripts\vision_calibrate.bat
 
-# 已知像素坐标时不用点：直接给 --points "u,v;u,v;u,v;u,v"
+# 等价的手写命令：弹窗按提示顺序点锚点，点多点少都行，点够 4 个按 Enter 收工
+.venv-vision\Scripts\python.exe scripts\vision_calibrate.py `
+  --video data\vision\videos\v2.mp4 --frame 0 --out data\vision\calib\v2.json
+
+# 已知像素坐标时不用点（5 个以上会走最小二乘）
 .venv-vision\Scripts\python.exe scripts\vision_calibrate.py --image shot.jpg `
   --points "12,540;1908,520;1912,1032;8,1044" --anchors corner_tl,corner_tr,corner_br,corner_bl `
   --out data\vision\calib\shot.json
 ```
 
-- 锚点可选：4 个角球点、两个罚球点、中圈中心、中线两端（`corner_* / penalty_spot_* / center / halfway_*`）；
-- 存盘内容：单应矩阵 + 4 组对应点 + 场地尺寸 + **重投影误差**；误差 > 0.5 米会打印警告；
-- 顺手输出一张 `*.preview.jpg`（标了锚点与对应米制坐标），回头能核对标错没有。
+- 锚点可选：4 个角球点、两个罚球点、中圈中心、中线两端、两个禁区的角点与球门柱
+  （`corner_* / penalty_spot_* / center / halfway_* / pa_* / goal_*`）；
+- 存盘内容：单应矩阵 + 参与拟合的对应点 + 场地尺寸 + **逐点残差**；
+- 顺手输出 `*.preview.jpg`（标了锚点）与 `*.grid.jpg`（5 米网格 + 外框/中线/禁区/小禁区/中圈 反投影）。
 
-**4 点拟合的残差恒等于 0**（8 个方程解 8 个未知数），所以「重投影误差 0.000 米」不能当质量
-证明。真正的验收看三样：① 4 点铺开 ≥25% 画面对角线；② 每个点附近的「每像素米数」比值 <8×；
-③ 生成的 `*.grid.jpg` 里橙色 5 米网格压在真实白线上。任何一项不合格，脚本退出码 2 并把结果
-写成 `*.rejected.json`，不占用正式文件名。
+**为什么「多点几个」不是心理安慰**：4 组点正好 8 个方程解 8 个未知数，残差**数学上恒等于 0**——
+点得再歪也报 0.000 米，所以它根本不能当质量证明。给 5 个以上时：
+
+1. `pitch.homography_from_points()` 走**最小二乘**，全部点一起参与（旧代码有个真 bug：只取前 4 个，
+   多点的点在 `pairs[:4]` 里被默默丢掉，等于白点）；
+2. `_choose_points()` 计算**逐点残差**，某点投回去偏出 2 米（`OUTLIER_M`）就逐个剔掉再重解；
+3. 同时穷举 4 点组合作兜底（两个以上点同时歪时，最小二乘会被一起拖偏，组合法更稳），
+   两套方案取「白漆命中率高」的那个。
+
+所以交互口径是：**能点几个点几个，点够 4 个按 Enter 就收工**；某个锚点在这段素材里点不着
+（例如近端边线被场边广告牌挡住）也不影响，少点一个就行。
+
+真正的验收看四样：① 铺开 ≥25% 画面对角线；② 每像素米数比值 <8×；③ 投影线压在白漆上的
+比例 >65% 且高出「整体平移 50 px」对照组 1.6 倍、且**每条线** >50%；④ 5 点以上时逐点残差
+都 ≤2 米。任何一项不合格，脚本退出码 2 并把结果写成 `*.rejected.json`，不占用正式文件名。
 
 **权限坑（踩过一次，记下来）**：`.venv-vision` 整个目录树如果带上「Low Mandatory Level」标记，
 Windows 会用**低完整性**进程启动这个解释器，它写不了中等完整性文件，典型报错是

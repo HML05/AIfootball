@@ -98,9 +98,13 @@ class Calibration:
 
 
 def homography_from_points(pairs: Sequence[tuple[tuple[float, float], tuple[float, float]]]) -> np.ndarray:
-    """4 组 (像素, 米) 对应点 → 3×3 单应矩阵（像素 → 米）。
+    """(像素, 米) 对应点 → 3×3 单应矩阵（像素 → 米）。
 
-    用的是标准 DLT：把 h33 固定成 1，解 8 个未知数的 8×8 线性方程组。
+    用的是标准 DLT：把 h33 固定成 1，解 8 个未知数。**4 点正好 8 个方程，残差恒为 0**
+    ——也就是说 4 点拟合「解出来了」根本不能当质量证据。给的点多于 4 组时这里走最小二乘，
+    把所有点一起用上（残差不再恒为 0，才有多余观测可言），配合 homography_residuals()
+    就能看出哪个点被点歪了。
+
     点少于 4 组直接报错——3 组只能解仿射，透视方向会错，那样远端球员的位置会显著偏。
 
     **坐标必须先归一化再解**：像素是几百上千的量级、米是个位到百位，直接丢进
@@ -111,8 +115,9 @@ def homography_from_points(pairs: Sequence[tuple[tuple[float, float], tuple[floa
     if len(pairs) < 4:
         raise ValueError(f"标定至少要 4 组对应点，收到 {len(pairs)} 组")
 
-    src = np.array([p[0] for p in pairs[:4]], dtype=float)
-    dst = np.array([p[1] for p in pairs[:4]], dtype=float)
+    n = len(pairs)
+    src = np.array([p[0] for p in pairs], dtype=float)
+    dst = np.array([p[1] for p in pairs], dtype=float)
 
     def _normalizer(pts: np.ndarray) -> np.ndarray:
         center = pts.mean(axis=0)
@@ -125,8 +130,8 @@ def homography_from_points(pairs: Sequence[tuple[tuple[float, float], tuple[floa
 
     t_src = _normalizer(src)
     t_dst = _normalizer(dst)
-    src_h = (t_src @ np.column_stack([src, np.ones(4)]).T).T
-    dst_h = (t_dst @ np.column_stack([dst, np.ones(4)]).T).T
+    src_h = (t_src @ np.column_stack([src, np.ones(n)]).T).T
+    dst_h = (t_dst @ np.column_stack([dst, np.ones(n)]).T).T
     src_n = src_h[:, :2] / src_h[:, 2:3]
     dst_n = dst_h[:, :2] / dst_h[:, 2:3]
 
@@ -151,6 +156,21 @@ def homography_from_points(pairs: Sequence[tuple[tuple[float, float], tuple[floa
     if not np.all(np.isfinite(h)):
         raise ValueError("标定点共线或退化，解不出单应矩阵；换几个分散在画面四角的点")
     return h
+
+
+def homography_residuals(
+    h: np.ndarray,
+    pairs: Sequence[tuple[tuple[float, float], tuple[float, float]]],
+) -> list[float]:
+    """每个标定点投回去落在米制目标点上的偏差（米），按传入顺序。
+
+    点多于 4 组时才有意义：这时残差不再是数学上恒等于 0 的，偏大的那个就是点歪的点。
+    """
+    out: list[float] = []
+    for (u, v), (x, y) in pairs:
+        px, py = pixel_to_pitch(h, (u, v))
+        out.append(math.hypot(px - x, py - y))
+    return out
 
 
 def pixel_to_pitch(h: np.ndarray, uv: tuple[float, float]) -> tuple[float, float]:

@@ -434,6 +434,59 @@ def check_calibration_metric() -> None:
     check("对照组不会高过正确解", hit >= ctrl, f"hit {hit * 100:.0f}% vs ctrl {ctrl * 100:.0f}%")
 
 
+def check_multipoint() -> None:
+    print("[10] 多点标定（多于 4 个点：最小二乘 + 真残差）")
+    import numpy as np
+
+    from src.vision import pitch as vpitch
+
+    # 已知单应 → 反推出 6 个「像素点」，再用它们拟合回去：应当还原到 1e-6 米以内。
+    base_px = [(200.0, 150.0), (1750.0, 220.0), (1800.0, 1000.0), (120.0, 900.0), (960.0, 130.0), (1000.0, 1010.0)]
+    base_m = [vpitch.ANCHORS[n] for n in ("corner_tl", "corner_tr", "corner_br", "corner_bl", "halfway_top", "halfway_bottom")]
+    h_true = vpitch.homography_from_points(list(zip(base_px, base_m)))
+
+    # 用 h_true 的逆生成一批严格落在该单应上的点（任意米制坐标 → 像素）
+    h_inv = np.linalg.inv(h_true)
+    targets = [(10.0, 10.0), (52.5, 0.0), (52.5, 68.0), (88.5, 13.84), (94.0, 34.0), (105.0, 54.16)]
+    pairs = []
+    for x, y in targets:
+        q = h_inv @ np.array([x, y, 1.0])
+        pairs.append(((float(q[0] / q[2]), float(q[1] / q[2])), (x, y)))
+
+    h6 = vpitch.homography_from_points(pairs)
+    res6 = vpitch.homography_residuals(h6, pairs)
+    check("6 点拟合还原已知单应（残差 < 1e-6 米）", max(res6) < 1e-6, f"{max(res6):.2e} 米")
+    check("残差数量 = 输入点数（多出来的点没被偷偷丢掉）", len(res6) == len(pairs), f"{len(res6)} 个")
+
+    # 把其中一个点挪 40 像素：它自己的残差应当明显变大，其余点仍很小
+    px_bad = list(pairs)
+    (u, v), m = px_bad[3]
+    px_bad[3] = ((u + 40.0, v + 40.0), m)
+    h_bad = vpitch.homography_from_points(px_bad)
+    res_bad = vpitch.homography_residuals(h_bad, px_bad)
+    worst_idx = res_bad.index(max(res_bad))
+    others = [r for i, r in enumerate(res_bad) if i != worst_idx]
+    check("点歪的那个点残差最大", worst_idx == 3, f"第 {worst_idx + 1} 个，{res_bad[worst_idx]:.1f} 米")
+    check("点歪的点残差 > 2 米（能被剔离群点抓到）", res_bad[worst_idx] > 2.0, f"{res_bad[worst_idx]:.1f} 米")
+    check("其余点仍贴合（最小二乘没被一个坏点带跑）", max(others) < 2.0, f"最大 {max(others):.2f} 米")
+
+    # 全部点都参与拟合的证据：加入一个偏掉的点后，原来 4 个「精确点」的残差不再为 0
+    pairs5 = pairs[:5]
+    (u5, v5), m5 = pairs5[4]
+    pairs5[4] = ((u5 + 60.0, v5 + 60.0), m5)
+    h5 = vpitch.homography_from_points(pairs5)
+    res5 = vpitch.homography_residuals(h5, pairs5)
+    check("多余的点真的参与了拟合（4 个好点残差被拉起来）", max(res5[:4]) > 0.05, f"最大 {max(res5[:4]):.2f} 米")
+
+    # 少于 4 个点仍然要报错
+    try:
+        vpitch.homography_from_points(pairs[:3])
+        raised = False
+    except ValueError:
+        raised = True
+    check("3 个点仍然报错（不给解仿射的机会）", raised)
+
+
 def main() -> int:
     print(f"视觉模块自检（解释器：{sys.version.split()[0]}）")
     check_config()
@@ -445,6 +498,7 @@ def main() -> int:
     check_pitch()
     check_teams()
     check_calibration_metric()
+    check_multipoint()
     print(f"\n合计：{PASSED} 通过 / {FAILED} 失败 / {SKIPPED} 跳过")
     return 1 if FAILED else 0
 

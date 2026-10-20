@@ -53,6 +53,10 @@ MIN_HIT_LIFT = 1.6
 # 单条线的最低命中率。总命中率会被「点对的那条线」拉高（实测：中线 100% + 小禁区 28%
 # 合计还是 61%），所以每条线单独判——28% 说明小禁区那个框根本没扣在真实小禁区上。
 MIN_LINE_EACH = 0.50
+# 点多于 4 个时才有意义：把每个标定点投回米制坐标，偏出去这么多米就算「点歪了」。
+# 4 个点时残差恒为 0（8 方程 8 未知数），这个阈值根本测不出东西——这正是「多点几个」
+# 的实际价值：多出来的观测第一次让残差变成真的残差。
+OUTLIER_M = 2.0
 
 
 def _load_cv2():
@@ -166,7 +170,11 @@ class _View:
 
 
 def _click_points(frame, names: list[str]) -> list[tuple[float, float]]:
-    """弹窗点选，Esc 取消。滚轮放大、右键拖动平移、u 撤销、r 重来。"""
+    """弹窗点选，Esc 取消。滚轮放大、右键拖动平移、u 撤销、r 重来、Enter 提前结束。
+
+    Enter 的意思是「就点这么多」：够 4 个点就收工。原因是这个机位里有些锚点
+    （近端边线被广告牌挡住那侧）根本点不着，不能因为某一个点放弃整组标定。
+    """
     cv2 = _load_cv2()
     _dpi_aware()
     clicked: list[tuple[float, float]] = []
@@ -209,6 +217,7 @@ def _click_points(frame, names: list[str]) -> list[tuple[float, float]]:
     cv2.setMouseCallback(win, on_mouse)
     print("[i] 点选窗口已打开（标题 calibrate…）。没看到就把其他窗口最小化，或看任务栏。")
     print(f"[i] 按 1→{total} 的顺序点：鼠标滚轮放大、按住右键拖动画面、u 撤销上一点、r 重来、Esc 取消。")
+    print("[i] 点够 4 个以后按 Enter 就收工（点越多越准：多于 4 个会做最小二乘 + 剔除点歪的那个）。")
     while True:
         patch, x0, y0 = view.crop(frame)
         mapping["x0"], mapping["y0"] = x0, y0
@@ -222,13 +231,20 @@ def _click_points(frame, names: list[str]) -> list[tuple[float, float]]:
             cv2.putText(canvas, f"{i + 1} {names[i]}", (px + 12, py - 12),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
         todo = names[len(clicked)] if len(clicked) < total else "done"
-        cv2.putText(canvas, f"next ({min(len(clicked) + 1, total)}/{total}): {todo}   zoom x{view.zoom:.2f}",
+        hint = f"next ({min(len(clicked) + 1, total)}/{total}): {todo}"
+        if len(clicked) >= 4:
+            hint += "   [Enter = 就用这 %d 个点]" % len(clicked)
+        cv2.putText(canvas, f"{hint}   zoom x{view.zoom:.2f}",
                     (16, 34), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 255), 2)
         cv2.imshow(win, canvas)
         key = cv2.waitKey(20) & 0xFF
         if key == 27:
             cv2.destroyAllWindows()
             raise SystemExit("[取消] 已退出标定")
+        if key in (10, 13) and len(clicked) >= 4:
+            print(f"[i] 提前结束：用这 {len(clicked)} 个点（剩余锚点当没用上）")
+            cv2.destroyAllWindows()
+            return clicked
         if key in (ord("u"), ord("U")) and clicked:
             print(f"[i] 撤销：{names[len(clicked) - 1]}")
             clicked.pop()
@@ -242,15 +258,6 @@ def _click_points(frame, names: list[str]) -> list[tuple[float, float]]:
         if len(clicked) >= total:
             cv2.destroyAllWindows()
             return clicked
-
-
-def _reproject_error(h: np.ndarray, pairs) -> tuple[float, list[float]]:
-    """每个标定点投回去，看差多少米。4 点拟合时恒为 0，只能当「算出来了」的证据。"""
-    errs = []
-    for (u, v), (x, y) in pairs:
-        px, py = pitch.pixel_to_pitch(h, (u, v))
-        errs.append(math.hypot(px - x, py - y))
-    return max(errs), errs
 
 
 def _imwrite(path: Path, img) -> bool:
@@ -526,11 +533,15 @@ def _confirm(frame, cal, names: list[str], hit: float, ctrl: float):
 
 
 def _evaluate(frame, px_points, anchors, names):
-    """拟合 + 全套自检，返回一个 dict（main 保存时要用）。"""
-    n_fit = min(4, len(px_points), len(anchors))
-    fit_px = px_points[:n_fit]
-    fit_anchor = anchors[:n_fit]
-    holdout = list(zip(px_points[n_fit:], anchors[n_fit:]))
+    """拟合 + 全套自检，返回一个 dict（main 保存时要用）。
+
+    点多于 4 个时走最小二乘（`pitch.homography_from_points` 现在用全部点，不再偷偷
+    只取前 4 个），残差才不再是恒等于 0 的东西——这是「多点几个」真正的收益。
+    """
+    order, dropped = _choose_points(frame, px_points, anchors, names)
+    fit_px = [px_points[i] for i in order]
+    fit_anchor = [anchors[i] for i in order]
+    fit_names = [names[i] for i in order]
     cal = pitch.build_calibration(list(zip(fit_px, fit_anchor)))
 
     spread = _spread(fit_px, frame.shape)
@@ -538,9 +549,12 @@ def _evaluate(frame, px_points, anchors, names):
     scale_ratio = max(scales) / max(min(scales), 1e-9)
     hit, ctrl, hit_detail = _line_hit_ratio(frame, cal.homography)
 
-    worst, _ = _reproject_error(cal.homography, cal.pairs)
-    print(f"     内点误差 {worst:.3f} 米（4 点拟合恒为 0，不能当质量证明）")
-    print(f"     4 点铺开程度 {spread * 100:.0f}% 画面对角线（建议 >{MIN_SPREAD * 100:.0f}%）")
+    resid = pitch.homography_residuals(cal.homography, list(zip(fit_px, fit_anchor)))
+    worst = max(resid) if resid else 0.0
+    print(f"     用 {len(order)} 个点拟合，逐点残差：")
+    for nm, r in zip(fit_names, resid):
+        print(f"        {nm:18s} {r:6.2f} 米")
+    print(f"     铺开程度 {spread * 100:.0f}% 画面对角线（建议 >{MIN_SPREAD * 100:.0f}%）")
     print(f"     每像素米数 {min(scales):.4f} ~ {max(scales):.4f}（比值 {scale_ratio:.1f}×，建议 <{MAX_SCALE_RATIO:.0f}×）")
     print(f"     投影线压在白漆上的比例 {hit * 100:.0f}%（对照组 {ctrl * 100:.0f}%，"
           f"要求 >{MIN_LINE_HIT * 100:.0f}% 且高出对照组 {MIN_HIT_LIFT:.1f} 倍）")
@@ -548,9 +562,22 @@ def _evaluate(frame, px_points, anchors, names):
         print(f"        {name:10s} {r * 100:4.0f}%")
 
     problems: list[str] = []
+    if len(order) > 4:
+        print(f"     残差最大 {worst:.2f} 米（多点最小二乘才有真残差；4 个点时恒为 0）")
+        if worst > OUTLIER_M:
+            problems.append(
+                f"还有个点投回去差 {worst:.1f} 米（>{OUTLIER_M:.0f} 米）——那一处特征多半找错了，"
+                "按验收窗里的数字键重设它"
+            )
+    else:
+        if dropped:
+            print(f"     [!] 剔掉 {len(dropped)} 个点后只剩 4 个：残差又回到恒 0，等于没有冗余证据了。"
+                  "再补 1~2 个点（或者改掉刚才被剔的那个）")
+        else:
+            print("     [!] 只有 4 个点：残差恒为 0，精度证据只有上面那条白漆命中率。多给 1 个点更硬")
     if spread < MIN_SPREAD:
         problems.append(
-            f"4 个点只铺开了画面的 {spread * 100:.0f}%，太集中——解出来的球场尺度基本是猜的。"
+            f"点只铺开了画面的 {spread * 100:.0f}%，太集中——解出来的球场尺度基本是猜的。"
             "请点在画面四角附近（中圈两端、左右禁区角）"
         )
     if scale_ratio > MAX_SCALE_RATIO:
@@ -568,19 +595,8 @@ def _evaluate(frame, px_points, anchors, names):
             "这几条线明显没压在真实场地线上：" + "、".join(f"{n} {r * 100:.0f}%" for n, r in weak)
             + f"（要求每条 >{MIN_LINE_EACH * 100:.0f}%）——对应的点重新找一下"
         )
-    if holdout:
-        worst_hold = 0.0
-        for (u, v), (x, y) in holdout:
-            px, py = pitch.pixel_to_pitch(cal.homography, (u, v))
-            err = math.hypot(px - x, py - y)
-            worst_hold = max(worst_hold, err)
-            print(f"     留出点 ({x:.1f},{y:.1f})m 误差 {err:.2f} 米")
-        if worst_hold > 3.0:
-            problems.append(f"留出点误差 {worst_hold:.1f} 米偏大，标定不可信（>3 米）")
-    else:
-        print("     [!] 没给留出点：精度证据只有上面那条白漆命中率。多给 1 个锚点会更硬")
-    return dict(cal=cal, fit_px=fit_px, fit_anchor=fit_anchor, problems=problems,
-                hit=hit, ctrl=ctrl)
+    return dict(cal=cal, fit_px=fit_px, fit_anchor=fit_anchor, names_used=fit_names,
+                problems=problems, hit=hit, ctrl=ctrl, dropped=dropped)
 
 
 def _usable(h: np.ndarray, points) -> bool:
@@ -595,47 +611,75 @@ def _usable(h: np.ndarray, points) -> bool:
     return True
 
 
-def _best_subset(frame, px_points, anchors, names):
-    """点多于 4 个时，挑「投出来的场地线最贴白漆」的那 4 个。
+def _choose_points(frame, px_points, anchors, names):
+    """点都收齐了，决定用哪些点拟合、哪些点要淘汰。
 
-    为什么需要这个：4 点拟合的残差恒为 0，人眼在一张 1080p 全景里找「禁区 16.5 米线
-    与边线的交点」本来就容易点到边线上（我给的坐标也错过）。多点两个当保险，让算法
-    用白漆命中率自己淘汰点歪的那几个——顺便剩下的点变成真正的「留出点」，能给精度证据。
+    两个方案，取白漆命中率高的那个：
+
+    - A「全部点最小二乘 + 逐个剔离群点」：点多时理论上最准（多余观测把噪声摊平）。
+      每轮把「投回去偏出去 >OUTLIER_M 米」最狠的那个点剔掉再重解 —— 这就是多点标定
+      真正的价值：4 个点时残差恒为 0，多出来那几个点才让残差变成真的残差。
+    - B「4 点组合穷举」：两个以上的点同时点歪时，A 会被一起拖偏，这时 B 更稳。
+
+    为什么非要这套：人眼在 1080p 全景里找「16.5 米线与边线的交点」本来就容易点在线的
+    中段（我自己给的坐标也错过两次）。容错不该指望手稳，要让算法自己挑。
     """
     n = min(len(px_points), len(anchors))
     px_points, anchors = px_points[:n], anchors[:n]
     if n <= 4:
         return list(range(n)), []
 
-    best = None
-    for combo in itertools.combinations(range(n), 4):
+    def score(idx):
         try:
-            cal = pitch.build_calibration([(px_points[i], anchors[i]) for i in combo])
+            cal = pitch.build_calibration([(px_points[i], anchors[i]) for i in idx])
         except (ValueError, ZeroDivisionError):
-            continue  # 3 点共线之类，解不出单应
-        if not _usable(cal.homography, [px_points[i] for i in combo]):
-            continue  # 单应在这几个点上就发散（近似退化），直接扔
+            return None  # 3 点共线之类，解不出单应
+        if not _usable(cal.homography, [px_points[i] for i in idx]):
+            return None  # 单应在这几个点上就发散（近似退化）
         hit, ctrl, detail = _line_hit_ratio(frame, cal.homography)
         worst_line = min((r for _, r in detail), default=0.0)
-        score = hit + 0.25 * worst_line  # 主看总命中率，辅以「最差那条线」
-        if best is None or score > best["score"]:
-            best = dict(score=score, combo=combo, hit=hit, ctrl=ctrl, worst=worst_line)
+        return hit + 0.25 * worst_line, hit, ctrl, worst_line, cal
 
-    if best is None:
+    # A. 全部点最小二乘，逐个剔离群点
+    keep = list(range(n))
+    best_all = None
+    while True:
+        sc = score(keep)
+        if sc is None:
+            break
+        s, hit, ctrl, worst_line, cal = sc
+        resid = pitch.homography_residuals(cal.homography, [(px_points[i], anchors[i]) for i in keep])
+        if best_all is None or s > best_all["score"]:
+            best_all = dict(score=s, hit=hit, ctrl=ctrl, worst=worst_line, keep=list(keep))
+        if len(keep) <= 4 or max(resid) <= OUTLIER_M:
+            break
+        keep.pop(resid.index(max(resid)))
+
+    # B. 4 点组合穷举（兜底）
+    best4 = None
+    for combo in itertools.combinations(range(n), 4):
+        sc = score(combo)
+        if sc is None:
+            continue
+        s, hit, ctrl, worst_line, _cal = sc
+        if best4 is None or s > best4["score"]:
+            best4 = dict(score=s, hit=hit, ctrl=ctrl, worst=worst_line, keep=list(combo))
+
+    cands = [c for c in (best_all, best4) if c]
+    if not cands:
         raise SystemExit("[错误] 这些点里没有一组能解出单应（3 点共线？）")
-
-    combo = best["combo"]
-    rest = [i for i in range(n) if i not in combo]
-    print(f"     [i] 自动挑出这 4 个点（白漆命中 {best['hit'] * 100:.0f}%，最差一条线 {best['worst'] * 100:.0f}%）：")
-    for i in combo:
+    best = max(cands, key=lambda c: c["score"])
+    order = best["keep"]
+    dropped = [i for i in range(n) if i not in order]
+    print(f"     [i] 用 {len(order)}/{n} 个点拟合（白漆命中 {best['hit'] * 100:.0f}%，"
+          f"最差一条线 {best['worst'] * 100:.0f}%）")
+    for i in order:
         u, v = px_points[i]
-        print(f"        {names[i]:18s} 像素 ({u:.0f},{v:.0f})")
-    if rest:
-        print(f"     [i] 剩下 {len(rest)} 个点当留出点（只做校验，不参与拟合）")
-        for i in rest:
-            u, v = px_points[i]
-            print(f"        {names[i]:18s} 像素 ({u:.0f},{v:.0f})")
-    return combo, rest
+        print(f"        + {names[i]:18s} 像素 ({u:.0f},{v:.0f})")
+    for i in dropped:
+        u, v = px_points[i]
+        print(f"        - {names[i]:18s} 像素 ({u:.0f},{v:.0f})  ← 没让它参与拟合")
+    return order, dropped
 
 
 def main() -> int:
@@ -645,7 +689,7 @@ def main() -> int:
     src.add_argument("--image", default="", help="直接给一张截图")
     ap.add_argument("--frame", type=int, default=0, help="--video 时用第几帧（默认 0）")
     ap.add_argument("--anchors", default="corner_tl,corner_tr,corner_br,corner_bl",
-                    help=f"按点击顺序给出锚点名（第 5 个起只做校验），可选：{','.join(pitch.ANCHORS)}")
+                    help=f"按点击顺序给出锚点名；给 5 个以上就走最小二乘 + 自动剔离群点，可选：{','.join(pitch.ANCHORS)}")
     ap.add_argument("--points", default="", help="不给就弹窗点选；给了就直接用：'u,v;u,v;u,v;u,v'")
     ap.add_argument("--out", default="", help="标定 JSON 输出路径（默认 data/vision/calib/<名字>.json）")
     ap.add_argument("--no-grid", action="store_true", help="不生成栅格叠图（默认生成）")
@@ -679,17 +723,11 @@ def main() -> int:
             if len(px_points) < 4:
                 raise SystemExit(f"[错误] 只给了 {len(px_points)} 个像素点，至少要 4 个")
         n_use = min(len(px_points), len(anchors))
-        combo, rest = _best_subset(frame, px_points, anchors, names)
-        order = list(combo) + list(rest)
-        res = _evaluate(
-            frame,
-            [px_points[i] for i in order],
-            [anchors[i] for i in order],
-            [names[i] for i in order],
-        )
+        name_use = names[:n_use]
+        res = _evaluate(frame, px_points[:n_use], anchors[:n_use], name_use)
         if args.points:
             break
-        key, redo = _confirm(frame, res["cal"], [names[i] for i in list(combo) + list(rest)], res["hit"], res["ctrl"])
+        key, redo = _confirm(frame, res["cal"], name_use, res["hit"], res["ctrl"])
         if key == "y":
             break
         if key == "redo" and redo is not None:
@@ -731,9 +769,9 @@ def main() -> int:
     print(f"[ok] 标定写入 {written}")
 
     preview = frame.copy()
-    for i, ((u, v), (x, y)) in enumerate(zip(fit_px, fit_anchor), 1):
+    for (u, v), (x, y), nm in zip(fit_px, fit_anchor, res["names_used"]):
         cv2.circle(preview, (int(u), int(v)), 9, (0, 255, 0), 2)
-        cv2.putText(preview, f"{i}:{names[i - 1]}", (int(u) + 14, int(v) - 14),
+        cv2.putText(preview, f"{nm}", (int(u) + 14, int(v) - 14),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
     prev_path = written.with_suffix(".preview.jpg")
     _imwrite(prev_path, preview)

@@ -205,10 +205,10 @@ python scripts\verify_vision.py
 .venv-vision\Scripts\python.exe scripts\verify_vision.py
 ```
 
-当前实测：**76 项断言全过**（本机系统 Python 3.13 与 `.venv-vision` 都是 76/76）。
+当前实测：**80 项断言全过**（本机系统 Python 3.13 与 `.venv-vision` 都是 80/80）。
 没有 cv2 的环境（CI 的 static job 只装 `requirements.txt`，实测用一个裸 Python 3.12 跑过）会把
 「中文路径改道 2 项 + probe_video 尺寸/帧数 + iter_frames 跳帧 + 带框视频 + meta 透传」这 7 项
-合并成 1 条跳过，退出码仍 0。模块这 76 项留本机跑；**接口面的 39 项
+合并成 1 条跳过，退出码仍 0。模块这 80 项留本机跑；**接口面的 39 项
 （`verify_vision_web.py`）已进 CI 的 runtime job**，见 §8.6。
 
 ---
@@ -324,7 +324,7 @@ torch，也不该让单 worker 被一次推理卡住）。
 
 ```powershell
 python scripts\verify_vision_web.py                     # 39 项接口断言（只需一个跑着的服务）
-.venv-vision\Scripts\python.exe scripts\verify_vision.py # 76 项模块断言
+.venv-vision\Scripts\python.exe scripts\verify_vision.py # 80 项模块断言
 python scripts\verify_vision.py                          # 没有 cv2 的环境：60 通过 + 1 跳过，退出码仍 0
 ```
 

@@ -15,7 +15,7 @@ rem optional 2nd argument = anchor list. If one anchor is unreachable in this fr
 rem swap the list, e.g.
 rem   scripts\vision_calibrate.bat 0 halfway_top,halfway_bottom,penalty_spot_right,pa_right_goal_top
 set "ANCHORS=%~2"
-if "%ANCHORS%"=="" set "ANCHORS=halfway_top,halfway_bottom,pa_right_top,pa_right_goal_top"
+if "%ANCHORS%"=="" set "ANCHORS=halfway_top,halfway_bottom,penalty_spot_right,goal_right_top,goal_right_bottom"
 set "PY=.venv-vision\Scripts\python.exe"
 set "VID=data\vision\videos\v2.mp4"
 set "OUT=data\vision\calib\v2.json"
@@ -26,15 +26,16 @@ echo   Pitch calibration - frame %FRAME%
 echo.
 echo   Anchors in click order: %ANCHORS%
 echo.
-echo   Default set:
-echo     1) halfway line x TOP touchline             halfway_top
-echo     2) halfway line x BOTTOM touchline          halfway_bottom
-echo     3) right box 16.5m line x TOP touchline     pa_right_top
-echo     4) right box 16.5m line x GOAL LINE (the corner right next to
-echo        the goal, far side)                       pa_right_goal_top
+echo   Default set (5 clicks; the program keeps the best 4 and validates with
+echo   the rest, so one sloppy click does not ruin it):
+echo     1) halfway line x TOP touchline (far side)      halfway_top
+echo     2) halfway line x BOTTOM touchline (near side)  halfway_bottom
+echo     3) RIGHT penalty spot (the painted dot)         penalty_spot_right
+echo     4) RIGHT goal: base of the FAR post              goal_right_top
+echo     5) RIGHT goal: base of the NEAR post             goal_right_bottom
 echo.
-echo   Why not the near-side corner: on this clip the near touchline is
-echo   hidden behind the advertising boards, so that corner is not clickable.
+echo   All five are long lines / painted dots / post bases -- no "16.5 m
+echo   line corner" hunting. Zoom in with the wheel for the spot and posts.
 echo.
 echo   Mouse: left click = pick, WHEEL = zoom, RIGHT-DRAG = pan,
 echo          u = undo last, r = reset, Esc = cancel

@@ -381,6 +381,59 @@ def check_teams() -> None:
     check("退化框不会算出负高度", vteams.torso_box((0, 0, 10, 2))[3] > vteams.torso_box((0, 0, 10, 2))[1])
 
 
+def check_calibration_metric() -> None:
+    print("[9] 标定判据（合成图，验证「白漆命中率」本身可信）")
+    if not has_module("cv2"):
+        skip("标定判据整体", "没装 cv2")
+        return
+    import cv2
+    import numpy as np
+
+    from scripts import vision_calibrate as vcal
+    from src.vision import pitch as vpitch
+
+    # 造一张「已知单应」的假球场：绿底 + 白线，再让判据给它打分。
+    # 判据可信的标志是：正确单应接近满分，整体平移 50 px 立刻掉到接近 0。
+    width, height = 1920, 1080
+    pair_px = [(200.0, 150.0), (1750.0, 220.0), (1800.0, 1000.0), (120.0, 900.0)]
+    pair_m = [vpitch.ANCHORS[n] for n in ("corner_tl", "corner_tr", "corner_br", "corner_bl")]
+    h_true = vpitch.homography_from_points(list(zip(pair_px, pair_m)))
+    h_inv = np.linalg.inv(h_true)
+
+    img = np.zeros((height, width, 3), dtype=np.uint8)
+    img[:] = (60, 140, 60)
+
+    def to_px(x, y):
+        q = h_inv @ np.array([x, y, 1.0])
+        return int(q[0] / q[2]), int(q[1] / q[2])
+
+    def seg(x0, y0, x1, y1, n=40):
+        return [(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n) for i in range(n + 1)]
+
+    cy = 34.0
+    polylines = [
+        seg(0, 0, 105, 0) + seg(105, 0, 105, 68) + seg(105, 68, 0, 68) + seg(0, 68, 0, 0),
+        seg(52.5, 0, 52.5, 68),
+        seg(0, cy - 20.16, 16.5, cy - 20.16) + seg(16.5, cy - 20.16, 16.5, cy + 20.16) + seg(16.5, cy + 20.16, 0, cy + 20.16),
+        seg(105, cy - 20.16, 88.5, cy - 20.16) + seg(88.5, cy - 20.16, 88.5, cy + 20.16) + seg(88.5, cy + 20.16, 105, cy + 20.16),
+        seg(0, cy - 9.16, 5.5, cy - 9.16) + seg(5.5, cy - 9.16, 5.5, cy + 9.16) + seg(5.5, cy + 9.16, 0, cy + 9.16),
+        seg(105, cy - 9.16, 99.5, cy - 9.16) + seg(99.5, cy - 9.16, 99.5, cy + 9.16) + seg(99.5, cy + 9.16, 105, cy + 9.16),
+        [(52.5 + 9.15 * np.cos(2 * np.pi * i / 120), cy + 9.15 * np.sin(2 * np.pi * i / 120)) for i in range(121)],
+    ]
+    for line in polylines:
+        for i in range(len(line) - 1):
+            cv2.line(img, to_px(*line[i]), to_px(*line[i + 1]), (255, 255, 255), 3, cv2.LINE_AA)
+
+    hit, ctrl, detail = vcal._line_hit_ratio(img, h_true)
+    check("正确单应白漆命中率 ≥ 阈值", hit >= vcal.MIN_LINE_HIT, f"{hit * 100:.0f}%")
+    check("每条场地线都压在白漆上", all(r >= vcal.MIN_LINE_EACH for _, r in detail),
+          "、".join(f"{n} {r * 100:.0f}%" for n, r in detail))
+    shifted = np.roll(img, 50, axis=1)
+    hit2, _, _ = vcal._line_hit_ratio(shifted, h_true)
+    check("整体平移 50 px 后命中率崩塌（判据有分辨力）", hit - hit2 > 0.5, f"{hit2 * 100:.0f}%")
+    check("对照组不会高过正确解", hit >= ctrl, f"hit {hit * 100:.0f}% vs ctrl {ctrl * 100:.0f}%")
+
+
 def main() -> int:
     print(f"视觉模块自检（解释器：{sys.version.split()[0]}）")
     check_config()
@@ -391,6 +444,7 @@ def main() -> int:
     check_fetch()
     check_pitch()
     check_teams()
+    check_calibration_metric()
     print(f"\n合计：{PASSED} 通过 / {FAILED} 失败 / {SKIPPED} 跳过")
     return 1 if FAILED else 0
 

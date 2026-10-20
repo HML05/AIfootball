@@ -12,7 +12,7 @@
 > **第二个模块（毕设题目）：基于 YOLOv8 的足球视频球员检测跟踪**，已接进同一个 Web 界面。
 > `src/vision/` 四模块（config / detector / metrics / io）+ 三条命令行（抓链接 / 抽帧 / 预标注 / 可行性冒烟）+ 处理进程（`scripts/run_vision_jobs.py`）
 > + 12 个接口（`/api/vision/*`，其中 2 个媒体流走 `?token=`）+ 顶栏新增的 **`/vision`「视频分析」页**（原视频上叠框、ID 与轨迹，指标与逐条判定），
-> 视觉侧 76 项 + 接口侧 39 项自检。已在公开业余比赛片段（30 秒 / 900 帧 / 1280×720）上跑通：
+> 视觉侧 80 项 + 接口侧 39 项自检。已在公开业余比赛片段（30 秒 / 900 帧 / 1280×720）上跑通：
 > 平均 11.3 人/帧、34 帧/秒、ID 碎裂 7.69（单机位业余素材的真实水平，不美化）。
 > 又用 1080p 转播战术机位（60 秒 / 1503 帧）做了参数实验：**球检不到不是阈值问题，是分辨率问题** ——
 > 只把 `imgsz` 从 960 提到 1536，球覆盖率从 0.20% 涨到 20.23%、最长连续段 3 → 91 帧，代价只有速度 -12%。
@@ -192,7 +192,7 @@ cp .env.example .env
 | `scripts/check_llm.py` | 大模型配置体检：脱敏回显 key/base/model、列账号可用模型、发一次真实 ping（`--models` 只列模型不计费） |
 | `scripts/verify_entrypoint.sh` | 容器入口脚本自检 18 项（POSIX sh；本机没装 docker 也能验：把 `/app` 换成临时目录、用桩命令顶替 uvicorn，拿**真数据包**跑五种情况 —— 缺库时下载解包、库已存在不重复下载、地址不可用仍能启动、缺库缺模型给警告不崩、缺检索索引现场重建） |
 | `scripts/verify_install_vps.sh` | 云主机直装脚本自检 56 项（把 apt/git/python3/pip/curl/tar/systemctl 全换成桩命令，跑九个场景：依赖与 venv、pip 走镜像、只在缺主库时下数据包、`.env` 六项安全开关与 `chmod 600`、systemd 单元内容、重复执行幂等、下载失败仍能起、健康检查超时明确失败、非 root 拒绝、`DRY_RUN` 不落盘） |
-| `scripts/verify_vision.py` | 视觉模块自检 76 项（config / metrics / io / detector / 预标注 / 球场标定；没装 cv2 时把 5 项合并成 1 条跳过，退出码仍 0） |
+| `scripts/verify_vision.py` | 视觉模块自检 80 项（config / metrics / io / detector / 预标注 / 球场标定；没装 cv2 时把 5 项合并成 1 条跳过，退出码仍 0） |
 | `scripts/verify_vision_web.py` | 视觉 Web 接口自检 39 项（401 闸门、概览口径、上传的格式/空文件拒绝、排队与重复排队 409、参数越界 400、进度、媒体流 token、取消、删除保护；用 2.7 KB 真 mp4 当样本，不需要 torch） |
 | `scripts/make_data_pack.py` | 生成 / 校验部署数据包（51.8 MB：主库 + 检索索引 + 模型 + 特征 CSV） |
 | `deploy/install_vps.sh` | 云主机一条命令直装（Ubuntu/Debian，不用 Docker）：装依赖 → venv → 拉代码 → 下数据包 → 生成 `.env` → systemd 常驻 → 等 `/health`；幂等、可 `DRY_RUN` |

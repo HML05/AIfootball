@@ -26,6 +26,7 @@
 from __future__ import annotations
 
 import argparse
+import itertools
 import math
 import sys
 from pathlib import Path
@@ -47,11 +48,11 @@ MAX_SCALE_RATIO = 8.0
 # 投影出来的场地线有多少比例落在画面里的白线上。这是唯一不依赖「用户多点一个校验点」
 # 的自动精度指标：点错了整条线会跑到草皮上，命中率立刻掉。同时算一个「整体平移 50 像素」
 # 的对照组——判据看的是两者之差，不是绝对值（绝对值会被广告牌、观众席的白像素抬高）。
-MIN_LINE_HIT = 0.55
+MIN_LINE_HIT = 0.65
 MIN_HIT_LIFT = 1.6
 # 单条线的最低命中率。总命中率会被「点对的那条线」拉高（实测：中线 100% + 小禁区 28%
 # 合计还是 61%），所以每条线单独判——28% 说明小禁区那个框根本没扣在真实小禁区上。
-MIN_LINE_EACH = 0.45
+MIN_LINE_EACH = 0.50
 
 
 def _load_cv2():
@@ -529,6 +530,61 @@ def _evaluate(frame, px_points, anchors, names):
                 hit=hit, ctrl=ctrl)
 
 
+def _usable(h: np.ndarray, points) -> bool:
+    """这组点配上这个单应，投影是不是有定义（不发散 / 不撞奇点）。"""
+    for p in points:
+        try:
+            x, y = pitch.pixel_to_pitch(h, p)
+        except (ZeroDivisionError, ValueError):
+            return False
+        if not (math.isfinite(x) and math.isfinite(y)):
+            return False
+    return True
+
+
+def _best_subset(frame, px_points, anchors, names):
+    """点多于 4 个时，挑「投出来的场地线最贴白漆」的那 4 个。
+
+    为什么需要这个：4 点拟合的残差恒为 0，人眼在一张 1080p 全景里找「禁区 16.5 米线
+    与边线的交点」本来就容易点到边线上（我给的坐标也错过）。多点两个当保险，让算法
+    用白漆命中率自己淘汰点歪的那几个——顺便剩下的点变成真正的「留出点」，能给精度证据。
+    """
+    n = min(len(px_points), len(anchors))
+    px_points, anchors = px_points[:n], anchors[:n]
+    if n <= 4:
+        return list(range(n)), []
+
+    best = None
+    for combo in itertools.combinations(range(n), 4):
+        try:
+            cal = pitch.build_calibration([(px_points[i], anchors[i]) for i in combo])
+        except (ValueError, ZeroDivisionError):
+            continue  # 3 点共线之类，解不出单应
+        if not _usable(cal.homography, [px_points[i] for i in combo]):
+            continue  # 单应在这几个点上就发散（近似退化），直接扔
+        hit, ctrl, detail = _line_hit_ratio(frame, cal.homography)
+        worst_line = min((r for _, r in detail), default=0.0)
+        score = hit + 0.25 * worst_line  # 主看总命中率，辅以「最差那条线」
+        if best is None or score > best["score"]:
+            best = dict(score=score, combo=combo, hit=hit, ctrl=ctrl, worst=worst_line)
+
+    if best is None:
+        raise SystemExit("[错误] 这些点里没有一组能解出单应（3 点共线？）")
+
+    combo = best["combo"]
+    rest = [i for i in range(n) if i not in combo]
+    print(f"     [i] 自动挑出这 4 个点（白漆命中 {best['hit'] * 100:.0f}%，最差一条线 {best['worst'] * 100:.0f}%）：")
+    for i in combo:
+        u, v = px_points[i]
+        print(f"        {names[i]:18s} 像素 ({u:.0f},{v:.0f})")
+    if rest:
+        print(f"     [i] 剩下 {len(rest)} 个点当留出点（只做校验，不参与拟合）")
+        for i in rest:
+            u, v = px_points[i]
+            print(f"        {names[i]:18s} 像素 ({u:.0f},{v:.0f})")
+    return combo, rest
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="把转播画面标定到 105×68 米球场坐标")
     src = ap.add_mutually_exclusive_group(required=True)
@@ -569,15 +625,23 @@ def main() -> int:
             px_points = _click_points(frame, names)
             if len(px_points) < 4:
                 raise SystemExit(f"[错误] 只给了 {len(px_points)} 个像素点，至少要 4 个")
-        res = _evaluate(frame, px_points, anchors, names)
+        n_use = min(len(px_points), len(anchors))
+        combo, rest = _best_subset(frame, px_points, anchors, names)
+        order = list(combo) + list(rest)
+        res = _evaluate(
+            frame,
+            [px_points[i] for i in order],
+            [anchors[i] for i in order],
+            [names[i] for i in order],
+        )
         if args.points:
             break
-        key = _confirm(frame, res["cal"], names, res["hit"], res["ctrl"])
+        key = _confirm(frame, res["cal"], [names[i] for i in list(combo) + list(rest)], res["hit"], res["ctrl"])
         if key == "y":
             break
         if key == "n":
             px_points = None
-            print("[i] 重新点：按 1→4 的顺序再来一次")
+            print(f"[i] 重新点：按 1→{len(names)} 的顺序再来一次")
             continue
         raise SystemExit("[取消] 已退出标定")
 

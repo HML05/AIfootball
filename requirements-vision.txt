@@ -20,3 +20,6 @@ ultralytics>=8.3
 lap>=0.5
 opencv-python>=4.9
 numpy>=1.26
+# 抓视频链接用（scripts/vision_fetch.py）：yt-dlp 下视频，imageio-ffmpeg 提供合并音视频用的 ffmpeg
+yt-dlp>=2024.1
+imageio-ffmpeg>=0.4

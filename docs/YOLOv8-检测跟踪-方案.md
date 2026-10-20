@@ -205,10 +205,10 @@ python scripts\verify_vision.py
 .venv-vision\Scripts\python.exe scripts\verify_vision.py
 ```
 
-当前实测：**55 项断言全过**（本机系统 Python 3.13 与 `.venv-vision` 都是 55/55）。
+当前实测：**67 项断言全过**（本机系统 Python 3.13 与 `.venv-vision` 都是 67/67）。
 没有 cv2 的环境（CI 的 static job 只装 `requirements.txt`，实测用一个裸 Python 3.12 跑过）会把
 「中文路径改道 2 项 + probe_video 尺寸/帧数 + iter_frames 跳帧 + 带框视频 + meta 透传」这 7 项
-合并成 1 条跳过 → **48 通过 + 1 跳过**，退出码仍 0。模块这 55 项留本机跑；**接口面的 39 项
+合并成 1 条跳过 → **48 通过 + 1 跳过**，退出码仍 0。模块这 67 项留本机跑；**接口面的 39 项
 （`verify_vision_web.py`）已进 CI 的 runtime job**，见 §8.6。
 
 ---
@@ -324,8 +324,8 @@ torch，也不该让单 worker 被一次推理卡住）。
 
 ```powershell
 python scripts\verify_vision_web.py                     # 39 项接口断言（只需一个跑着的服务）
-.venv-vision\Scripts\python.exe scripts\verify_vision.py # 55 项模块断言
-python scripts\verify_vision.py                          # 没有 cv2 的环境：48 通过 + 1 跳过，退出码仍 0
+.venv-vision\Scripts\python.exe scripts\verify_vision.py # 67 项模块断言
+python scripts\verify_vision.py                          # 没有 cv2 的环境：60 通过 + 1 跳过，退出码仍 0
 ```
 
 `verify_vision_web.py` 已进 CI 的 runtime job（不需要 torch：它用 `scripts/fixtures/tiny.mp4`，
@@ -419,7 +419,57 @@ python scripts\verify_vision.py                          # 没有 cv2 的环境�
 
 ---
 
-## 10. 验收口径（诚实说明）
+## 10. 米制统计层：跑动距离 / 速度 / 控球 / 雷达图的基础（2026-10-20 落地）
+
+用户要的五件事（球员状态、跑动距离、速度、控球率、类 VAR 越位、实时雷达图）里，
+**除了「检测框」之外全都踩在同一块地基上：把像素坐标换算成米**。所以先落这一层，
+再谈上层指标 —— 否则算出来的距离是像素数，换个机位就换个数字，论文里站不住。
+
+### 10.1 `src/vision/pitch.py`（12 项自检）
+
+| 能力 | 实现要点 |
+| --- | --- |
+| 标定 | 4 组（像素, 米）对应点解单应矩阵，**纯 numpy 解 8×8 线性方程组**，不 import cv2（主应用/CI 的解释器没有 cv2） |
+| 坐标变换 | `pixel_to_pitch(H, (u, v))`；原点在左上角球点，x 沿长边（105 m）、y 沿短边（68 m） |
+| 取位置 | `feet_point(box)` = **框底边中点**。人站在草皮上，脚的位置才是地面位置；用框中心会让远端球员凭空往看台方向偏 |
+| 距离/速度 | `motion_stats()`：逐 track 累加米制位移，给出总距离、均速、最高速、存活时长 |
+| 三道过滤 | ① 瞬时速度 > 12 m/s 判成 ID 跳变，不计入；② 落点跑出球场外 8 米跳过；③ 时间差 0 跳过 |
+| 控球启发式 | `possession()`：球的每一帧找半径 2.5 米内最近的球员，连续同一人才算控球，否则算「无人控球」 |
+
+`motion_stats()` 里那条 12 m/s 的闸门不是保守，是必须的：**当前 ID 碎裂 5.72，
+一次误配就能让某个 ID 瞬移半场**，若直接累加，单帧就能给一名球员刷出几百米。
+
+### 10.2 `scripts/vision_calibrate.py`（点 4 下就标定完）
+
+```powershell
+# 弹窗点选：按提示顺序点 4 个锚点（默认 4 个角球点）
+.venv-vision\Scripts\python.exe scripts\vision_calibrate.py `
+  --video data\vision\videos\v2.mp4 --frame 300 --out data\vision\calib\v2.json
+
+# 已知像素坐标时不用点：直接给 --points "u,v;u,v;u,v;u,v"
+.venv-vision\Scripts\python.exe scripts\vision_calibrate.py --image shot.jpg `
+  --points "12,540;1908,520;1912,1032;8,1044" --anchors corner_tl,corner_tr,corner_br,corner_bl `
+  --out data\vision\calib\shot.json
+```
+
+- 锚点可选：4 个角球点、两个罚球点、中圈中心、中线两端（`corner_* / penalty_spot_* / center / halfway_*`）；
+- 存盘内容：单应矩阵 + 4 组对应点 + 场地尺寸 + **重投影误差**；误差 > 0.5 米会打印警告；
+- 顺手输出一张 `*.preview.jpg`（标了锚点与对应米制坐标），回头能核对标错没有。
+
+### 10.3 这块能做什么、不能做什么（写论文要照抄这段）
+
+- **能**：单机位、机位基本不动的片段上，球员米制坐标误差可以控制到 1~2 米量级，
+  由此算距离/速度/站位热区是成立的；
+- **不能（当前版本）**：转播镜头一旦平移或变焦，**一次标定的单应矩阵就失效**，
+  距离会系统性偏大或偏小。要解决得做「逐帧 / 逐镜头标定」（用场地线或关键点回归），
+  这是下一步的活儿，也是这个题目的主要创新点之一；
+- **越位辅助**同样卡在这里：需要「传球瞬间 + 最后一名防守球员 + 进攻球员」三者在同一帧的
+  米制坐标，而且镜头必须覆盖越位线；单机位转播看不到远端时，**大量场景根本无法判定** ——
+  论文里只能写成「辅助判定/可视化」，不能声称 VAR 级精度（真 VAR 是 12 机位 + 球内芯片）。
+
+---
+
+## 11. 验收口径（诚实说明）
 
 - 阶段 1 的 `_summary.json` **不含 mAP / 召回率**：没有人工标注真值就算不出来，里面只有
   「检出密度、球覆盖率、ID 碎裂比、框尺寸分布、处理速度」——它们是「管线跑通」的证据，不是模型精度。

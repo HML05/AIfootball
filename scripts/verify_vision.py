@@ -278,6 +278,70 @@ def check_fetch() -> None:
     check("ascii_name 中文回退成哈希", cn.isascii() and len(cn) == 8, cn)
 
 
+def check_pitch() -> None:
+    print("\n[7] pitch：标定与米制统计")
+    import numpy as np
+
+    from src.vision import pitch as vpitch
+
+    # 已知变换：米 → 像素做一次仿射+缩放，再标定回来，误差应该是 0（数值噪声级）
+    h_known = np.array([[2.0, 0.0, 300.0], [0.0, 2.0, 120.0], [0.0, 0.0, 1.0]])
+    pairs = []
+    for x, y in [(0, 0), (105, 0), (105, 68), (0, 68)]:
+        u = 2.0 * x + 300.0
+        v = 2.0 * y + 120.0
+        pairs.append(((u, v), (float(x), float(y))))
+    cal = vpitch.build_calibration(pairs)
+    errs = []
+    for (u, v), (x, y) in pairs:
+        px, py = cal.pixel_to_pitch(u, v)
+        errs.append(((px - x) ** 2 + (py - y) ** 2) ** 0.5)
+    check("4 点 DLT 还原已知变换", max(errs) < 1e-6, f"最大误差 {max(errs):.2e} 米")
+    check("标定矩阵是 3×3", cal.homography.shape == (3, 3), str(cal.homography.shape))
+
+    try:
+        vpitch.homography_from_points(pairs[:3])
+        check("少于 4 点要报错", False, "没有抛错")
+    except ValueError:
+        check("少于 4 点要报错", True)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        p = vpitch.save_calibration(cal, Path(tmp) / "cal.json")
+        back = vpitch.load_calibration(p)
+        a = back.pixel_to_pitch(500.0, 300.0)
+        b = cal.pixel_to_pitch(500.0, 300.0)
+        check("标定 JSON 存读一致", abs(a[0] - b[0]) < 1e-6 and abs(a[1] - b[1]) < 1e-6, f"{a[0]:.3f},{a[1]:.3f}")
+
+    check(
+        "取脚点（框底边中点）",
+        vpitch.feet_point({"xyxy": [100, 200, 160, 300]}) == (130.0, 300.0),
+        str(vpitch.feet_point({"xyxy": [100, 200, 160, 300]})),
+    )
+
+    # 每秒 10 米直线跑 3 秒 = 30 米；25 fps → 每帧 0.04 秒、每帧走 0.4 米
+    pts = [(i * 0.04, 10.0 + 0.4 * i, 20.0) for i in range(76)]
+    stats = vpitch.motion_stats({7: pts})
+    st = stats[0]
+    check("距离累加正确", abs(st.distance_m - 30.0) < 0.1, f"{st.distance_m:.2f} 米")
+    check("均速正确", abs(st.avg_speed - 10.0) < 0.1, f"{st.avg_speed:.2f} m/s")
+    check("最高速正确", abs(st.max_speed - 10.0) < 0.1, f"{st.max_speed:.2f} m/s")
+
+    jump = [(0.0, 10.0, 10.0), (0.04, 90.0, 60.0), (0.08, 90.4, 60.0)]
+    st2 = vpitch.motion_stats({9: jump})[0]
+    check(
+        "超人类速度的跳变被丢弃、后续正常帧仍计入",
+        st2.rejected == 1 and abs(st2.distance_m - 0.4) < 0.01,
+        f"rejected {st2.rejected} / {st2.distance_m:.2f} 米",
+    )
+    far = [(0.0, 5.0, 5.0), (0.04, 300.0, 5.0)]
+    check("跑出球场外 8 米的点被跳过", vpitch.motion_stats({3: far})[0].distance_m == 0.0)
+
+    holders = {1: [(0.0, 10.0, 10.0), (0.04, 10.1, 10.0), (0.08, 10.2, 10.0)]}
+    near = vpitch.possession(holders, [(0.0, 10.5, 10.5), (0.04, 10.6, 10.5), (0.08, 50.0, 50.0)])
+    check("控球归属（半径内算控球）", near["owned_frames"] == 2 and near["unowned_frames"] == 1, str(near["owned_frames"]))
+    check("控球百分比分母含无人控球帧", near["owned_pct"] == round(100.0 * 2 / 3, 2), str(near["owned_pct"]))
+
+
 def main() -> int:
     print(f"视觉模块自检（解释器：{sys.version.split()[0]}）")
     check_config()
@@ -286,6 +350,7 @@ def main() -> int:
     check_detector()
     check_prelabel()
     check_fetch()
+    check_pitch()
     print(f"\n合计：{PASSED} 通过 / {FAILED} 失败 / {SKIPPED} 跳过")
     return 1 if FAILED else 0
 

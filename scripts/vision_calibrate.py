@@ -350,9 +350,18 @@ def _line_hit_ratio(frame, h: np.ndarray, tol: int = 4) -> tuple[float, float, l
     cy = W / 2
 
     bars: list[tuple[str, tuple[tuple[float, float], tuple[float, float]]]] = [
+        # 两条边线与两条球门线：这几条才是「点必须落在交点上」的判据。
+        # 少了它们，一个只横向偏 20 px 的点也能蒙混过关——它还在中线上，
+        # 但已经不在「中线 × 边线」那个交点了，整张单应会跟着歪。
+        ("touchline_far", ((0.0, 0.0), (L, 0.0))),
+        ("touchline_near", ((0.0, W), (L, W))),
+        ("goal_left", ((0.0, 0.0), (0.0, W))),
+        ("goal_right", ((L, 0.0), (L, W))),
         ("halfway", ((L / 2, 0), (L / 2, W))),
         ("pa_right", ((L - 16.5, cy - 20.16), (L - 16.5, cy + 20.16))),
         ("pa_left", ((16.5, cy - 20.16), (16.5, cy + 20.16))),
+        ("pa_right_far", ((L - 16.5, cy - 20.16), (L, cy - 20.16))),
+        ("pa_right_near", ((L - 16.5, cy + 20.16), (L, cy + 20.16))),
         ("ga_right", ((L - 5.5, cy - 9.16), (L - 5.5, cy + 9.16))),
         ("ga_left", ((5.5, cy - 9.16), (5.5, cy + 9.16))),
     ]
